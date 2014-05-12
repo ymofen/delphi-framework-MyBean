@@ -1,0 +1,12 @@
+*.dcu
+
+*.local
+
+IOCP_DEBUG*.txt
+IOCP_ERR*.txt
+
+__history
+*.identcache
+*.exe
+/MyEmail/BIN/CLIENT/MailTemp
+/MyEmail/BIN/CLIENT/mailData
