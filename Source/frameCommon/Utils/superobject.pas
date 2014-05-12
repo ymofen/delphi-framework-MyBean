@@ -8,35 +8,15 @@
  * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License for
  * the specific language governing rights and limitations under the License.
  *
+ * Embarcadero Technologies Inc is not permitted to use or redistribute
+ * this source code without explicit permission.
+ *
  * Unit owner : Henri Gourvest <hgourvest@gmail.com>
  * Web site   : http://www.progdigy.com
  *
  * This unit is inspired from the json c lib:
  *   Michael Clark <michael@metaparadigm.com>
  *   http://oss.metaparadigm.com/json-c/
-
- *  change by Mofen
-    v1.2.3
-    //clone时出现异常
-    //modify by mofen
-              if ite.val <> nil then
-              begin
-                PutO(ite.key, nil);
-              end else
-              begin
-
- *  Changes by Mofen
- *  v1.2.2
- *   添加可以设置排序模式(1添加方式, 2排序, 0，默认)SortMode
- *   使用SetSOSortMode进行设置0为默认值，按照初始方式
- *   建议每个工程中使用一种模式,由于有太多的SO()创建
- *   2011年2月21日 12:49:24
-
- *  Changes by Mofen
- *  v1.2.1
- *   修改了Key不区分大小写
- *   修改Merge函数
- *   Ident加宽
  *
  *  CHANGES:
  *  v1.2
@@ -96,43 +76,63 @@
  *   + first release
  *)
 
-
-
 {$IFDEF FPC}
-{$MODE OBJFPC}{$H+}
+  {$MODE OBJFPC}{$H+}
 {$ENDIF}
 
 {$DEFINE SUPER_METHOD}
 {$DEFINE WINDOWSNT_COMPATIBILITY}
-{$DEFINE DEBUG} // track memory leack
+{.$DEFINE DEBUG} // track memory leack
 
 
-{$IF defined(FPC) or defined(VER170) or defined(VER180) or defined(VER190) or defined(VER200) or defined(VER210)}
-{$DEFINE HAVE_INLINE}
-{$IFEND}
+{$if defined(FPC) or defined(VER170) or defined(VER180) or defined(VER190) or defined(VER200) or defined(VER210)}
+  {$DEFINE HAVE_INLINE}
+{$ifend}
 
-{$IF defined(VER210) or defined(VER220)}
-{$DEFINE HAVE_RTTI}
-{$IFEND}
+{$if defined(VER210) or defined(VER220) or defined(VER230)}
+  {$define HAVE_RTTI}
+{$ifend}
+
+{$if defined(VER230)}
+  {$define NEED_FORMATSETTINGS}
+{$ifend}
+
+
+
+{$if defined(FPC) and defined(VER2_6)}
+  {$define NEED_FORMATSETTINGS}
+{$ifend}
+
+{$OVERFLOWCHECKS OFF}
+{$RANGECHECKS OFF}
 
 unit superobject;
+
+{$if CompilerVersion>= 23}
+  {$define NEED_FORMATSETTINGS}
+{$ifend}
 
 interface
 uses
   Classes
 {$IFDEF HAVE_RTTI}
-  , Generics.Collections, RTTI, TypInfo
+  ,Generics.Collections, RTTI, TypInfo
 {$ENDIF}
   ;
 
 type
 {$IFNDEF FPC}
+{$IFDEF CPUX64}
+  PtrInt = Int64;
+  PtrUInt = UInt64;
+{$ELSE}
   PtrInt = longint;
   PtrUInt = Longword;
 {$ENDIF}
+{$ENDIF}
   SuperInt = Int64;
 
-{$IF (sizeof(Char) = 1)}
+{$if (sizeof(Char) = 1)}
   SOChar = WideChar;
   SOIChar = Word;
   PSOChar = PWideChar;
@@ -141,12 +141,12 @@ type
 {$ELSE}
   SOString = WideString;
 {$ENDIF}
-{$ELSE}
+{$else}
   SOChar = Char;
   SOIChar = Word;
   PSOChar = PChar;
   SOString = string;
-{$IFEND}
+{$ifend}
 
 const
   SUPER_ARRAY_LIST_DEFAULT_SIZE = 32;
@@ -155,19 +155,16 @@ const
   SUPER_AVL_MAX_DEPTH = sizeof(longint) * 8;
   SUPER_AVL_MASK_HIGH_BIT = not ((not longword(0)) shr 1);
 
-type //add By Mofen
-  TSOSortMode = (sosmDefault {默认的方式}, sosmAdd {添加的顺序}, sosmASC {升序}, sosmDesc {降序});
-
 type
   // forward declarations
   TSuperObject = class;
   ISuperObject = interface;
   TSuperArray = class;
 
-  (* AVL Tree
-   *  This is a "special" autobalanced AVL tree
-   *  It use a hash value for fast compare
-   *)
+(* AVL Tree
+ *  This is a "special" autobalanced AVL tree
+ *  It use a hash value for fast compare
+ *)
 
 {$IFDEF SUPER_METHOD}
   TSuperMethod = procedure(const This, Params: ISuperObject; var Result: ISuperObject);
@@ -202,8 +199,6 @@ type
     FRoot: TSuperAvlEntry;
     FCount: Integer;
     function balance(bal: TSuperAvlEntry): TSuperAvlEntry;
-    function CompareForSortModeString(pvKey1, pvKey2: SOString): Integer;
-
   protected
     procedure doDeleteEntry(Entry: TSuperAvlEntry; all: boolean); virtual;
     function CompareNodeNode(node1, node2: TSuperAvlEntry): integer; virtual;
@@ -257,6 +252,7 @@ type
     function GetValues: ISuperObject;
     function GetNames: ISuperObject;
     function Find(const k: SOString; var value: ISuperObject): Boolean;
+    function Exists(const k: SOString): Boolean;
   end;
 
   TSuperAvlIterator = class
@@ -278,7 +274,7 @@ type
     property Current: TSuperAvlEntry read GetIter;
   end;
 
-  TSuperObjectArray = array[0..(high(PtrInt) div sizeof(TSuperObject)) - 1] of ISuperObject;
+  TSuperObjectArray = array[0..(high(Integer) div sizeof(TSuperObject))-1] of ISuperObject;
   PSuperObjectArray = ^TSuperObjectArray;
 
   TSuperArray = class
@@ -309,7 +305,12 @@ type
   public
     constructor Create; virtual;
     destructor Destroy; override;
-    function Add(const Data: ISuperObject): Integer;
+    function Add(const Data: ISuperObject): Integer; overload;
+    function Add(Data: SuperInt): Integer; overload;
+    function Add(const Data: SOString): Integer; overload;
+    function Add(Data: Boolean): Integer; overload;
+    function Add(Data: Double): Integer; overload;
+    function AddC(const Data: Currency): Integer;
     function Delete(index: Integer): ISuperObject;
     procedure Insert(index: Integer; const value: ISuperObject);
     procedure Clear(all: boolean = false);
@@ -329,15 +330,11 @@ type
   end;
 
   TSuperWriter = class
-  private
-    FIndentWidth: Integer;
   public
-    constructor Create;
     // abstact methods to overide
     function Append(buf: PSOChar; Size: Integer): Integer; overload; virtual; abstract;
     function Append(buf: PSOChar): Integer; overload; virtual; abstract;
     procedure Reset; virtual; abstract;
-    property IndentWidth: Integer read FIndentWidth write FIndentWidth;
   end;
 
   TSuperWriterString = class(TSuperWriter)
@@ -420,7 +417,7 @@ type
     teEvalArray,
     teEvalMethod,
     teEvalInt
-    );
+  );
 
   TSuperTokenerState = (
     tsEatws,
@@ -455,7 +452,7 @@ type
     tsParamPut,
     tsMethodValue,
     tsMethodPut
-    );
+  );
 
   PSuperTokenerSrec = ^TSuperTokenerSrec;
   TSuperTokenerSrec = record
@@ -472,10 +469,10 @@ type
     str: PSOChar;
     pb: TSuperWriterString;
     depth, is_double, floatcount, st_pos, char_offset: Integer;
-    err: TSuperTokenizerError;
+    err:  TSuperTokenizerError;
     ucs_char: Word;
     quote_char: SOChar;
-    stack: array[0..SUPER_TOKENER_MAX_DEPTH - 1] of TSuperTokenerSrec;
+    stack: array[0..SUPER_TOKENER_MAX_DEPTH-1] of TSuperTokenerSrec;
     line, col: Integer;
   public
     constructor Create; virtual;
@@ -495,9 +492,9 @@ type
     stArray,
     stString
 {$IFDEF SUPER_METHOD}
-    , stMethod
+    ,stMethod
 {$ENDIF}
-    );
+  );
 
   TSuperValidateError = (
     veRuleMalformated,
@@ -509,16 +506,16 @@ type
     veValueNotInEnum,
     veInvalidLength,
     veInvalidRange
-    );
+  );
 
   TSuperFindOption = (
     foCreatePath,
     foPutValue,
     foDelete
 {$IFDEF SUPER_METHOD}
-    , foCallMethod
+    ,foCallMethod
 {$ENDIF}
-    );
+  );
 
   TSuperFindOptions = set of TSuperFindOption;
   TSuperCompareResult = (cpLess, cpEqu, cpGreat, cpError);
@@ -538,7 +535,7 @@ type
   end;
 
   ISuperObject = interface
-    ['{4B86A9E3-E094-4E5A-954A-69048B7B6327}']
+  ['{4B86A9E3-E094-4E5A-954A-69048B7B6327}']
     function GetEnumerator: TSuperEnumerator;
     function GetDataType: TSuperType;
     function GetProcessing: boolean;
@@ -570,13 +567,10 @@ type
 
     // Writers
     function Write(writer: TSuperWriter; indent: boolean; escape: boolean; level: integer): Integer;
-    function SaveTo(stream: TStream; indent: boolean = false; escape: boolean =
-      false): integer; overload;
-    function SaveTo(const FileName: string; indent: boolean = false; escape:
-      boolean = false): integer; overload;
-    function SaveTo(socket: longint; indent: boolean = false; escape: boolean =
-      false): integer; overload;
-    function CalcSize(indent: boolean = false; escape: boolean = false): integer;
+    function SaveTo(stream: TStream; indent: boolean = false; escape: boolean = true): integer; overload;
+    function SaveTo(const FileName: string; indent: boolean = false; escape: boolean = true): integer; overload;
+    function SaveTo(socket: longint; indent: boolean = false; escape: boolean = true): integer; overload;
+    function CalcSize(indent: boolean = false; escape: boolean = true): integer;
 
     // convert
     function AsBoolean: Boolean;
@@ -589,8 +583,7 @@ type
 {$IFDEF SUPER_METHOD}
     function AsMethod: TSuperMethod;
 {$ENDIF}
-    function AsJSon(indent: boolean = false; escape: boolean = false; indentwidth:
-      Integer = 3): SOString;
+    function AsJSon(indent: boolean = false; escape: boolean = true): SOString;
 
     procedure Clear(all: boolean = false);
     procedure Pack(all: boolean = false);
@@ -611,14 +604,13 @@ type
     function call(const path: SOString; const param: ISuperObject = nil): ISuperObject; overload;
     function call(const path, param: SOString): ISuperObject; overload;
 {$ENDIF}
+
     // clone a node
     function Clone: ISuperObject;
     function Delete(const path: SOString): ISuperObject;
     // merges tow objects of same type, if reference is true then nodes are not cloned
-    //add by mofen pvOverlay 是否覆盖本身 false:不覆盖本身的值,以本身的值为准
-    procedure Merge(const obj: ISuperObject; reference: boolean = false;
-      pvOverlay: boolean = true); overload;
-    procedure Merge(const str: SOString; pvOverlay: boolean = true); overload;
+    procedure Merge(const obj: ISuperObject; reference: boolean = false); overload;
+    procedure Merge(const str: SOString); overload;
 
     // validate methods
     function Validate(const rules: SOString; const defs: SOString = ''; callback: TSuperOnValidateError = nil; sender: Pointer = nil): boolean; overload;
@@ -644,7 +636,7 @@ type
     FProcessing: boolean;
     FDataType: TSuperType;
     FDataPtr: Pointer;
-    {.$if true}
+{.$if true}
     FO: record
       case TSuperType of
         stBoolean: (c_boolean: boolean);
@@ -656,14 +648,18 @@ type
 {$IFDEF SUPER_METHOD}
         stMethod: (c_method: TSuperMethod);
 {$ENDIF}
-    end;
-    {.$ifend}
+      end;
+{.$ifend}
     FOString: SOString;
     function GetDataType: TSuperType;
     function GetDataPtr: Pointer;
     procedure SetDataPtr(const Value: Pointer);
   protected
+{$IFDEF FPC}
+    function QueryInterface({$IFDEF FPC_HAS_CONSTREF}constref{$ELSE}const{$ENDIF} iid: tguid; out obj): longint;{$IFNDEF WINDOWS}cdecl{$ELSE}stdcall{$ENDIF};
+{$ELSE}
     function QueryInterface(const IID: TGUID; out Obj): HResult; virtual; stdcall;
+{$ENDIF}
     function _AddRef: Integer; virtual; stdcall;
     function _Release: Integer; virtual; stdcall;
 
@@ -696,23 +692,19 @@ type
     procedure SetProcessing(value: boolean);
 
     // Writers
-    function SaveTo(stream: TStream; indent: boolean = false; escape: boolean =
-      false): integer; overload;
-    function SaveTo(const FileName: string; indent: boolean = false; escape:
-      boolean = false): integer; overload;
-    function SaveTo(socket: longint; indent: boolean = false; escape: boolean =
-      false): integer; overload;
-    function CalcSize(indent: boolean = false; escape: boolean = false): integer;
-    function AsJSon(indent: boolean = false; escape: boolean = false; indentwidth:
-      Integer = 3): SOString;
+    function SaveTo(stream: TStream; indent: boolean = false; escape: boolean = true): integer; overload;
+    function SaveTo(const FileName: string; indent: boolean = false; escape: boolean = true): integer; overload;
+    function SaveTo(socket: longint; indent: boolean = false; escape: boolean = true): integer; overload;
+    function CalcSize(indent: boolean = false; escape: boolean = true): integer;
+    function AsJSon(indent: boolean = false; escape: boolean = true): SOString;
 
     // parser  ... owned!
     class function ParseString(s: PSOChar; strict: Boolean; partial: boolean = true; const this: ISuperObject = nil; options: TSuperFindOptions = [];
-      const put: ISuperObject = nil; dt: TSuperType = stNull): ISuperObject;
+       const put: ISuperObject = nil; dt: TSuperType = stNull): ISuperObject;
     class function ParseStream(stream: TStream; strict: Boolean; partial: boolean = true; const this: ISuperObject = nil; options: TSuperFindOptions = [];
-      const put: ISuperObject = nil; dt: TSuperType = stNull): ISuperObject;
+       const put: ISuperObject = nil; dt: TSuperType = stNull): ISuperObject;
     class function ParseFile(const FileName: string; strict: Boolean; partial: boolean = true; const this: ISuperObject = nil; options: TSuperFindOptions = [];
-      const put: ISuperObject = nil; dt: TSuperType = stNull): ISuperObject;
+       const put: ISuperObject = nil; dt: TSuperType = stNull): ISuperObject;
     class function ParseEx(tok: TSuperTokenizer; str: PSOChar; len: integer; strict: Boolean; const this: ISuperObject = nil;
       options: TSuperFindOptions = []; const put: ISuperObject = nil; dt: TSuperType = stNull): ISuperObject;
 
@@ -758,7 +750,7 @@ type
 {$ENDIF}
     property A[const path: SOString]: TSuperArray read GetA;
 
-{$IFDEF SUPER_METHOD}
+    {$IFDEF SUPER_METHOD}
     function call(const path: SOString; const param: ISuperObject = nil): ISuperObject; overload; virtual;
     function call(const path, param: SOString): ISuperObject; overload; virtual;
 {$ENDIF}
@@ -766,10 +758,8 @@ type
     function Clone: ISuperObject; virtual;
     function Delete(const path: SOString): ISuperObject;
     // merges tow objects of same type, if reference is true then nodes are not cloned
-    procedure Merge(const obj: ISuperObject; reference: boolean = false; pvOverlay:
-      boolean = true); overload;
-    procedure Merge(const str: SOString; pvOverlay:
-      boolean = true); overload;
+    procedure Merge(const obj: ISuperObject; reference: boolean = false); overload;
+    procedure Merge(const str: SOString); overload;
 
     // validate methods
     function Validate(const rules: SOString; const defs: SOString = ''; callback: TSuperOnValidateError = nil; sender: Pointer = nil): boolean; overload;
@@ -811,33 +801,34 @@ type
     class function GetFieldDefault(r: TRttiField; const obj: ISuperObject): ISuperObject;
   public
     Context: TRttiContext;
-    SerialFromJson: TDictionary < PTypeInfo, TSerialFromJson > ;
-    SerialToJson: TDictionary < PTypeInfo, TSerialToJson > ;
+    SerialFromJson: TDictionary<PTypeInfo, TSerialFromJson>;
+    SerialToJson: TDictionary<PTypeInfo, TSerialToJson>;
     constructor Create; virtual;
     destructor Destroy; override;
     function FromJson(TypeInfo: PTypeInfo; const obj: ISuperObject; var Value: TValue): Boolean; virtual;
     function ToJson(var value: TValue; const index: ISuperObject): ISuperObject; virtual;
-    function AsType < T > (const obj: ISuperObject): T;
-    function AsJson < T > (const obj: T; const index: ISuperObject = nil): ISuperObject;
+    function AsType<T>(const obj: ISuperObject): T;
+    function AsJson<T>(const obj: T; const index: ISuperObject = nil): ISuperObject;
   end;
 
   TSuperObjectHelper = class helper for TObject
-    public
-  function ToJson(ctx: TSuperRttiContext = nil): ISuperObject;
-constructor FromJson(const obj: ISuperObject; ctx: TSuperRttiContext = nil); overload;
-constructor FromJson(const str: string; ctx: TSuperRttiContext = nil); overload;
-end;
+  public
+    function ToJson(ctx: TSuperRttiContext = nil): ISuperObject;
+    constructor FromJson(const obj: ISuperObject; ctx: TSuperRttiContext = nil); overload;
+    constructor FromJson(const str: string; ctx: TSuperRttiContext = nil); overload;
+  end;
 {$ENDIF}
 
-TSuperObjectIter = record
-  key: SOString;
-  val: ISuperObject;
-  Ite: TSuperAvlIterator;
-end;
+  TSuperObjectIter = record
+    key: SOString;
+    val: ISuperObject;
+    Ite: TSuperAvlIterator;
+  end;
 
 function ObjectIsError(obj: TSuperObject): boolean;
 function ObjectIsType(const obj: ISuperObject; typ: TSuperType): boolean;
 function ObjectGetType(const obj: ISuperObject): TSuperType;
+function ObjectIsNull(const obj: ISuperObject): Boolean;
 
 function ObjectFindFirst(const obj: ISuperObject; var F: TSuperObjectIter): boolean;
 function ObjectFindNext(var F: TSuperObjectIter): boolean;
@@ -855,20 +846,18 @@ function TryObjectToDate(const obj: ISuperObject; var dt: TDateTime): Boolean;
 function ISO8601DateToJavaDateTime(const str: SOString; var ms: Int64): Boolean;
 function ISO8601DateToDelphiDateTime(const str: SOString; var dt: TDateTime): Boolean;
 function DelphiDateTimeToISO8601Date(dt: TDateTime): SOString;
-
-//设置排序模式 Mofen
-procedure SetSOSortMode(pvSortMode: TSOSortMode);
-
+function UUIDToString(const g: TGUID): SOString;
+function StringToUUID(const str: SOString; var g: TGUID): Boolean;
 
 {$IFDEF HAVE_RTTI}
 
 type
   TSuperInvokeResult = (
     irSuccess,
-    irMethothodError, // method don't exist
-    irParamError, // invalid parametters
-    irError // other error
-    );
+    irMethothodError,  // method don't exist
+    irParamError,     // invalid parametters
+    irError            // other error
+  );
 
 function TrySOInvoke(var ctx: TSuperRttiContext; const obj: TValue; const method: string; const params: ISuperObject; var Return: ISuperObject): TSuperInvokeResult; overload;
 function SOInvoke(const obj: TValue; const method: string; const params: ISuperObject; ctx: TSuperRttiContext = nil): ISuperObject; overload;
@@ -876,7 +865,6 @@ function SOInvoke(const obj: TValue; const method: string; const params: string;
 {$ENDIF}
 
 implementation
-
 uses sysutils,
 {$IFDEF UNIX}
   baseunix, unix, DateUtils
@@ -884,23 +872,20 @@ uses sysutils,
   Windows
 {$ENDIF}
 {$IFDEF FPC}
-  , sockets
+  ,sockets
 {$ELSE}
-  , WinSock
+  ,WinSock
 {$ENDIF};
 
-{$IFDEF INNER_DEBUG}
+{$IFDEF DEBUG}
 var
   debugcount: integer = 0;
 {$ENDIF}
 
-var
-  nowSortMode: TSOSortMode = sosmDefault;
-
 const
-  super_number_chars_set = ['0'..'9', '.', '+', '-', 'e', 'E'];
+  super_number_chars_set = ['0'..'9','.','+','-','e','E'];
   super_hex_chars: PSOChar = '0123456789abcdef';
-  super_hex_chars_set = ['0'..'9', 'a'..'f', 'A'..'F'];
+  super_hex_chars_set = ['0'..'9','a'..'f','A'..'F'];
 
   ESC_BS: PSOChar = '\b';
   ESC_LF: PSOChar = '\n';
@@ -919,8 +904,8 @@ const
   TOK_LF: PSOChar = #10;
   TOK_FF: PSOChar = #12;
   TOK_CR: PSOChar = #13;
-  //  TOK_SL: PSOChar = '\';
-  //  TOK_SR: PSOChar = '/';
+//  TOK_SL: PSOChar = '\';
+//  TOK_SR: PSOChar = '/';
   TOK_NULL: PSOChar = 'null';
   TOK_CBL: PSOChar = '{'; // curly bracket left
   TOK_CBR: PSOChar = '}'; // curly bracket right
@@ -933,8 +918,7 @@ const
   TOK_TRUE: PSOChar = 'true';
   TOK_FALSE: PSOChar = 'false';
 
-{$IF (sizeof(Char) = 1)}
-
+{$if (sizeof(Char) = 1)}
 function StrLComp(const Str1, Str2: PSOChar; MaxLen: Cardinal): Integer;
 var
   P1, P2: PWideChar;
@@ -997,19 +981,19 @@ begin
     Result := (p - Str);
   end;
 end;
-{$IFEND}
+{$ifend}
 
 function FloatToJson(const value: Double): SOString;
 var
   p: PSOChar;
 begin
   Result := FloatToStr(value);
-  if DecimalSeparator <> '.' then
+  if {$if defined(NEED_FORMATSETTINGS)}FormatSettings.{$ifend}DecimalSeparator <> '.' then
   begin
     p := PSOChar(Result);
     while p^ <> #0 do
-      if p^ <> SOChar(DecimalSeparator) then
-        inc(p) else
+      if p^ <> SOChar({$if defined(NEED_FORMATSETTINGS)}FormatSettings.{$ifend}DecimalSeparator) then
+      inc(p) else
       begin
         p^ := '.';
         Exit;
@@ -1022,12 +1006,12 @@ var
   p: PSOChar;
 begin
   Result := CurrToStr(value);
-  if DecimalSeparator <> '.' then
+  if {$if defined(NEED_FORMATSETTINGS)}FormatSettings.{$ifend}DecimalSeparator <> '.' then
   begin
     p := PSOChar(Result);
     while p^ <> #0 do
-      if p^ <> SOChar(DecimalSeparator) then
-        inc(p) else
+      if p^ <> SOChar({$if defined(NEED_FORMATSETTINGS)}FormatSettings.{$ifend}DecimalSeparator) then
+      inc(p) else
       begin
         p^ := '.';
         Exit;
@@ -1036,7 +1020,6 @@ begin
 end;
 
 {$IFDEF UNIX}
-
 function GetTimeBias: integer;
 var
   TimeVal: TTimeVal;
@@ -1046,13 +1029,12 @@ begin
   Result := TimeZone.tz_minuteswest;
 end;
 {$ELSE}
-
 function GetTimeBias: integer;
 var
-  tzi: TTimeZoneInformation;
+  tzi : TTimeZoneInformation;
 begin
   case GetTimeZoneInformation(tzi) of
-    TIME_ZONE_ID_UNKNOWN: Result := tzi.Bias;
+    TIME_ZONE_ID_UNKNOWN : Result := tzi.Bias;
     TIME_ZONE_ID_STANDARD: Result := tzi.Bias + tzi.StandardBias;
     TIME_ZONE_ID_DAYLIGHT: Result := tzi.Bias + tzi.DaylightBias;
   else
@@ -1065,22 +1047,20 @@ end;
 type
   ptm = ^tm;
   tm = record
-    tm_sec: Integer; (* Seconds: 0-59 (K&R says 0-61?) *)
-    tm_min: Integer; (* Minutes: 0-59 *)
-    tm_hour: Integer; (* Hours since midnight: 0-23 *)
-    tm_mday: Integer; (* Day of the month: 1-31 *)
-    tm_mon: Integer; (* Months *since* january: 0-11 *)
-    tm_year: Integer; (* Years since 1900 *)
-    tm_wday: Integer; (* Days since Sunday (0-6) *)
-    tm_yday: Integer; (* Days since Jan. 1: 0-365 *)
-    tm_isdst: Integer; (* +1 Daylight Savings Time, 0 No DST, -1 don't know *)
+    tm_sec: Integer;		(* Seconds: 0-59 (K&R says 0-61?) *)
+    tm_min: Integer;		(* Minutes: 0-59 *)
+    tm_hour: Integer;	(* Hours since midnight: 0-23 *)
+    tm_mday: Integer;	(* Day of the month: 1-31 *)
+    tm_mon: Integer;		(* Months *since* january: 0-11 *)
+    tm_year: Integer;	(* Years since 1900 *)
+    tm_wday: Integer;	(* Days since Sunday (0-6) *)
+    tm_yday: Integer;	(* Days since Jan. 1: 0-365 *)
+    tm_isdst: Integer;	(* +1 Daylight Savings Time, 0 No DST, -1 don't know *)
   end;
 
 function mktime(p: ptm): LongInt; cdecl; external;
-
 function gmtime(const t: PLongint): ptm; cdecl; external;
-
-function localtime(const t: PLongint): ptm; cdecl; external;
+function localtime (const t: PLongint): ptm; cdecl; external;
 
 function DelphiToJavaDateTime(const dt: TDateTime): Int64;
 var
@@ -1103,12 +1083,11 @@ begin
   l := dt div 1000;
   ms := dt mod 1000;
   p := gmtime(@l);
-  Result := EncodeDateTime(p^.tm_year + 1900, p^.tm_mon + 1, p^.tm_mday, p^.tm_hour, p^.tm_min, p^.tm_sec, ms);
+  Result := EncodeDateTime(p^.tm_year+1900, p^.tm_mon+1, p^.tm_mday, p^.tm_hour, p^.tm_min, p^.tm_sec, ms);
 end;
 {$ELSE}
 
 {$IFDEF WINDOWSNT_COMPATIBILITY}
-
 function DayLightCompareDate(const date: PSystemTime;
   const compareDate: PSystemTime): Integer;
 var
@@ -1139,22 +1118,22 @@ begin
     First := (6 + compareDate^.wDayOfWeek - date^.wDayOfWeek + date^.wDay) mod 7 + 1;
     limit_day := First + 7 * (weekofmonth - 1);
     (* check needed for the 5th weekday of the month *)
-    if (limit_day > MonthDays[(date^.wMonth = 2) and IsLeapYear(date^.wYear)][date^.wMonth]) then
+    if (limit_day > MonthDays[(date^.wMonth=2) and IsLeapYear(date^.wYear)][date^.wMonth]) then
       dec(limit_day, 7);
   end
   else
     limit_day := compareDate^.wDay;
 
   (* convert to seconds *)
-  limit_day := ((limit_day * 24 + compareDate^.wHour) * 60 + compareDate^.wMinute) * 60;
-  dayinsecs := ((date^.wDay * 24 + date^.wHour) * 60 + date^.wMinute) * 60 + date^.wSecond;
+  limit_day := ((limit_day * 24  + compareDate^.wHour) * 60 + compareDate^.wMinute ) * 60;
+  dayinsecs := ((date^.wDay * 24  + date^.wHour) * 60 + date^.wMinute ) * 60 + date^.wSecond;
   (* and compare *)
 
   if dayinsecs < limit_day then
-    Result := -1 else
+    Result :=  -1 else
     if dayinsecs > limit_day then
-      Result := 1 else
-      Result := 0; (* date is equal to the date limit. *)
+      Result :=  1 else
+      Result :=  0; (* date is equal to the date limit. *)
 end;
 
 function CompTimeZoneID(const pTZinfo: PTimeZoneInformation;
@@ -1174,11 +1153,11 @@ begin
      * it's absolute date.
      *)
     if ((pTZinfo^.StandardDate.wMonth = 0) or
-      ((pTZinfo^.StandardDate.wYear = 0) and
-      ((pTZinfo^.StandardDate.wDay < 1) or
-      (pTZinfo^.StandardDate.wDay > 5) or
-      (pTZinfo^.DaylightDate.wDay < 1) or
-      (pTZinfo^.DaylightDate.wDay > 5)))) then
+        ((pTZinfo^.StandardDate.wYear = 0) and
+        ((pTZinfo^.StandardDate.wDay < 1) or
+        (pTZinfo^.StandardDate.wDay > 5) or
+        (pTZinfo^.DaylightDate.wDay < 1) or
+        (pTZinfo^.DaylightDate.wDay > 5)))) then
     begin
       SetLastError(ERROR_INVALID_PARAMETER);
       Result := TIME_ZONE_ID_INVALID;
@@ -1222,13 +1201,13 @@ begin
     afterDaylightDate := ret >= 0;
 
     Result := TIME_ZONE_ID_STANDARD;
-    if (pTZinfo^.DaylightDate.wMonth < pTZinfo^.StandardDate.wMonth) then
+    if( pTZinfo^.DaylightDate.wMonth < pTZinfo^.StandardDate.wMonth ) then
     begin
       (* Northern hemisphere *)
-      if (beforeStandardDate and afterDaylightDate) then
+      if( beforeStandardDate and afterDaylightDate) then
         Result := TIME_ZONE_ID_DAYLIGHT;
-    end else (* Down south *)
-      if (beforeStandardDate or afterDaylightDate) then
+    end else    (* Down south *)
+      if( beforeStandardDate or afterDaylightDate) then
         Result := TIME_ZONE_ID_DAYLIGHT;
   end else
     (* No transition date *)
@@ -1244,7 +1223,7 @@ begin
   bias := pTZinfo^.Bias;
   tzid := CompTimeZoneID(pTZinfo, lpFileTime, islocal);
 
-  if (tzid = TIME_ZONE_ID_INVALID) then
+  if( tzid = TIME_ZONE_ID_INVALID) then
   begin
     Result := False;
     Exit;
@@ -1292,8 +1271,8 @@ begin
 end;
 
 function TzSpecificLocalTimeToSystemTime(
-  const lpTimeZoneInformation: PTimeZoneInformation;
-  const lpLocalTime: PSystemTime; lpUniversalTime: PSystemTime): BOOL;
+    const lpTimeZoneInformation: PTimeZoneInformation;
+    const lpLocalTime: PSystemTime; lpUniversalTime: PSystemTime): BOOL;
 var
   ft: TFileTime;
   lBias: LongInt;
@@ -1326,7 +1305,6 @@ begin
   Result := FileTimeToSystemTime(ft, lpUniversalTime^);
 end;
 {$ELSE}
-
 function TzSpecificLocalTimeToSystemTime(
   lpTimeZoneInformation: PTimeZoneInformation;
   lpLocalTime, lpUniversalTime: PSystemTime): BOOL; stdcall; external 'kernel32.dll';
@@ -1382,11 +1360,11 @@ var
   state: TState;
   pos, v: Word;
   sep: TPerhaps;
-  inctz, havedate: Boolean;
+  inctz, havetz, havedate: Boolean;
   st: TDateTimeInfo;
   DayTable: PDayTable;
 
-  function get(var v: Word; c: SOChar): Boolean; {$IFDEF HAVE_INLINE}inline; {$ENDIF}
+  function get(var v: Word; c: SOChar): Boolean; {$IFDEF HAVE_INLINE} inline;{$ENDIF}
   begin
     if (c < #256) and (AnsiChar(c) in ['0'..'9']) then
     begin
@@ -1406,91 +1384,92 @@ begin
   FillChar(st, SizeOf(st), 0);
   havedate := True;
   inctz := False;
+  havetz := False;
 
   while true do
-    case state of
-      stStart:
-        case p^ of
-          '0'..'9': state := stYear;
-          'T', 't':
-            begin
-              state := stHour;
-              pos := 0;
-              inc(p);
-              havedate := False;
-            end;
-        else
-          goto error;
-        end;
-      stYear:
-        case pos of
-          0..1, 3:
-            if get(st.year, p^) then
-            begin
-              Inc(pos);
-              Inc(p);
-            end else
-              goto error;
-          2: case p^ of
-              '0'..'9':
-                begin
-                  st.year := st.year * 10 + ord(p^) - ord('0');
-                  Inc(pos);
-                  Inc(p);
-                end;
-              ':':
-                begin
-                  havedate := false;
-                  st.hour := st.year;
-                  st.year := 0;
-                  inc(p);
-                  pos := 0;
-                  state := stMin;
-                  sep := yes;
-                end;
-            else
-              goto error;
-            end;
-          4: case p^ of
-              '-': begin
-                  pos := 0;
-                  Inc(p);
-                  sep := yes;
-                  state := stMonth;
-                end;
-              '0'..'9':
-                begin
-                  sep := no;
-                  pos := 0;
-                  state := stMonth;
-                end;
-              'W', 'w':
-                begin
-                  pos := 0;
-                  Inc(p);
-                  state := stWeek;
-                end;
-              'T', 't', ' ':
-                begin
-                  state := stHour;
-                  pos := 0;
-                  inc(p);
-                  st.month := 1;
-                  st.day := 1;
-                end;
-              #0:
-                begin
-                  st.month := 1;
-                  st.day := 1;
-                  state := stEnd;
-                end;
-            else
-              goto error;
-            end;
-        end;
-      stMonth:
-        case pos of
-          0: case p^ of
+  case state of
+    stStart:
+      case p^ of
+        '0'..'9': state := stYear;
+        'T', 't':
+          begin
+            state := stHour;
+            pos := 0;
+            inc(p);
+            havedate := False;
+          end;
+      else
+        goto error;
+      end;
+    stYear:
+      case pos of
+        0..1,3:
+              if get(st.year, p^) then
+              begin
+                Inc(pos);
+                Inc(p);
+              end else
+                goto error;
+        2:    case p^ of
+                '0'..'9':
+                  begin
+                    st.year := st.year * 10 + ord(p^) - ord('0');
+                    Inc(pos);
+                    Inc(p);
+                  end;
+                ':':
+                  begin
+                    havedate := false;
+                    st.hour := st.year;
+                    st.year := 0;
+                    inc(p);
+                    pos := 0;
+                    state := stMin;
+                    sep := yes;
+                  end;
+              else
+                goto error;
+              end;
+        4: case p^ of
+             '-': begin
+                    pos := 0;
+                    Inc(p);
+                    sep := yes;
+                    state := stMonth;
+                  end;
+             '0'..'9':
+                  begin
+                    sep := no;
+                    pos := 0;
+                    state := stMonth;
+                  end;
+             'W', 'w' :
+                  begin
+                    pos := 0;
+                    Inc(p);
+                    state := stWeek;
+                  end;
+             'T', 't', ' ':
+                  begin
+                    state := stHour;
+                    pos := 0;
+                    inc(p);
+                    st.month := 1;
+                    st.day := 1;
+                  end;
+             #0:
+                  begin
+                    st.month := 1;
+                    st.day := 1;
+                    state := stEnd;
+                  end;
+           else
+             goto error;
+           end;
+      end;
+    stMonth:
+      case pos of
+        0:  case p^ of
               '0'..'9':
                 begin
                   st.month := ord(p^) - ord('0');
@@ -1506,415 +1485,417 @@ begin
             else
               goto error;
             end;
-          1: if get(st.month, p^) then
+        1:  if get(st.month, p^) then
             begin
               Inc(pos);
               Inc(p);
             end else
               goto error;
-          2: case p^ of
-              '-':
-                if (sep in [yes, perhaps]) then
-                begin
-                  pos := 0;
-                  Inc(p);
-                  state := stDay;
-                  sep := yes;
-                end else
-                  goto error;
-              '0'..'9':
-                if sep in [no, perhaps] then
-                begin
-                  pos := 0;
-                  state := stDay;
-                  sep := no;
-                end else
-                begin
-                  st.dayofyear := st.month * 10 + Ord(p^) - Ord('0');
-                  st.month := 0;
-                  inc(p);
-                  pos := 3;
-                  state := stDayOfYear;
-                end;
-              'T', 't', ' ':
-                begin
-                  state := stHour;
-                  pos := 0;
-                  inc(p);
-                  st.day := 1;
-                end;
-              #0:
-                begin
-                  st.day := 1;
-                  state := stEnd;
-                end;
-            else
-              goto error;
-            end;
-        end;
-      stDay:
-        case pos of
-          0: if get(st.day, p^) then
-            begin
-              Inc(pos);
-              Inc(p);
-            end else
-              goto error;
-          1: if get(st.day, p^) then
-            begin
-              Inc(pos);
-              Inc(p);
-            end else
-              if sep in [no, perhaps] then
-              begin
-                st.dayofyear := st.month * 10 + st.day;
-                st.day := 0;
-                st.month := 0;
-                state := stDayOfYear;
-              end else
-                goto error;
-
-          2: case p^ of
-              'T', 't', ' ':
-                begin
-                  pos := 0;
-                  Inc(p);
-                  state := stHour;
-                end;
-              #0: state := stEnd;
-            else
-              goto error;
-            end;
-        end;
-      stDayOfYear:
-        begin
-          if (st.dayofyear <= 0) then goto error;
-          case p^ of
-            'T', 't', ' ':
-              begin
-                pos := 0;
-                Inc(p);
-                state := stHour;
-              end;
-            #0: state := stEnd;
-          else
-            goto error;
-          end;
-        end;
-      stWeek:
-        begin
-          case pos of
-            0..1: if get(st.week, p^) then
-              begin
-                inc(pos);
-                inc(p);
-              end else
-                goto error;
-            2: case p^ of
-                '-': if (sep in [yes, perhaps]) then
+        2: case p^ of
+             '-':
+                  if (sep in [yes, perhaps])  then
                   begin
+                    pos := 0;
                     Inc(p);
-                    state := stWeekDay;
+                    state := stDay;
                     sep := yes;
                   end else
                     goto error;
-                '1'..'7':
+             '0'..'9':
                   if sep in [no, perhaps] then
                   begin
-                    state := stWeekDay;
+                    pos := 0;
+                    state := stDay;
                     sep := no;
                   end else
-                    goto error;
-              else
-                goto error;
-              end;
-          end;
-        end;
-      stWeekDay:
-        begin
-          if (st.week > 0) and get(st.weekday, p^) then
-          begin
-            inc(p);
-            v := st.year - 1;
-            v := ((v * 365) + (v div 4) - (v div 100) + (v div 400)) mod 7 + 1;
-            st.dayofyear := (st.weekday - v) + ((st.week) * 7) + 1;
-            if v <= 4 then dec(st.dayofyear, 7);
-            case p^ of
-              'T', 't', ' ':
-                begin
-                  pos := 0;
-                  Inc(p);
-                  state := stHour;
-                end;
-              #0: state := stEnd;
-            else
+                  begin
+                    st.dayofyear := st.month * 10 + Ord(p^) - Ord('0');
+                    st.month := 0;
+                    inc(p);
+                    pos := 3;
+                    state := stDayOfYear;
+                  end;
+             'T', 't', ' ':
+                  begin
+                    state := stHour;
+                    pos := 0;
+                    inc(p);
+                    st.day := 1;
+                 end;
+             #0:
+               begin
+                 st.day := 1;
+                 state := stEnd;
+               end;
+           else
+             goto error;
+           end;
+      end;
+    stDay:
+      case pos of
+        0:  if get(st.day, p^) then
+            begin
+              Inc(pos);
+              Inc(p);
+            end else
               goto error;
-            end;
-          end else
-            goto error;
+        1:  if get(st.day, p^) then
+            begin
+              Inc(pos);
+              Inc(p);
+            end else
+            if sep in [no, perhaps] then
+            begin
+              st.dayofyear := st.month * 10 + st.day;
+              st.day := 0;
+              st.month := 0;
+              state := stDayOfYear;
+            end else
+              goto error;
+
+        2: case p^ of
+             'T', 't', ' ':
+                  begin
+                    pos := 0;
+                    Inc(p);
+                    state := stHour;
+                  end;
+             #0:  state := stEnd;
+           else
+             goto error;
+           end;
+      end;
+    stDayOfYear:
+      begin
+        if (st.dayofyear <= 0) then goto error;
+        case p^ of
+          'T', 't', ' ':
+               begin
+                 pos := 0;
+                 Inc(p);
+                 state := stHour;
+               end;
+          #0:  state := stEnd;
+        else
+          goto error;
         end;
-      stHour:
+      end;
+    stWeek:
+      begin
         case pos of
-          0: case p^ of
-              '0'..'9':
-                if get(st.hour, p^) then
+          0..1: if get(st.week, p^) then
                 begin
                   inc(pos);
                   inc(p);
                 end else
                   goto error;
-              '-':
-                begin
-                  inc(p);
-                  state := stMin;
-                end;
-            else
-              goto error;
-            end;
-          1: if get(st.hour, p^) then
-            begin
-              inc(pos);
-              inc(p);
-            end else
-              goto error;
           2: case p^ of
-              ':': if sep in [yes, perhaps] then
-                begin
-                  sep := yes;
-                  pos := 0;
-                  Inc(p);
-                  state := stMin;
-                end else
-                  goto error;
-              ',':
+               '-': if (sep in [yes, perhaps]) then
+                    begin
+                      Inc(p);
+                      state := stWeekDay;
+                      sep := yes;
+                    end else
+                      goto error;
+               '1'..'7':
+                    if sep in [no, perhaps] then
+                    begin
+                      state := stWeekDay;
+                      sep := no;
+                    end else
+                      goto error;
+             else
+               goto error;
+             end;
+        end;
+      end;
+    stWeekDay:
+      begin
+        if (st.week > 0) and get(st.weekday, p^) then
+        begin
+          inc(p);
+          v := st.year - 1;
+          v := ((v * 365) + (v div 4) - (v div 100) + (v div 400)) mod 7 + 1;
+          st.dayofyear := (st.weekday - v) + ((st.week) * 7) + 1;
+          if v <= 4 then dec(st.dayofyear, 7);
+          case p^ of
+            'T', 't', ' ':
+                 begin
+                   pos := 0;
+                   Inc(p);
+                   state := stHour;
+                 end;
+            #0:  state := stEnd;
+          else
+            goto error;
+          end;
+        end else
+          goto error;
+      end;
+    stHour:
+      case pos of
+        0:    case p^ of
+                '0'..'9':
+                    if get(st.hour, p^) then
+                    begin
+                      inc(pos);
+                      inc(p);
+                      end else
+                        goto error;
+                '-':
+                  begin
+                    inc(p);
+                    state := stMin;
+                  end;
+              else
+                goto error;
+              end;
+        1:    if get(st.hour, p^) then
+              begin
+                inc(pos);
+                inc(p);
+              end else
+                goto error;
+        2: case p^ of
+             ':': if sep in [yes, perhaps] then
+                  begin
+                    sep := yes;
+                    pos := 0;
+                    Inc(p);
+                    state := stMin;
+                  end else
+                    goto error;
+             ',', '.':
                 begin
                   Inc(p);
                   state := stMs;
                 end;
-              '+':
-                if havedate then
-                begin
-                  state := stGMTH;
-                  pos := 0;
-                  v := 0;
-                  inc(p);
-                end else
-                  goto error;
-              '-':
-                if havedate then
-                begin
-                  state := stGMTH;
-                  pos := 0;
-                  v := 0;
-                  inc(p);
-                  inctz := True;
-                end else
-                  goto error;
-              'Z', 'z':
-                if havedate then
-                  state := stUTC else
-                  goto error;
-              '0'..'9':
-                if sep in [no, perhaps] then
-                begin
-                  pos := 0;
-                  state := stMin;
-                  sep := no;
-                end else
-                  goto error;
-              #0: state := stEnd;
-            else
-              goto error;
-            end;
-        end;
-      stMin:
-        case pos of
-          0: case p^ of
-              '0'..'9':
+             '+':
+               if havedate then
+               begin
+                 state := stGMTH;
+                 pos := 0;
+                 v := 0;
+                 inc(p);
+               end else
+                 goto error;
+             '-':
+               if havedate then
+               begin
+                 state := stGMTH;
+                 pos := 0;
+                 v := 0;
+                 inc(p);
+                 inctz := True;
+               end else
+                 goto error;
+             'Z', 'z':
+                  if havedate then
+                    state := stUTC else
+                    goto error;
+             '0'..'9':
+                  if sep in [no, perhaps] then
+                  begin
+                    pos := 0;
+                    state := stMin;
+                    sep := no;
+                  end else
+                    goto error;
+             #0:  state := stEnd;
+           else
+             goto error;
+           end;
+      end;
+    stMin:
+      case pos of
+        0: case p^ of
+             '0'..'9':
                 if get(st.minute, p^) then
                 begin
                   inc(pos);
                   inc(p);
                 end else
                   goto error;
-              '-':
+             '-':
                 begin
                   inc(p);
                   state := stSec;
                 end;
-            else
-              goto error;
-            end;
-          1: if get(st.minute, p^) then
-            begin
-              inc(pos);
-              inc(p);
-            end else
-              goto error;
-          2: case p^ of
-              ':': if sep in [yes, perhaps] then
-                begin
-                  pos := 0;
-                  Inc(p);
-                  state := stSec;
-                  sep := yes;
-                end else
-                  goto error;
-              ',':
-                begin
-                  Inc(p);
-                  state := stMs;
-                end;
-              '+':
-                if havedate then
-                begin
-                  state := stGMTH;
-                  pos := 0;
-                  v := 0;
-                  inc(p);
-                end else
-                  goto error;
-              '-':
-                if havedate then
-                begin
-                  state := stGMTH;
-                  pos := 0;
-                  v := 0;
-                  inc(p);
-                  inctz := True;
-                end else
-                  goto error;
-              'Z', 'z':
-                if havedate then
-                  state := stUTC else
-                  goto error;
-              '0'..'9':
-                if sep in [no, perhaps] then
-                begin
-                  pos := 0;
-                  state := stSec;
-                end else
-                  goto error;
-              #0: state := stEnd;
-            else
-              goto error;
-            end;
-        end;
-      stSec:
-        case pos of
-          0..1: if get(st.second, p^) then
-            begin
-              inc(pos);
-              inc(p);
-            end else
-              goto error;
-          2: case p^ of
-              ',':
+           else
+             goto error;
+           end;
+        1: if get(st.minute, p^) then
+           begin
+             inc(pos);
+             inc(p);
+           end else
+             goto error;
+        2: case p^ of
+             ':': if sep in [yes, perhaps] then
+                  begin
+                    pos := 0;
+                    Inc(p);
+                    state := stSec;
+                    sep := yes;
+                  end else
+                    goto error;
+             ',', '.':
                 begin
                   Inc(p);
                   state := stMs;
                 end;
-              '+':
-                if havedate then
-                begin
-                  state := stGMTH;
-                  pos := 0;
-                  v := 0;
-                  inc(p);
-                end else
-                  goto error;
-              '-':
-                if havedate then
-                begin
-                  state := stGMTH;
-                  pos := 0;
-                  v := 0;
-                  inc(p);
-                  inctz := True;
-                end else
-                  goto error;
-              'Z', 'z':
-                if havedate then
-                  state := stUTC else
-                  goto error;
-              #0: state := stEnd;
-            else
-              goto error;
-            end;
-        end;
-      stMs:
-        case p^ of
-          '0'..'9':
-            begin
-              st.ms := st.ms * 10 + ord(p^) - ord('0');
-              inc(p);
-            end;
-          '+':
-            if havedate then
-            begin
-              state := stGMTH;
-              pos := 0;
-              v := 0;
-              inc(p);
-            end else
-              goto error;
-          '-':
-            if havedate then
-            begin
-              state := stGMTH;
-              pos := 0;
-              v := 0;
-              inc(p);
-              inctz := True;
-            end else
-              goto error;
-          'Z', 'z':
-            if havedate then
-              state := stUTC else
-              goto error;
-          #0: state := stEnd;
-        else
-          goto error;
-        end;
-      stUTC: // = GMT 0
+             '+':
+               if havedate then
+               begin
+                 state := stGMTH;
+                 pos := 0;
+                 v := 0;
+                 inc(p);
+               end else
+                 goto error;
+             '-':
+               if havedate then
+               begin
+                 state := stGMTH;
+                 pos := 0;
+                 v := 0;
+                 inc(p);
+                 inctz := True;
+               end else
+                 goto error;
+             'Z', 'z':
+                  if havedate then
+                    state := stUTC else
+                    goto error;
+             '0'..'9':
+                  if sep in [no, perhaps] then
+                  begin
+                    pos := 0;
+                    state := stSec;
+                  end else
+                    goto error;
+             #0:  state := stEnd;
+           else
+             goto error;
+           end;
+      end;
+    stSec:
+      case pos of
+        0..1: if get(st.second, p^) then
+              begin
+                inc(pos);
+                inc(p);
+              end else
+                goto error;
+        2:    case p^ of
+               ',', '.':
+                  begin
+                    Inc(p);
+                    state := stMs;
+                  end;
+               '+':
+                 if havedate then
+                 begin
+                   state := stGMTH;
+                   pos := 0;
+                   v := 0;
+                   inc(p);
+                 end else
+                   goto error;
+               '-':
+                 if havedate then
+                 begin
+                   state := stGMTH;
+                   pos := 0;
+                   v := 0;
+                   inc(p);
+                   inctz := True;
+                 end else
+                   goto error;
+               'Z', 'z':
+                    if havedate then
+                      state := stUTC else
+                      goto error;
+               #0: state := stEnd;
+              else
+               goto error;
+              end;
+      end;
+    stMs:
+      case p^ of
+        '0'..'9':
         begin
-          //SystemTimeToTzSpecificLocalTime(nil, @st, @st);
+          st.ms := st.ms * 10 + ord(p^) - ord('0');
           inc(p);
-          if p^ = #0 then
-            Break else
-            goto error;
         end;
-      stGMTH:
+        '+':
+          if havedate then
+          begin
+            state := stGMTH;
+            pos := 0;
+            v := 0;
+            inc(p);
+          end else
+            goto error;
+        '-':
+          if havedate then
+          begin
+            state := stGMTH;
+            pos := 0;
+            v := 0;
+            inc(p);
+            inctz := True;
+          end else
+            goto error;
+        'Z', 'z':
+             if havedate then
+               state := stUTC else
+               goto error;
+        #0: state := stEnd;
+      else
+        goto error;
+      end;
+    stUTC: // = GMT 0
+      begin
+        havetz := True;
+        inc(p);
+        if p^ = #0 then
+          Break else
+          goto error;
+      end;
+    stGMTH:
+      begin
+        havetz := True;
         case pos of
           0..1: if get(v, p^) then
-            begin
-              inc(p);
-              inc(pos);
-            end else
-              goto error;
+                begin
+                  inc(p);
+                  inc(pos);
+                end else
+                  goto error;
           2:
             begin
               st.bias := v * 60;
               case p^ of
                 ':': if sep in [yes, perhaps] then
-                  begin
-                    state := stGMTM;
-                    inc(p);
-                    pos := 0;
-                    v := 0;
-                    sep := yes;
-                  end else
-                    goto error;
+                     begin
+                       state := stGMTM;
+                       inc(p);
+                       pos := 0;
+                       v := 0;
+                       sep := yes;
+                     end else
+                       goto error;
                 '0'..'9':
-                  if sep in [no, perhaps] then
-                  begin
-                    state := stGMTM;
-                    pos := 1;
-                    sep := no;
-                    inc(p);
-                    v := ord(p^) - ord('0');
-                  end else
-                    goto error;
+                     if sep in [no, perhaps] then
+                     begin
+                       state := stGMTM;
+                       pos := 1;
+                       sep := no;
+                       inc(p);
+                       v := ord(p^) - ord('0');
+                     end else
+                       goto error;
                 #0: state := stGMTend;
               else
                 goto error;
@@ -1922,15 +1903,16 @@ begin
 
             end;
         end;
-      stGMTM:
-        case pos of
-          0..1: if get(v, p^) then
-            begin
-              inc(p);
-              inc(pos);
-            end else
-              goto error;
-          2: case p^ of
+      end;
+    stGMTM:
+      case pos of
+        0..1:  if get(v, p^) then
+               begin
+                 inc(p);
+                 inc(pos);
+               end else
+                 goto error;
+        2:  case p^ of
               #0:
                 begin
                   state := stGMTend;
@@ -1939,22 +1921,26 @@ begin
             else
               goto error;
             end;
-        end;
-      stGMTend:
-        begin
-          if not inctz then
-            st.Bias := -st.bias;
-          Break;
-        end;
-      stEnd:
-        begin
+      end;
+    stGMTend:
+      begin
+        if not inctz then
+          st.Bias := -st.bias;
+        Break;
+      end;
+    stEnd:
+    begin
 
-          Break;
-        end;
+      Break;
     end;
+  end;
 
   if (st.hour >= 24) or (st.minute >= 60) or (st.second >= 60) or (st.ms >= 1000) or (st.week > 53)
     then goto error;
+
+  if not havetz then
+    st.bias := GetTimeBias;
+
   ms := st.ms + st.second * 1000 + (st.minute + st.bias) * 60000 + st.hour * 3600000;
   if havedate then
   begin
@@ -1964,7 +1950,7 @@ begin
       if not (st.month in [1..12]) or (DayTable^[st.month] < st.day) then
         goto error;
 
-      for v := 1 to st.month - 1 do
+      for v := 1 to  st.month - 1 do
         Inc(ms, DayTable^[v] * 86400000);
     end;
     dec(st.year);
@@ -1972,9 +1958,9 @@ begin
       (st.year div 400) + st.day + st.dayofyear - 719163) * 86400000);
   end;
 
-  Result := True;
-  Exit;
-  error:
+ Result := True;
+ Exit;
+error:
   Result := False;
 end;
 
@@ -2007,30 +1993,25 @@ begin
     [year, month, day, hour, min, sec, msec, sign, tzh, tzm]);
 end;
 
-procedure SetSOSortMode(pvSortMode: TSOSortMode);
-begin
-  nowSortMode := pvSortMode;
-end;
-
 function TryObjectToDate(const obj: ISuperObject; var dt: TDateTime): Boolean;
 var
   i: Int64;
 begin
   case ObjectGetType(obj) of
-    stInt:
+  stInt:
+    begin
+      dt := JavaToDelphiDateTime(obj.AsInteger);
+      Result := True;
+    end;
+  stString:
+    begin
+      if ISO8601DateToJavaDateTime(obj.AsString, i) then
       begin
-        dt := JavaToDelphiDateTime(obj.AsInteger);
+        dt := JavaToDelphiDateTime(i);
         Result := True;
-      end;
-    stString:
-      begin
-        if ISO8601DateToJavaDateTime(obj.AsString, i) then
-        begin
-          dt := JavaToDelphiDateTime(i);
-          Result := True;
-        end else
-          Result := TryStrToDateTime(obj.AsString, dt);
-      end;
+      end else
+        Result := TryStrToDateTime(obj.AsString, dt);
+    end;
   else
     Result := False;
   end;
@@ -2052,45 +2033,45 @@ begin
   Result := TSuperObject.Create(stArray);
   for j := 0 to length(Args) - 1 do
     with Result.AsArray do
-      case TVarRec(Args[j]).VType of
-        vtInteger: Add(TSuperObject.Create(TVarRec(Args[j]).VInteger));
-        vtInt64: Add(TSuperObject.Create(TVarRec(Args[j]).VInt64^));
-        vtBoolean: Add(TSuperObject.Create(TVarRec(Args[j]).VBoolean));
-        vtChar: Add(TSuperObject.Create(SOString(TVarRec(Args[j]).VChar)));
-        vtWideChar: Add(TSuperObject.Create(SOChar(TVarRec(Args[j]).VWideChar)));
-        vtExtended: Add(TSuperObject.Create(TVarRec(Args[j]).VExtended^));
-        vtCurrency: Add(TSuperObject.CreateCurrency(TVarRec(Args[j]).VCurrency^));
-        vtString: Add(TSuperObject.Create(SOString(TVarRec(Args[j]).VString^)));
-        vtPChar: Add(TSuperObject.Create(SOString(TVarRec(Args[j]).VPChar^)));
-        vtAnsiString: Add(TSuperObject.Create(SOString(AnsiString(TVarRec(Args[j]).VAnsiString))));
-        vtWideString: Add(TSuperObject.Create(SOString(PWideChar(TVarRec(Args[j]).VWideString))));
-        vtInterface:
-          if TVarRec(Args[j]).VInterface = nil then
-            Add(nil) else
-            if IInterface(TVarRec(Args[j]).VInterface).QueryInterface(ISuperObject, intf) = 0 then
-              Add(ISuperObject(intf)) else
-              Add(nil);
-        vtPointer:
-          if TVarRec(Args[j]).VPointer = nil then
-            Add(nil) else
-            Add(TSuperObject.Create(PtrInt(TVarRec(Args[j]).VPointer)));
-        vtVariant:
-          Add(SO(TVarRec(Args[j]).VVariant^));
-        vtObject:
-          if TVarRec(Args[j]).VPointer = nil then
-            Add(nil) else
-            Add(TSuperObject.Create(PtrInt(TVarRec(Args[j]).VPointer)));
-        vtClass:
-          if TVarRec(Args[j]).VPointer = nil then
-            Add(nil) else
-            Add(TSuperObject.Create(PtrInt(TVarRec(Args[j]).VPointer)));
-{$IF declared(vtUnicodeString)}
-        vtUnicodeString:
+    case TVarRec(Args[j]).VType of
+      vtInteger : Add(TSuperObject.Create(TVarRec(Args[j]).VInteger));
+      vtInt64   : Add(TSuperObject.Create(TVarRec(Args[j]).VInt64^));
+      vtBoolean : Add(TSuperObject.Create(TVarRec(Args[j]).VBoolean));
+      vtChar    : Add(TSuperObject.Create(SOString(TVarRec(Args[j]).VChar)));
+      vtWideChar: Add(TSuperObject.Create(SOChar(TVarRec(Args[j]).VWideChar)));
+      vtExtended: Add(TSuperObject.Create(TVarRec(Args[j]).VExtended^));
+      vtCurrency: Add(TSuperObject.CreateCurrency(TVarRec(Args[j]).VCurrency^));
+      vtString  : Add(TSuperObject.Create(SOString(TVarRec(Args[j]).VString^)));
+      vtPChar   : Add(TSuperObject.Create(SOString(TVarRec(Args[j]).VPChar^)));
+      vtAnsiString: Add(TSuperObject.Create(SOString(AnsiString(TVarRec(Args[j]).VAnsiString))));
+      vtWideString: Add(TSuperObject.Create(SOString(PWideChar(TVarRec(Args[j]).VWideString))));
+      vtInterface:
+        if TVarRec(Args[j]).VInterface = nil then
+          Add(nil) else
+          if IInterface(TVarRec(Args[j]).VInterface).QueryInterface(ISuperObject, intf) = 0 then
+            Add(ISuperObject(intf)) else
+            Add(nil);
+      vtPointer :
+        if TVarRec(Args[j]).VPointer = nil then
+          Add(nil) else
+          Add(TSuperObject.Create(PtrInt(TVarRec(Args[j]).VPointer)));
+      vtVariant:
+        Add(SO(TVarRec(Args[j]).VVariant^));
+      vtObject:
+        if TVarRec(Args[j]).VPointer = nil then
+          Add(nil) else
+          Add(TSuperObject.Create(PtrInt(TVarRec(Args[j]).VPointer)));
+      vtClass:
+        if TVarRec(Args[j]).VPointer = nil then
+          Add(nil) else
+          Add(TSuperObject.Create(PtrInt(TVarRec(Args[j]).VPointer)));
+{$if declared(vtUnicodeString)}
+      vtUnicodeString:
           Add(TSuperObject.Create(SOString(string(TVarRec(Args[j]).VUnicodeString))));
-{$IFEND}
-      else
-        assert(false);
-      end;
+{$ifend}
+    else
+      assert(false);
+    end;
 end;
 
 function SO(const Args: array of const): ISuperObject; overload;
@@ -2102,35 +2083,39 @@ begin
   arr := SA(Args);
   with arr.AsArray do
     for j := 0 to (Length div 2) - 1 do
-      Result.AsObject.PutO(O[j * 2].AsString, O[(j * 2) + 1]);
+      Result.AsObject.PutO(O[j*2].AsString, O[(j*2) + 1]);
 end;
 
 function SO(const value: Variant): ISuperObject; overload;
 begin
   with TVarData(value) do
-    case VType of
-      varNull: Result := nil;
-      varEmpty: Result := nil;
-      varSmallInt: Result := TSuperObject.Create(VSmallInt);
-      varInteger: Result := TSuperObject.Create(VInteger);
-      varSingle: Result := TSuperObject.Create(VSingle);
-      varDouble: Result := TSuperObject.Create(VDouble);
-      varCurrency: Result := TSuperObject.CreateCurrency(VCurrency);
-      varDate: Result := TSuperObject.Create(DelphiToJavaDateTime(vDate));
-      varOleStr: Result := TSuperObject.Create(SOString(VOleStr));
-      varBoolean: Result := TSuperObject.Create(VBoolean);
-      varShortInt: Result := TSuperObject.Create(VShortInt);
-      varByte: Result := TSuperObject.Create(VByte);
-      varWord: Result := TSuperObject.Create(VWord);
-      varLongWord: Result := TSuperObject.Create(VLongWord);
-      varInt64: Result := TSuperObject.Create(VInt64);
-      varString: Result := TSuperObject.Create(SOString(AnsiString(VString)));
-{$IF declared(varUString)}
-      varUString: Result := TSuperObject.Create(SOString(string(VUString)));
-{$IFEND}
-    else
-      raise Exception.CreateFmt('Unsuported variant data type: %d', [VType]);
-    end;
+  case VType of
+    varNull:     Result := nil;
+    varEmpty:    Result := nil;
+    varSmallInt: Result := TSuperObject.Create(VSmallInt);
+    varInteger:  Result := TSuperObject.Create(VInteger);
+    varSingle:   Result := TSuperObject.Create(VSingle);
+    varDouble:   Result := TSuperObject.Create(VDouble);
+    varCurrency: Result := TSuperObject.CreateCurrency(VCurrency);
+    varDate:     Result := TSuperObject.Create(DelphiToJavaDateTime(vDate));
+    varOleStr:   Result := TSuperObject.Create(SOString(VOleStr));
+    varBoolean:  Result := TSuperObject.Create(VBoolean);
+    varShortInt: Result := TSuperObject.Create(VShortInt);
+    varByte:     Result := TSuperObject.Create(VByte);
+    varWord:     Result := TSuperObject.Create(VWord);
+    varLongWord: Result := TSuperObject.Create(VLongWord);
+    varInt64:    Result := TSuperObject.Create(VInt64);
+    varString:   Result := TSuperObject.Create(SOString(AnsiString(VString)));
+{$if declared(varUString)}
+  {$IFDEF FPC}
+    varUString:  Result := TSuperObject.Create(SOString(UnicodeString(VString)));
+  {$ELSE}
+    varUString:  Result := TSuperObject.Create(SOString(string(VUString)));
+  {$ENDIF}
+{$ifend}
+  else
+    raise Exception.CreateFmt('Unsuported variant data type: %d', [VType]);
+  end;
 end;
 
 function ObjectIsError(obj: TSuperObject): boolean;
@@ -2150,6 +2135,11 @@ begin
   if obj <> nil then
     Result := obj.DataType else
     Result := stNull;
+end;
+
+function ObjectIsNull(const obj: ISuperObject): Boolean;
+begin
+  Result := ObjectIsType(obj, stNull);
 end;
 
 function ObjectFindFirst(const obj: ISuperObject; var F: TSuperObjectIter): boolean;
@@ -2193,6 +2183,258 @@ begin
   F.val := nil;
 end;
 
+function UuidFromString(p: PSOChar; Uuid: PGUID): Boolean;
+const
+  hex2bin: array[48..102] of Byte = (
+     0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 0, 0, 0, 0, 0, 0,
+     0,10,11,12,13,14,15, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+     0,10,11,12,13,14,15);
+type
+  TState = (stEatSpaces, stStart, stHEX, stBracket, stEnd);
+  TUUID = record
+    case byte of
+      0: (guid: TGUID);
+      1: (bytes: array[0..15] of Byte);
+      2: (words: array[0..7] of Word);
+      3: (ints: array[0..3] of Cardinal);
+      4: (i64s: array[0..1] of UInt64);
+  end;
+
+  function ishex(const c: SOChar): Boolean; {$IFDEF HAVE_INLINE} inline;{$ENDIF}
+  begin
+    result := (c < #256) and (AnsiChar(c) in ['0'..'9', 'a'..'z', 'A'..'Z'])
+  end;
+var
+  pos: Byte;
+  state, saved: TState;
+  bracket, separator: Boolean;
+label
+  redo;
+begin
+  FillChar(Uuid^, SizeOf(TGUID), 0);
+  saved := stStart;
+  state := stEatSpaces;
+  bracket := false;
+  separator := false;
+  pos := 0;
+  while true do
+redo:
+  case state of
+    stEatSpaces:
+      begin
+        while true do
+          case p^ of
+            ' ', #13, #10, #9: inc(p);
+          else
+            state := saved;
+            goto redo;
+          end;
+      end;
+    stStart:
+      case p^ of
+        '{':
+          begin
+            bracket := true;
+            inc(p);
+            state := stEatSpaces;
+            saved := stHEX;
+            pos := 0;
+          end;
+      else
+        state := stHEX;
+      end;
+    stHEX:
+      case pos of
+        0..7:
+          if ishex(p^) then
+          begin
+            Uuid^.D1 := (Uuid^.D1 * 16) + hex2bin[Ord(p^)];
+            inc(p);
+            inc(pos);
+          end else
+          begin
+            Result := False;
+            Exit;
+          end;
+        8:
+          if (p^ = '-') then
+          begin
+            separator := true;
+            inc(p);
+            inc(pos)
+          end else
+            inc(pos);
+        13,18,23:
+           if separator then
+           begin
+             if p^ <> '-' then
+             begin
+               Result := False;
+               Exit;
+             end;
+             inc(p);
+             inc(pos);
+           end else
+             inc(pos);
+        9..12:
+          if ishex(p^) then
+          begin
+            TUUID(Uuid^).words[2] := (TUUID(Uuid^).words[2] * 16) + hex2bin[Ord(p^)];
+            inc(p);
+            inc(pos);
+          end else
+          begin
+            Result := False;
+            Exit;
+          end;
+        14..17:
+          if ishex(p^) then
+          begin
+            TUUID(Uuid^).words[3] := (TUUID(Uuid^).words[3] * 16) + hex2bin[Ord(p^)];
+            inc(p);
+            inc(pos);
+          end else
+          begin
+            Result := False;
+            Exit;
+          end;
+        19..20:
+          if ishex(p^) then
+          begin
+            TUUID(Uuid^).bytes[8] := (TUUID(Uuid^).bytes[8] * 16) + hex2bin[Ord(p^)];
+            inc(p);
+            inc(pos);
+          end else
+          begin
+            Result := False;
+            Exit;
+          end;
+        21..22:
+          if ishex(p^) then
+          begin
+            TUUID(Uuid^).bytes[9] := (TUUID(Uuid^).bytes[9] * 16) + hex2bin[Ord(p^)];
+            inc(p);
+            inc(pos);
+          end else
+          begin
+            Result := False;
+            Exit;
+          end;
+        24..25:
+          if ishex(p^) then
+          begin
+            TUUID(Uuid^).bytes[10] := (TUUID(Uuid^).bytes[10] * 16) + hex2bin[Ord(p^)];
+            inc(p);
+            inc(pos);
+          end else
+          begin
+            Result := False;
+            Exit;
+          end;
+        26..27:
+          if ishex(p^) then
+          begin
+            TUUID(Uuid^).bytes[11] := (TUUID(Uuid^).bytes[11] * 16) + hex2bin[Ord(p^)];
+            inc(p);
+            inc(pos);
+          end else
+          begin
+            Result := False;
+            Exit;
+          end;
+        28..29:
+          if ishex(p^) then
+          begin
+            TUUID(Uuid^).bytes[12] := (TUUID(Uuid^).bytes[12] * 16) + hex2bin[Ord(p^)];
+            inc(p);
+            inc(pos);
+          end else
+          begin
+            Result := False;
+            Exit;
+          end;
+        30..31:
+          if ishex(p^) then
+          begin
+            TUUID(Uuid^).bytes[13] := (TUUID(Uuid^).bytes[13] * 16) + hex2bin[Ord(p^)];
+            inc(p);
+            inc(pos);
+          end else
+          begin
+            Result := False;
+            Exit;
+          end;
+        32..33:
+          if ishex(p^) then
+          begin
+            TUUID(Uuid^).bytes[14] := (TUUID(Uuid^).bytes[14] * 16) + hex2bin[Ord(p^)];
+            inc(p);
+            inc(pos);
+          end else
+          begin
+            Result := False;
+            Exit;
+          end;
+        34..35:
+          if ishex(p^) then
+          begin
+            TUUID(Uuid^).bytes[15] := (TUUID(Uuid^).bytes[15] * 16) + hex2bin[Ord(p^)];
+            inc(p);
+            inc(pos);
+          end else
+          begin
+            Result := False;
+            Exit;
+          end;
+        36: if bracket then
+            begin
+              state := stEatSpaces;
+              saved := stBracket;
+            end else
+            begin
+              state := stEatSpaces;
+              saved := stEnd;
+            end;
+      end;
+    stBracket:
+      begin
+        if p^ <> '}' then
+        begin
+          Result := False;
+          Exit;
+        end;
+        inc(p);
+        state := stEatSpaces;
+        saved := stEnd;
+      end;
+    stEnd:
+      begin
+        if p^ <> #0 then
+        begin
+          Result := False;
+          Exit;
+        end;
+        Break;
+      end;
+  end;
+  Result := True;
+end;
+
+function UUIDToString(const g: TGUID): SOString;
+begin
+  Result := format('%.8x%.4x%.4x%.2x%.2x%.2x%.2x%.2x%.2x%.2x%.2x',
+    [g.D1, g.D2, g.D3,
+     g.D4[0], g.D4[1], g.D4[2],
+     g.D4[3], g.D4[4], g.D4[5],
+     g.D4[6], g.D4[7]]);
+end;
+
+function StringToUUID(const str: SOString; var g: TGUID): Boolean;
+begin
+  Result := UuidFromString(PSOChar(str), @g);
+end;
+
 {$IFDEF HAVE_RTTI}
 
 function serialtoboolean(ctx: TSuperRttiContext; var value: TValue; const index: ISuperObject): ISuperObject;
@@ -2212,11 +2454,11 @@ begin
   value.ExtractRawData(@g);
   Result := TSuperObject.Create(
     format('%.8x-%.4x-%.4x-%.2x%.2x-%.2x%.2x%.2x%.2x%.2x%.2x',
-    [g.D1, g.D2, g.D3,
-    g.D4[0], g.D4[1], g.D4[2],
-      g.D4[3], g.D4[4], g.D4[5],
-      g.D4[6], g.D4[7]])
-      );
+              [g.D1, g.D2, g.D3,
+               g.D4[0], g.D4[1], g.D4[2],
+               g.D4[3], g.D4[4], g.D4[5],
+               g.D4[6], g.D4[7]])
+  );
 end;
 
 function serialfromboolean(ctx: TSuperRttiContext; const obj: ISuperObject; var Value: TValue): Boolean;
@@ -2224,23 +2466,23 @@ var
   o: ISuperObject;
 begin
   case ObjectGetType(obj) of
-    stBoolean:
-      begin
-        TValueData(Value).FAsSLong := obj.AsInteger;
-        Result := True;
-      end;
-    stInt:
-      begin
-        TValueData(Value).FAsSLong := ord(obj.AsInteger <> 0);
-        Result := True;
-      end;
-    stString:
-      begin
-        o := SO(obj.AsString);
-        if not ObjectIsType(o, stString) then
-          Result := serialfromboolean(ctx, SO(obj.AsString), Value) else
-          Result := False;
-      end;
+  stBoolean:
+    begin
+      TValueData(Value).FAsSLong := obj.AsInteger;
+      Result := True;
+    end;
+  stInt:
+    begin
+      TValueData(Value).FAsSLong := ord(obj.AsInteger <> 0);
+      Result := True;
+    end;
+  stString:
+    begin
+      o := SO(obj.AsString);
+      if not ObjectIsType(o, stString) then
+        Result := serialfromboolean(ctx, SO(obj.AsString), Value) else
+        Result := False;
+    end;
   else
     Result := False;
   end;
@@ -2252,224 +2494,28 @@ var
   i: Int64;
 begin
   case ObjectGetType(obj) of
-    stInt:
+  stInt:
+    begin
+      TValueData(Value).FAsDouble := JavaToDelphiDateTime(obj.AsInteger);
+      Result := True;
+    end;
+  stString:
+    begin
+      if ISO8601DateToJavaDateTime(obj.AsString, i) then
       begin
-        TValueData(Value).FAsDouble := JavaToDelphiDateTime(obj.AsInteger);
+        TValueData(Value).FAsDouble := JavaToDelphiDateTime(i);
         Result := True;
-      end;
-    stString:
+      end else
+      if TryStrToDateTime(obj.AsString, dt) then
       begin
-        if ISO8601DateToJavaDateTime(obj.AsString, i) then
-        begin
-          TValueData(Value).FAsDouble := JavaToDelphiDateTime(i);
-          Result := True;
-        end else
-          if TryStrToDateTime(obj.AsString, dt) then
-          begin
-            TValueData(Value).FAsDouble := dt;
-            Result := True;
-          end else
-            Result := False;
-      end;
+        TValueData(Value).FAsDouble := dt;
+        Result := True;
+      end else
+        Result := False;
+    end;
   else
     Result := False;
   end;
-end;
-
-function UuidFromString(p: PSOChar; Uuid: PGUID): Boolean;
-const
-  hex2bin: array[#48..#102] of Byte = (
-    0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 0, 0, 0, 0, 0, 0,
-    0, 10, 11, 12, 13, 14, 15, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 10, 11, 12, 13, 14, 15);
-type
-  TState = (stEatSpaces, stStart, stHEX, stBracket, stEnd);
-  TUUID = record
-    case byte of
-      0: (guid: TGUID);
-      1: (bytes: array[0..15] of Byte);
-      2: (words: array[0..7] of Word);
-      3: (ints: array[0..3] of Cardinal);
-      4: (i64s: array[0..1] of UInt64);
-  end;
-
-  function ishex(const c: Char): Boolean; {$IFDEF HAVE_INLINE}inline; {$ENDIF}
-  begin
-    result := (c < #256) and (AnsiChar(c) in ['0'..'9', 'a'..'z', 'A'..'Z'])
-  end;
-var
-  pos: Byte;
-  state, saved: TState;
-  bracket, separator: Boolean;
-label
-  redo;
-begin
-  FillChar(Uuid^, SizeOf(TGUID), 0);
-  saved := stStart;
-  state := stEatSpaces;
-  bracket := false;
-  separator := false;
-  pos := 0;
-  while true do
-    redo:
-    case state of
-      stEatSpaces:
-        begin
-          while true do
-            case p^ of
-              ' ', #13, #10, #9: inc(p);
-            else
-              state := saved;
-              goto redo;
-            end;
-        end;
-      stStart:
-        case p^ of
-          '{':
-            begin
-              bracket := true;
-              inc(p);
-              state := stEatSpaces;
-              saved := stHEX;
-              pos := 0;
-            end;
-        else
-          state := stHEX;
-        end;
-      stHEX:
-        case pos of
-          0..7:
-            if ishex(p^) then
-            begin
-              Uuid.D1 := (Uuid.D1 * 16) + hex2bin[p^];
-              inc(p);
-              inc(pos);
-            end else
-              Exit(False);
-          8:
-            if (p^ = '-') then
-            begin
-              separator := true;
-              inc(p);
-              inc(pos)
-            end else
-              inc(pos);
-          13, 18, 23:
-            if separator then
-            begin
-              if p^ <> '-' then
-                Exit(False);
-              inc(p);
-              inc(pos);
-            end else
-              inc(pos);
-          9..12:
-            if ishex(p^) then
-            begin
-              TUUID(Uuid^).words[2] := (TUUID(Uuid^).words[2] * 16) + hex2bin[p^];
-              inc(p);
-              inc(pos);
-            end else
-              Exit(False);
-          14..17:
-            if ishex(p^) then
-            begin
-              TUUID(Uuid^).words[3] := (TUUID(Uuid^).words[3] * 16) + hex2bin[p^];
-              inc(p);
-              inc(pos);
-            end else
-              Exit(False);
-          19..20:
-            if ishex(p^) then
-            begin
-              TUUID(Uuid^).bytes[8] := (TUUID(Uuid^).bytes[8] * 16) + hex2bin[p^];
-              inc(p);
-              inc(pos);
-            end else
-              Exit(False);
-          21..22:
-            if ishex(p^) then
-            begin
-              TUUID(Uuid^).bytes[9] := (TUUID(Uuid^).bytes[9] * 16) + hex2bin[p^];
-              inc(p);
-              inc(pos);
-            end else
-              Exit(False);
-          24..25:
-            if ishex(p^) then
-            begin
-              TUUID(Uuid^).bytes[10] := (TUUID(Uuid^).bytes[10] * 16) + hex2bin[p^];
-              inc(p);
-              inc(pos);
-            end else
-              Exit(False);
-          26..27:
-            if ishex(p^) then
-            begin
-              TUUID(Uuid^).bytes[11] := (TUUID(Uuid^).bytes[11] * 16) + hex2bin[p^];
-              inc(p);
-              inc(pos);
-            end else
-              Exit(False);
-          28..29:
-            if ishex(p^) then
-            begin
-              TUUID(Uuid^).bytes[12] := (TUUID(Uuid^).bytes[12] * 16) + hex2bin[p^];
-              inc(p);
-              inc(pos);
-            end else
-              Exit(False);
-          30..31:
-            if ishex(p^) then
-            begin
-              TUUID(Uuid^).bytes[13] := (TUUID(Uuid^).bytes[13] * 16) + hex2bin[p^];
-              inc(p);
-              inc(pos);
-            end else
-              Exit(False);
-          32..33:
-            if ishex(p^) then
-            begin
-              TUUID(Uuid^).bytes[14] := (TUUID(Uuid^).bytes[14] * 16) + hex2bin[p^];
-              inc(p);
-              inc(pos);
-            end else
-              Exit(False);
-          34..35:
-            if ishex(p^) then
-            begin
-              TUUID(Uuid^).bytes[15] := (TUUID(Uuid^).bytes[15] * 16) + hex2bin[p^];
-              inc(p);
-              inc(pos);
-            end else
-              Exit(False);
-          36: if bracket then
-            begin
-              state := stEatSpaces;
-              saved := stBracket;
-            end else
-            begin
-              state := stEatSpaces;
-              saved := stEnd;
-            end;
-        end;
-      stBracket:
-        begin
-          if p^ <> '}' then
-            Exit(False);
-          inc(p);
-          state := stEatSpaces;
-          saved := stEnd;
-        end;
-      stEnd:
-        begin
-          if p^ <> #0 then
-            Exit(False);
-          Break;
-        end;
-    end;
-  Result := True;
 end;
 
 function serialfromguid(ctx: TSuperRttiContext; const obj: ISuperObject; var Value: TValue): Boolean;
@@ -2516,8 +2562,8 @@ function TrySOInvoke(var ctx: TSuperRttiContext; const obj: TValue;
 var
   t: TRttiInstanceType;
   m: TRttiMethod;
-  a: TArray < TValue > ;
-  ps: TArray < TRttiParameter > ;
+  a: TArray<TValue>;
+  ps: TArray<TRttiParameter>;
   v: TValue;
   index: ISuperObject;
 
@@ -2657,7 +2703,7 @@ end;
 constructor TSuperObject.Create(jt: TSuperType);
 begin
   inherited Create;
-{$IFDEF INNER_DEBUG}
+{$IFDEF DEBUG}
   InterlockedIncrement(debugcount);
 {$ENDIF}
 
@@ -2699,7 +2745,7 @@ end;
 
 destructor TSuperObject.Destroy;
 begin
-{$IFDEF INNER_DEBUG}
+{$IFDEF DEBUG}
   InterlockedDecrement(debugcount);
 {$ENDIF}
   case FDataType of
@@ -2710,17 +2756,17 @@ begin
 end;
 
 function TSuperObject.Write(writer: TSuperWriter; indent: boolean; escape: boolean; level: integer): Integer;
-  function DoEscape(str: PSOChar; len: Integer): Integer;
-  var
-    pos, start_offset: Integer;
-    c: SOChar;
-    buf: array[0..5] of SOChar;
-  type
-    TByteChar = record
-      case integer of
-        0: (a, b: Byte);
-        1: (c: WideChar);
-    end;
+function DoEscape(str: PSOChar; len: Integer): Integer;
+var
+  pos, start_offset: Integer;
+  c: SOChar;
+  buf: array[0..5] of SOChar;
+type
+  TByteChar = record
+  case integer of
+    0: (a, b: Byte);
+    1: (c: WideChar);
+  end;
   begin
     if str = nil then
     begin
@@ -2729,73 +2775,73 @@ function TSuperObject.Write(writer: TSuperWriter; indent: boolean; escape: boole
     end;
     pos := 0; start_offset := 0;
     with writer do
-      while pos < len do
-      begin
-        c := str[pos];
-        case c of
-          #8, #9, #10, #12, #13, '"', '\', '/':
-            begin
-              if (pos - start_offset > 0) then
-                Append(str + start_offset, pos - start_offset);
-
-              if (c = #8) then Append(ESC_BS, 2)
-              else if (c = #9) then Append(ESC_TAB, 2)
-              else if (c = #10) then Append(ESC_LF, 2)
-              else if (c = #12) then Append(ESC_FF, 2)
-              else if (c = #13) then Append(ESC_CR, 2)
-              else if (c = '"') then Append(ESC_QUOT, 2)
-              else if (c = '\') then Append(ESC_SL, 2)
-              else if (c = '/') then Append(ESC_SR, 2);
-              inc(pos);
-              start_offset := pos;
-            end;
-        else
-          if (SOIChar(c) > 255) then
+    while pos < len do
+    begin
+      c := str[pos];
+      case c of
+        #8,#9,#10,#12,#13,'"','\','/':
           begin
-            if (pos - start_offset > 0) then
+            if(pos - start_offset > 0) then
               Append(str + start_offset, pos - start_offset);
-            buf[0] := '\';
-            buf[1] := 'u';
-            buf[2] := super_hex_chars[TByteChar(c).b shr 4];
-            buf[3] := super_hex_chars[TByteChar(c).b and $F];
-            buf[4] := super_hex_chars[TByteChar(c).a shr 4];
-            buf[5] := super_hex_chars[TByteChar(c).a and $F];
-            Append(@buf, 6);
+
+            if(c = #8) then Append(ESC_BS, 2)
+            else if (c = #9) then Append(ESC_TAB, 2)
+            else if (c = #10) then Append(ESC_LF, 2)
+            else if (c = #12) then Append(ESC_FF, 2)
+            else if (c = #13) then Append(ESC_CR, 2)
+            else if (c = '"') then Append(ESC_QUOT, 2)
+            else if (c = '\') then Append(ESC_SL, 2)
+            else if (c = '/') then Append(ESC_SR, 2);
             inc(pos);
             start_offset := pos;
-          end else
-            if (c < #32) or (c > #127) then
-            begin
-              if (pos - start_offset > 0) then
-                Append(str + start_offset, pos - start_offset);
-              buf[0] := '\';
-              buf[1] := 'u';
-              buf[2] := '0';
-              buf[3] := '0';
-              buf[4] := super_hex_chars[ord(c) shr 4];
-              buf[5] := super_hex_chars[ord(c) and $F];
-              Append(buf, 6);
-              inc(pos);
-              start_offset := pos;
-            end else
-              inc(pos);
-        end;
+          end;
+      else
+        if (SOIChar(c) > 255) then
+        begin
+          if(pos - start_offset > 0) then
+            Append(str + start_offset, pos - start_offset);
+          buf[0] := '\';
+          buf[1] := 'u';
+          buf[2] := super_hex_chars[TByteChar(c).b shr 4];
+          buf[3] := super_hex_chars[TByteChar(c).b and $f];
+          buf[4] := super_hex_chars[TByteChar(c).a shr 4];
+          buf[5] := super_hex_chars[TByteChar(c).a and $f];
+          Append(@buf, 6);
+          inc(pos);
+          start_offset := pos;
+        end else
+        if (c < #32) or (c > #127) then
+        begin
+          if(pos - start_offset > 0) then
+            Append(str + start_offset, pos - start_offset);
+          buf[0] := '\';
+          buf[1] := 'u';
+          buf[2] := '0';
+          buf[3] := '0';
+          buf[4] := super_hex_chars[ord(c) shr 4];
+          buf[5] := super_hex_chars[ord(c) and $f];
+          Append(buf, 6);
+          inc(pos);
+          start_offset := pos;
+        end else
+          inc(pos);
       end;
-    if (pos - start_offset > 0) then
+    end;
+    if(pos - start_offset > 0) then
       writer.Append(str + start_offset, pos - start_offset);
     Result := 0;
   end;
 
-  function DoMinimalEscape(str: PSOChar; len: Integer): Integer;
-  var
-    pos, start_offset: Integer;
-    c: SOChar;
-  type
-    TByteChar = record
-      case integer of
-        0: (a, b: Byte);
-        1: (c: WideChar);
-    end;
+function DoMinimalEscape(str: PSOChar; len: Integer): Integer;
+var
+  pos, start_offset: Integer;
+  c: SOChar;
+type
+  TByteChar = record
+  case integer of
+    0: (a, b: Byte);
+    1: (c: WideChar);
+  end;
   begin
     if str = nil then
     begin
@@ -2804,39 +2850,39 @@ function TSuperObject.Write(writer: TSuperWriter; indent: boolean; escape: boole
     end;
     pos := 0; start_offset := 0;
     with writer do
-      while pos < len do
-      begin
-        c := str[pos];
-        case c of
-          #0:
-            begin
-              if (pos - start_offset > 0) then
-                Append(str + start_offset, pos - start_offset);
-              Append(ESC_ZERO, 6);
-              inc(pos);
-              start_offset := pos;
-            end;
-          '"':
-            begin
-              if (pos - start_offset > 0) then
-                Append(str + start_offset, pos - start_offset);
-              Append(ESC_QUOT, 2);
-              inc(pos);
-              start_offset := pos;
-            end;
-          '\':
-            begin
-              if (pos - start_offset > 0) then
-                Append(str + start_offset, pos - start_offset);
-              Append(ESC_SL, 2);
-              inc(pos);
-              start_offset := pos;
-            end;
-        else
-          inc(pos);
-        end;
+    while pos < len do
+    begin
+      c := str[pos];
+      case c of
+        #0:
+          begin
+            if(pos - start_offset > 0) then
+              Append(str + start_offset, pos - start_offset);
+            Append(ESC_ZERO, 6);
+            inc(pos);
+            start_offset := pos;
+          end;
+        '"':
+          begin
+            if(pos - start_offset > 0) then
+              Append(str + start_offset, pos - start_offset);
+            Append(ESC_QUOT, 2);
+            inc(pos);
+            start_offset := pos;
+          end;
+        '\':
+          begin
+            if(pos - start_offset > 0) then
+              Append(str + start_offset, pos - start_offset);
+            Append(ESC_SL, 2);
+            inc(pos);
+            start_offset := pos;
+          end;
+      else
+        inc(pos);
       end;
-    if (pos - start_offset > 0) then
+    end;
+    if(pos - start_offset > 0) then
       writer.Append(str + start_offset, pos - start_offset);
     Result := 0;
   end;
@@ -2853,30 +2899,12 @@ function TSuperObject.Write(writer: TSuperWriter; indent: boolean; escape: boole
 {$ELSE}
         Append(TOK_LF, 1);
 {$ENDIF}
-        //        for i := 0 to level-1 do
-        for i := 1 to ((level) * writer.IndentWidth) do //modify by mofen
+        for i := 0 to level - 1 do
           Append(TOK_SP, 1);
       end;
   end;
-
-  //add by mofen
-  procedure _indentwidth(pvLevel: Integer; pvBreak: Boolean);
-  var
-    x: Integer;
-  begin
-    if pvBreak and (pvLevel > 0) then
-    begin
-{$IFDEF MSWINDOWS}
-      writer.Append(TOK_CRLF, 2);
-{$ELSE}
-      writer.Append(TOK_LF, 1);
-{$ENDIF}
-    end;
-    for x := 1 to (pvLevel * writer.IndentWidth) do
-      writer.Append(TOK_SP, 1);
-  end;
 var
-  k, j: Integer;
+  k,j: Integer;
   iter: TSuperObjectIter;
   st: AnsiString;
   val: ISuperObject;
@@ -2899,44 +2927,35 @@ begin
         if FO.c_object.FCount > 0 then
         begin
           k := 0;
-          if indent then
-          begin
-            _indent(1, false);
-            _indentwidth(level - 1, True);
-            Append(TOK_CBL, 1);
-          end else
-          begin
-            Append(TOK_CBL, 1);
-          end;
-
-
+          Append(TOK_CBL, 1);
+          if indent then _indent(1, false);
           if ObjectFindFirst(Self, iter) then
-            repeat
-{$IFDEF SUPER_METHOD}
-              if (iter.val = nil) or not ObjectIsType(iter.val, stMethod) then
+          repeat
+  {$IFDEF SUPER_METHOD}
+            if (iter.val = nil) or not ObjectIsType(iter.val, stMethod) then
+            begin
+  {$ENDIF}
+              if (iter.val = nil) or (not iter.val.Processing) then
               begin
-{$ENDIF}
-                if (iter.val = nil) or (not iter.val.Processing) then
-                begin
-                  if (k <> 0) then
-                    Append(TOK_COM, 1);
-                  if indent then _indent(0, true);
-                  Append(TOK_DQT, 1);
-                  if escape then
-                    doEscape(PSOChar(iter.key), Length(iter.key)) else
-                    DoMinimalEscape(PSOChar(iter.key), Length(iter.key));
-                  if indent then
-                    Append(ENDSTR_A, 3) else
-                    Append(ENDSTR_B, 2);
-                  if (iter.val = nil) then
-                    Append(TOK_NULL, 4) else
-                    iter.val.write(writer, indent, escape, level);
-                  inc(k);
-                end;
-{$IFDEF SUPER_METHOD}
+                if(k <> 0) then
+                  Append(TOK_COM, 1);
+                if indent then _indent(0, true);
+                Append(TOK_DQT, 1);
+                if escape then
+                  doEscape(PSOChar(iter.key), Length(iter.key)) else
+                  DoMinimalEscape(PSOChar(iter.key), Length(iter.key));
+                if indent then
+                  Append(ENDSTR_A, 3) else
+                  Append(ENDSTR_B, 2);
+                if(iter.val = nil) then
+                  Append(TOK_NULL, 4) else
+                  iter.val.write(writer, indent, escape, level);
+                inc(k);
               end;
-{$ENDIF}
-            until not ObjectFindNext(iter);
+  {$IFDEF SUPER_METHOD}
+            end;
+  {$ENDIF}
+          until not ObjectFindNext(iter);
           ObjectFindClose(iter);
           if indent then _indent(-1, true);
           Result := Append(TOK_CBR, 1);
@@ -2978,23 +2997,23 @@ begin
           while k < FO.c_array.FLength do
           begin
 
-            val := FO.c_array.GetO(k);
-{$IFDEF SUPER_METHOD}
+            val :=  FO.c_array.GetO(k);
+  {$IFDEF SUPER_METHOD}
             if not ObjectIsType(val, stMethod) then
             begin
-{$ENDIF}
+  {$ENDIF}
               if (val = nil) or (not val.Processing) then
               begin
                 if (j <> 0) then
                   Append(TOK_COM, 1);
-                if (val = nil) then
+                if(val = nil) then
                   Append(TOK_NULL, 4) else
                   val.write(writer, indent, escape, level);
                 inc(j);
               end;
-{$IFDEF SUPER_METHOD}
+  {$IFDEF SUPER_METHOD}
             end;
-{$ENDIF}
+  {$ENDIF}
             inc(k);
           end;
           if indent then _indent(-1, false);
@@ -3002,7 +3021,7 @@ begin
         end else
           Result := Append(TOK_ARRAY, 2);
       stNull:
-        Result := Append(TOK_NULL, 4);
+          Result := Append(TOK_NULL, 4);
     else
       Result := 0;
     end;
@@ -3098,9 +3117,12 @@ end;
 
 function TSuperObject.AsString: SOString;
 begin
-  if FDataType = stString then
-    Result := FOString else
+  case FDataType of
+    stString: Result := FOString;
+    stNull: Result := '';
+  else
     Result := AsJSon(false, false);
+  end;
 end;
 
 function TSuperObject.GetEnumerator: TSuperEnumerator;
@@ -3133,15 +3155,13 @@ begin
     Result := nil;
 end;
 
-function TSuperObject.AsJSon(indent: boolean = false; escape: boolean = false;
-  indentwidth: Integer = 3): SOString;
+function TSuperObject.AsJSon(indent, escape: boolean): SOString;
 var
   pb: TSuperWriterString;
 begin
   pb := TSuperWriterString.Create;
   try
-    pb.IndentWidth := indentwidth;
-    if (Write(pb, indent, escape, 0) < 0) then
+    if(Write(pb, indent, escape, 0) < 0) then
     begin
       Result := '';
       Exit;
@@ -3162,7 +3182,7 @@ var
 begin
   tok := TSuperTokenizer.Create;
   obj := ParseEx(tok, s, -1, strict, this, options, put, dt);
-  if (tok.err <> teSuccess) or (not partial and (s[tok.char_offset] <> #0)) then
+  if(tok.err <> teSuccess) or (not partial and (s[tok.char_offset] <> #0)) then
     Result := nil else
     Result := obj;
   tok.Free;
@@ -3170,13 +3190,13 @@ end;
 
 class function TSuperObject.ParseStream(stream: TStream; strict: Boolean;
   partial: boolean; const this: ISuperObject; options: TSuperFindOptions;
-  const put: ISuperObject; dt: TSuperType): ISuperObject;
+   const put: ISuperObject; dt: TSuperType): ISuperObject;
 const
   BUFFER_SIZE = 1024;
 var
   tok: TSuperTokenizer;
-  buffera: array[0..BUFFER_SIZE - 1] of AnsiChar;
-  bufferw: array[0..BUFFER_SIZE - 1] of SOChar;
+  buffera: array[0..BUFFER_SIZE-1] of AnsiChar;
+  bufferw: array[0..BUFFER_SIZE-1] of SOChar;
   bom: array[0..1] of byte;
   unicode: boolean;
   j, size: Integer;
@@ -3190,11 +3210,11 @@ begin
     unicode := true;
     size := stream.Read(bufferw, BUFFER_SIZE * SizeOf(SoChar)) div SizeOf(SoChar);
   end else
-  begin
-    unicode := false;
-    stream.Seek(0, soFromBeginning);
-    size := stream.Read(buffera, BUFFER_SIZE);
-  end;
+    begin
+      unicode := false;
+      stream.Seek(0, soFromBeginning);
+      size := stream.Read(buffera, BUFFER_SIZE);
+    end;
 
   while size > 0 do
   begin
@@ -3204,14 +3224,14 @@ begin
     ParseEx(tok, bufferw, size, strict, this, options, put, dt);
 
     if tok.err = teContinue then
-    begin
-      if not unicode then
-        size := stream.Read(buffera, BUFFER_SIZE) else
-        size := stream.Read(bufferw, BUFFER_SIZE * SizeOf(SoChar)) div SizeOf(SoChar);
-    end else
+      begin
+        if not unicode then
+          size := stream.Read(buffera, BUFFER_SIZE) else
+          size := stream.Read(bufferw, BUFFER_SIZE * SizeOf(SoChar)) div SizeOf(SoChar);
+      end else
       Break;
   end;
-  if (tok.err <> teSuccess) or (not partial and (st[tok.char_offset] <> #0)) then
+  if(tok.err <> teSuccess) or (not partial and (st[tok.char_offset] <> #0)) then
     Result := nil else
     Result := tok.stack[tok.depth].current;
   tok.Free;
@@ -3235,18 +3255,18 @@ class function TSuperObject.ParseEx(tok: TSuperTokenizer; str: PSOChar; len: int
   strict: Boolean; const this: ISuperObject; options: TSuperFindOptions; const put: ISuperObject; dt: TSuperType): ISuperObject;
 
 const
-  spaces = [#32, #8, #9, #10, #12, #13];
+  spaces = [#32,#8,#9,#10,#12,#13];
   delimiters = ['"', '.', '[', ']', '{', '}', '(', ')', ',', ':', #0];
   reserved = delimiters + spaces;
   path = ['a'..'z', 'A'..'Z', '.', '_'];
 
-  function hexdigit(x: SOChar): byte; {$IFDEF HAVE_INLINE}inline; {$ENDIF}
+  function hexdigit(x: SOChar): byte; {$IFDEF HAVE_INLINE} inline;{$ENDIF}
   begin
     if x <= '9' then
       Result := byte(x) - byte('0') else
       Result := (byte(x) and 7) + 9;
   end;
-  function min(v1, v2: integer): integer; {$IFDEF HAVE_INLINE}inline; {$ENDIF}
+  function min(v1, v2: integer): integer;{$IFDEF HAVE_INLINE} inline;{$ENDIF}
   begin if v1 < v2 then result := v1 else result := v2 end;
 
 var
@@ -3271,7 +3291,7 @@ var
       else
         Result := v = #0;
       end else
-      Result := v = #0;
+        Result := v = #0;
   end;
 
 label out, redo_char;
@@ -3279,8 +3299,6 @@ begin
   evalstack := 0;
   obj := nil;
   Result := nil;
-
-
   TokRec := @tok.stack[tok.depth];
 
   tok.char_offset := 0;
@@ -3290,7 +3308,7 @@ begin
     if (tok.char_offset = len) then
     begin
       if (tok.depth = 0) and (TokRec^.state = tsEatws) and
-        (TokRec^.saved_state = tsFinish) then
+         (TokRec^.saved_state = tsFinish) then
         tok.err := teSuccess else
         tok.err := teContinue;
       goto out;
@@ -3299,910 +3317,910 @@ begin
     v := str^;
 
     case v of
-      #10:
-        begin
-          inc(tok.line);
-          tok.col := 0;
-        end;
-      #9: inc(tok.col, 4);
+    #10:
+      begin
+        inc(tok.line);
+        tok.col := 0;
+      end;
+    #9: inc(tok.col, 4);
     else
       inc(tok.col);
     end;
 
-    redo_char:
+redo_char:
     case TokRec^.state of
-      tsEatws:
+    tsEatws:
+      begin
+        if (SOIChar(v) < 256) and (AnsiChar(v) in spaces) then {nop} else
+        if (v = '/') then
         begin
-          if (SOIChar(v) < 256) and (AnsiChar(v) in spaces) then {nop} else
-            if (v = '/') then
-            begin
-              tok.pb.Reset;
-              tok.pb.Append(@v, 1);
-              TokRec^.state := tsCommentStart;
-            end else begin
-              TokRec^.state := TokRec^.saved_state;
-              goto redo_char;
-            end
-        end;
-
-      tsStart:
-        case v of
-          '"',
-            '''':
-            begin
-              TokRec^.state := tsString;
-              tok.pb.Reset;
-              tok.quote_char := v;
-            end;
-          '-':
-            begin
-              TokRec^.state := tsNumber;
-              tok.pb.Reset;
-              tok.is_double := 0;
-              tok.floatcount := -1;
-              goto redo_char;
-            end;
-
-          '0'..'9':
-            begin
-              if (tok.depth = 0) then
-                case ObjectGetType(this) of
-                  stObject:
-                    begin
-                      TokRec^.state := tsIdentifier;
-                      TokRec^.current := this;
-                      goto redo_char;
-                    end;
-                end;
-              TokRec^.state := tsNumber;
-              tok.pb.Reset;
-              tok.is_double := 0;
-              tok.floatcount := -1;
-              goto redo_char;
-            end;
-          '{':
-            begin
-              TokRec^.state := tsEatws;
-              TokRec^.saved_state := tsObjectFieldStart;
-              TokRec^.current := TSuperObject.Create(stObject);
-            end;
-          '[':
-            begin
-              TokRec^.state := tsEatws;
-              TokRec^.saved_state := tsArray;
-              TokRec^.current := TSuperObject.Create(stArray);
-            end;
-{$IFDEF SUPER_METHOD}
-          '(':
-            begin
-              if (tok.depth = 0) and ObjectIsType(this, stMethod) then
-              begin
-                TokRec^.current := this;
-                TokRec^.state := tsParamValue;
-              end;
-            end;
-{$ENDIF}
-          'N',
-            'n':
-            begin
-              TokRec^.state := tsNull;
-              tok.pb.Reset;
-              tok.st_pos := 0;
-              goto redo_char;
-            end;
-          'T',
-            't',
-            'F',
-            'f':
-            begin
-              TokRec^.state := tsBoolean;
-              tok.pb.Reset;
-              tok.st_pos := 0;
-              goto redo_char;
-            end;
-        else
-          TokRec^.state := tsIdentifier;
           tok.pb.Reset;
-          goto redo_char;
-        end;
-
-      tsFinish:
-        begin
-          if (tok.depth = 0) then goto out;
-          obj := TokRec^.current;
-          tok.ResetLevel(tok.depth);
-          dec(tok.depth);
-          TokRec := @tok.stack[tok.depth];
-          goto redo_char;
-        end;
-
-      tsNull:
-        begin
           tok.pb.Append(@v, 1);
-          if (StrLComp(TOK_NULL, PSOChar(tok.pb.FBuf), min(tok.st_pos + 1, 4)) = 0) then
-          begin
-            if (tok.st_pos = 4) then
-              if (((SOIChar(v) < 256) and (AnsiChar(v) in path)) or (SOIChar(v) >= 256)) then
-                TokRec^.state := tsIdentifier else
-              begin
-                TokRec^.current := TSuperObject.Create(stNull);
-                TokRec^.saved_state := tsFinish;
-                TokRec^.state := tsEatws;
-                goto redo_char;
-              end;
-          end else
-          begin
-            TokRec^.state := tsIdentifier;
-            tok.pb.FBuf[tok.st_pos] := #0;
-            dec(tok.pb.FBPos);
-            goto redo_char;
-          end;
-          inc(tok.st_pos);
-        end;
-
-      tsCommentStart:
-        begin
-          if (v = '*') then
-          begin
-            TokRec^.state := tsComment;
-          end else
-            if (v = '/') then
-            begin
-              TokRec^.state := tsCommentEol;
-            end else
-            begin
-              tok.err := teParseComment;
-              goto out;
-            end;
-          tok.pb.Append(@v, 1);
-        end;
-
-      tsComment:
-        begin
-          if (v = '*') then
-            TokRec^.state := tsCommentEnd;
-          tok.pb.Append(@v, 1);
-        end;
-
-      tsCommentEol:
-        begin
-          if (v = #10) then
-            TokRec^.state := tsEatws else
-            tok.pb.Append(@v, 1);
-        end;
-
-      tsCommentEnd:
-        begin
-          tok.pb.Append(@v, 1);
-          if (v = '/') then
-            TokRec^.state := tsEatws else
-            TokRec^.state := tsComment;
-        end;
-
-      tsString:
-        begin
-          if (v = tok.quote_char) then
-          begin
-            TokRec^.current := TSuperObject.Create(SOString(tok.pb.GetString));
-            TokRec^.saved_state := tsFinish;
-            TokRec^.state := tsEatws;
-          end else
-            if (v = '\') then
-            begin
-              TokRec^.saved_state := tsString;
-              TokRec^.state := tsStringEscape;
-            end else
-            begin
-              tok.pb.Append(@v, 1);
-            end
-        end;
-
-      tsEvalProperty:
-        begin
-          if (TokRec^.current = nil) and (foCreatePath in options) then
-          begin
-            TokRec^.current := TSuperObject.Create(stObject);
-            TokRec^.parent.AsObject.PutO(tok.pb.Fbuf, TokRec^.current)
-          end else
-            if not ObjectIsType(TokRec^.current, stObject) then
-            begin
-              tok.err := teEvalObject;
-              goto out;
-            end;
-          tok.pb.Reset;
-          TokRec^.state := tsIdentifier;
-          goto redo_char;
-        end;
-
-      tsEvalArray:
-        begin
-          if (TokRec^.current = nil) and (foCreatePath in options) then
-          begin
-            TokRec^.current := TSuperObject.Create(stArray);
-            TokRec^.parent.AsObject.PutO(tok.pb.Fbuf, TokRec^.current)
-          end else
-            if not ObjectIsType(TokRec^.current, stArray) then
-            begin
-              tok.err := teEvalArray;
-              goto out;
-            end;
-          tok.pb.Reset;
-          TokRec^.state := tsParamValue;
-          goto redo_char;
-        end;
-{$IFDEF SUPER_METHOD}
-      tsEvalMethod:
-        begin
-          if ObjectIsType(TokRec^.current, stMethod) and assigned(TokRec^.current.AsMethod) then
-          begin
-            tok.pb.Reset;
-            TokRec^.obj := TSuperObject.Create(stArray);
-            TokRec^.state := tsMethodValue;
-            goto redo_char;
-          end else
-          begin
-            tok.err := teEvalMethod;
-            goto out;
-          end;
-        end;
-
-      tsMethodValue:
-        begin
-          case v of
-            ')':
-              TokRec^.state := tsIdentifier;
-          else
-            if (tok.depth >= SUPER_TOKENER_MAX_DEPTH - 1) then
-            begin
-              tok.err := teDepth;
-              goto out;
-            end;
-            inc(evalstack);
-            TokRec^.state := tsMethodPut;
-            inc(tok.depth);
-            tok.ResetLevel(tok.depth);
-            TokRec := @tok.stack[tok.depth];
-            goto redo_char;
-          end;
-        end;
-
-      tsMethodPut:
-        begin
-          TokRec^.obj.AsArray.Add(obj);
-          case v of
-            ',':
-              begin
-                tok.pb.Reset;
-                TokRec^.saved_state := tsMethodValue;
-                TokRec^.state := tsEatws;
-              end;
-            ')':
-              begin
-                if TokRec^.obj.AsArray.Length = 1 then
-                  TokRec^.obj := TokRec^.obj.AsArray.GetO(0);
-                dec(evalstack);
-                tok.pb.Reset;
-                TokRec^.saved_state := tsIdentifier;
-                TokRec^.state := tsEatws;
-              end;
-          else
-            tok.err := teEvalMethod;
-            goto out;
-          end;
-        end;
-{$ENDIF}
-      tsParamValue:
-        begin
-          case v of
-            ']':
-              TokRec^.state := tsIdentifier;
-          else
-            if (tok.depth >= SUPER_TOKENER_MAX_DEPTH - 1) then
-            begin
-              tok.err := teDepth;
-              goto out;
-            end;
-            inc(evalstack);
-            TokRec^.state := tsParamPut;
-            inc(tok.depth);
-            tok.ResetLevel(tok.depth);
-            TokRec := @tok.stack[tok.depth];
-            goto redo_char;
-          end;
-        end;
-
-      tsParamPut:
-        begin
-          dec(evalstack);
-          TokRec^.obj := obj;
-          tok.pb.Reset;
-          TokRec^.saved_state := tsIdentifier;
-          TokRec^.state := tsEatws;
-          if v <> ']' then
-          begin
-            tok.err := teEvalArray;
-            goto out;
-          end;
-        end;
-
-      tsIdentifier:
-        begin
-          if (this = nil) then
-          begin
-            if (SOIChar(v) < 256) and IsEndDelimiter(AnsiChar(v)) then
-            begin
-              if not strict then
-              begin
-                tok.pb.TrimRight;
-                TokRec^.current := TSuperObject.Create(tok.pb.Fbuf);
-                TokRec^.saved_state := tsFinish;
-                TokRec^.state := tsEatws;
-                goto redo_char;
-              end else
-              begin
-                tok.err := teParseString;
-                goto out;
-              end;
-            end else
-              if (v = '\') then
-              begin
-                TokRec^.saved_state := tsIdentifier;
-                TokRec^.state := tsStringEscape;
-              end else
-                tok.pb.Append(@v, 1);
-          end else
-          begin
-            if (SOIChar(v) < 256) and (AnsiChar(v) in reserved) then
-            begin
-              TokRec^.gparent := TokRec^.parent;
-              if TokRec^.current = nil then
-                TokRec^.parent := this else
-                TokRec^.parent := TokRec^.current;
-
-              case ObjectGetType(TokRec^.parent) of
-                stObject:
-                  case v of
-                    '.':
-                      begin
-                        TokRec^.state := tsEvalProperty;
-                        if tok.pb.FBPos > 0 then
-                          TokRec^.current := TokRec^.parent.AsObject.GetO(tok.pb.Fbuf);
-                      end;
-                    '[':
-                      begin
-                        TokRec^.state := tsEvalArray;
-                        if tok.pb.FBPos > 0 then
-                          TokRec^.current := TokRec^.parent.AsObject.GetO(tok.pb.Fbuf);
-                      end;
-                    '(':
-                      begin
-                        TokRec^.state := tsEvalMethod;
-                        if tok.pb.FBPos > 0 then
-                          TokRec^.current := TokRec^.parent.AsObject.GetO(tok.pb.Fbuf);
-                      end;
-                  else
-                    if tok.pb.FBPos > 0 then
-                      TokRec^.current := TokRec^.parent.AsObject.GetO(tok.pb.Fbuf);
-                    if (foPutValue in options) and (evalstack = 0) then
-                    begin
-                      TokRec^.parent.AsObject.PutO(tok.pb.Fbuf, put);
-                      TokRec^.current := put
-                    end else
-                      if (foDelete in options) and (evalstack = 0) then
-                      begin
-                        TokRec^.current := TokRec^.parent.AsObject.Delete(tok.pb.Fbuf);
-                      end else
-                        if (TokRec^.current = nil) and (foCreatePath in options) then
-                        begin
-                          TokRec^.current := TSuperObject.Create(dt);
-                          TokRec^.parent.AsObject.PutO(tok.pb.Fbuf, TokRec^.current);
-                        end;
-                    TokRec^.current := TokRec^.parent.AsObject.GetO(tok.pb.Fbuf);
-                    TokRec^.state := tsFinish;
-                    goto redo_char;
-                  end;
-                stArray:
-                  begin
-                    if TokRec^.obj <> nil then
-                    begin
-                      if not ObjectIsType(TokRec^.obj, stInt) or (TokRec^.obj.AsInteger < 0) then
-                      begin
-                        tok.err := teEvalInt;
-                        TokRec^.obj := nil;
-                        goto out;
-                      end;
-                      numi := TokRec^.obj.AsInteger;
-                      TokRec^.obj := nil;
-
-                      TokRec^.current := TokRec^.parent.AsArray.GetO(numi);
-                      case v of
-                        '.':
-                          if (TokRec^.current = nil) and (foCreatePath in options) then
-                          begin
-                            TokRec^.current := TSuperObject.Create(stObject);
-                            TokRec^.parent.AsArray.PutO(numi, TokRec^.current);
-                          end else
-                            if (TokRec^.current = nil) then
-                            begin
-                              tok.err := teEvalObject;
-                              goto out;
-                            end;
-                        '[':
-                          begin
-                            if (TokRec^.current = nil) and (foCreatePath in options) then
-                            begin
-                              TokRec^.current := TSuperObject.Create(stArray);
-                              TokRec^.parent.AsArray.Add(TokRec^.current);
-                            end else
-                              if (TokRec^.current = nil) then
-                              begin
-                                tok.err := teEvalArray;
-                                goto out;
-                              end;
-                            TokRec^.state := tsEvalArray;
-                          end;
-                        '(': TokRec^.state := tsEvalMethod;
-                      else
-                        if (foPutValue in options) and (evalstack = 0) then
-                        begin
-                          TokRec^.parent.AsArray.PutO(numi, put);
-                          TokRec^.current := put;
-                        end else
-                          if (foDelete in options) and (evalstack = 0) then
-                          begin
-                            TokRec^.current := TokRec^.parent.AsArray.Delete(numi);
-                          end else
-                            TokRec^.current := TokRec^.parent.AsArray.GetO(numi);
-                        TokRec^.state := tsFinish;
-                        goto redo_char
-                      end;
-                    end else
-                    begin
-                      case v of
-                        '.':
-                          begin
-                            if (foPutValue in options) then
-                            begin
-                              TokRec^.current := TSuperObject.Create(stObject);
-                              TokRec^.parent.AsArray.Add(TokRec^.current);
-                            end else
-                              TokRec^.current := TokRec^.parent.AsArray.GetO(TokRec^.parent.AsArray.FLength - 1);
-                          end;
-                        '[':
-                          begin
-                            if (foPutValue in options) then
-                            begin
-                              TokRec^.current := TSuperObject.Create(stArray);
-                              TokRec^.parent.AsArray.Add(TokRec^.current);
-                            end else
-                              TokRec^.current := TokRec^.parent.AsArray.GetO(TokRec^.parent.AsArray.FLength - 1);
-                            TokRec^.state := tsEvalArray;
-                          end;
-                        '(':
-                          begin
-                            if not (foPutValue in options) then
-                              TokRec^.current := TokRec^.parent.AsArray.GetO(TokRec^.parent.AsArray.FLength - 1) else
-                              TokRec^.current := nil;
-
-                            TokRec^.state := tsEvalMethod;
-                          end;
-                      else
-                        if (foPutValue in options) and (evalstack = 0) then
-                        begin
-                          TokRec^.parent.AsArray.Add(put);
-                          TokRec^.current := put;
-                        end else
-                          if tok.pb.FBPos = 0 then
-                            TokRec^.current := TokRec^.parent.AsArray.GetO(TokRec^.parent.AsArray.FLength - 1);
-                        TokRec^.state := tsFinish;
-                        goto redo_char
-                      end;
-                    end;
-                  end;
-{$IFDEF SUPER_METHOD}
-                stMethod:
-                  case v of
-                    '.':
-                      begin
-                        TokRec^.current := nil;
-                        sm := TokRec^.parent.AsMethod;
-                        sm(TokRec^.gparent, TokRec^.obj, TokRec^.current);
-                        TokRec^.obj := nil;
-                      end;
-                    '[':
-                      begin
-                        TokRec^.current := nil;
-                        sm := TokRec^.parent.AsMethod;
-                        sm(TokRec^.gparent, TokRec^.obj, TokRec^.current);
-                        TokRec^.state := tsEvalArray;
-                        TokRec^.obj := nil;
-                      end;
-                    '(':
-                      begin
-                        TokRec^.current := nil;
-                        sm := TokRec^.parent.AsMethod;
-                        sm(TokRec^.gparent, TokRec^.obj, TokRec^.current);
-                        TokRec^.state := tsEvalMethod;
-                        TokRec^.obj := nil;
-                      end;
-                  else
-                    if not (foPutValue in options) or (evalstack > 0) then
-                    begin
-                      TokRec^.current := nil;
-                      sm := TokRec^.parent.AsMethod;
-                      sm(TokRec^.gparent, TokRec^.obj, TokRec^.current);
-                      TokRec^.obj := nil;
-                      TokRec^.state := tsFinish;
-                      goto redo_char
-                    end else
-                    begin
-                      tok.err := teEvalMethod;
-                      TokRec^.obj := nil;
-                      goto out;
-                    end;
-                  end;
-{$ENDIF}
-              end;
-            end else
-              tok.pb.Append(@v, 1);
-          end;
-        end;
-
-      tsStringEscape:
-        case v of
-          'b',
-            'n',
-            'r',
-            't',
-            'f':
-            begin
-              if (v = 'b') then tok.pb.Append(TOK_BS, 1)
-              else if (v = 'n') then tok.pb.Append(TOK_LF, 1)
-              else if (v = 'r') then tok.pb.Append(TOK_CR, 1)
-              else if (v = 't') then tok.pb.Append(TOK_TAB, 1)
-              else if (v = 'f') then tok.pb.Append(TOK_FF, 1);
-              TokRec^.state := TokRec^.saved_state;
-            end;
-          'u':
-            begin
-              tok.ucs_char := 0;
-              tok.st_pos := 0;
-              TokRec^.state := tsEscapeUnicode;
-            end;
-          'x':
-            begin
-              tok.ucs_char := 0;
-              tok.st_pos := 0;
-              TokRec^.state := tsEscapeHexadecimal;
-            end
-        else
-          tok.pb.Append(@v, 1);
+          TokRec^.state := tsCommentStart;
+        end else begin
           TokRec^.state := TokRec^.saved_state;
-        end;
+          goto redo_char;
+        end
+      end;
 
-      tsEscapeUnicode:
+    tsStart:
+      case v of
+      '"',
+      '''':
         begin
-          if ((SOIChar(v) < 256) and (AnsiChar(v) in super_hex_chars_set)) then
-          begin
-            inc(tok.ucs_char, (Word(hexdigit(v)) shl ((3 - tok.st_pos) * 4)));
-            inc(tok.st_pos);
-            if (tok.st_pos = 4) then
-            begin
-              tok.pb.Append(@tok.ucs_char, 1);
-              TokRec^.state := TokRec^.saved_state;
-            end
-          end else
-          begin
-            tok.err := teParseString;
-            goto out;
-          end
+          TokRec^.state := tsString;
+          tok.pb.Reset;
+          tok.quote_char := v;
         end;
-      tsEscapeHexadecimal:
+      '-':
         begin
-          if ((SOIChar(v) < 256) and (AnsiChar(v) in super_hex_chars_set)) then
-          begin
-            inc(tok.ucs_char, (Word(hexdigit(v)) shl ((1 - tok.st_pos) * 4)));
-            inc(tok.st_pos);
-            if (tok.st_pos = 2) then
-            begin
-              tok.pb.Append(@tok.ucs_char, 1);
-              TokRec^.state := TokRec^.saved_state;
-            end
-          end else
-          begin
-            tok.err := teParseString;
-            goto out;
-          end
-        end;
-      tsBoolean:
-        begin
-          tok.pb.Append(@v, 1);
-          if (StrLComp('true', PSOChar(tok.pb.FBuf), min(tok.st_pos + 1, 4)) = 0) then
-          begin
-            if (tok.st_pos = 4) then
-              if (((SOIChar(v) < 256) and (AnsiChar(v) in path)) or (SOIChar(v) >= 256)) then
-                TokRec^.state := tsIdentifier else
-              begin
-                TokRec^.current := TSuperObject.Create(true);
-                TokRec^.saved_state := tsFinish;
-                TokRec^.state := tsEatws;
-                goto redo_char;
-              end
-          end else
-            if (StrLComp('false', PSOChar(tok.pb.FBuf), min(tok.st_pos + 1, 5)) = 0) then
-            begin
-              if (tok.st_pos = 5) then
-                if (((SOIChar(v) < 256) and (AnsiChar(v) in path)) or (SOIChar(v) >= 256)) then
-                  TokRec^.state := tsIdentifier else
-                begin
-                  TokRec^.current := TSuperObject.Create(false);
-                  TokRec^.saved_state := tsFinish;
-                  TokRec^.state := tsEatws;
-                  goto redo_char;
-                end
-            end else
-            begin
-              TokRec^.state := tsIdentifier;
-              tok.pb.FBuf[tok.st_pos] := #0;
-              dec(tok.pb.FBPos);
-              goto redo_char;
-            end;
-          inc(tok.st_pos);
-        end;
-
-      tsNumber:
-        begin
-          if (SOIChar(v) < 256) and (AnsiChar(v) in super_number_chars_set) then
-          begin
-            tok.pb.Append(@v, 1);
-            if (SOIChar(v) < 256) then
-              case v of
-                '.': begin
-                    tok.is_double := 1;
-                    tok.floatcount := 0;
-                  end;
-                'e', 'E':
-                  begin
-                    tok.is_double := 1;
-                    tok.floatcount := -1;
-                  end;
-                '0'..'9':
-                  begin
-
-                    if (tok.is_double = 1) and (tok.floatcount >= 0) then
-                    begin
-                      inc(tok.floatcount);
-                      if tok.floatcount > 4 then
-                        tok.floatcount := -1;
-                    end;
-                  end;
-              end;
-          end else
-          begin
-            if (tok.is_double = 0) then
-            begin
-              val(tok.pb.FBuf, numi, code);
-              if ObjectIsType(this, stArray) then
-              begin
-                if (foPutValue in options) and (evalstack = 0) then
-                begin
-                  this.AsArray.PutO(numi, put);
-                  TokRec^.current := put;
-                end else
-                  if (foDelete in options) and (evalstack = 0) then
-                    TokRec^.current := this.AsArray.Delete(numi) else
-                    TokRec^.current := this.AsArray.GetO(numi);
-              end else
-                TokRec^.current := TSuperObject.Create(numi);
-
-            end else
-              if (tok.is_double <> 0) then
-              begin
-                if tok.floatcount >= 0 then
-                begin
-                  p := tok.pb.FBuf;
-                  while p^ <> '.' do inc(p);
-                  for code := 0 to tok.floatcount - 1 do
-                  begin
-                    p^ := p[1];
-                    inc(p);
-                  end;
-                  p^ := #0;
-                  val(tok.pb.FBuf, numi, code);
-                  case tok.floatcount of
-                    0: numi := numi * 10000;
-                    1: numi := numi * 1000;
-                    2: numi := numi * 100;
-                    3: numi := numi * 10;
-                  end;
-                  TokRec^.current := TSuperObject.CreateCurrency(PCurrency(@numi)^);
-                end else
-                begin
-                  val(tok.pb.FBuf, numd, code);
-                  TokRec^.current := TSuperObject.Create(numd);
-                end;
-              end else
-              begin
-                tok.err := teParseNumber;
-                goto out;
-              end;
-            TokRec^.saved_state := tsFinish;
-            TokRec^.state := tsEatws;
-            goto redo_char;
-          end
-        end;
-
-      tsArray:
-        begin
-          if (v = ']') then
-          begin
-            TokRec^.saved_state := tsFinish;
-            TokRec^.state := tsEatws;
-          end else
-          begin
-            if (tok.depth >= SUPER_TOKENER_MAX_DEPTH - 1) then
-            begin
-              tok.err := teDepth;
-              goto out;
-            end;
-            TokRec^.state := tsArrayAdd;
-            inc(tok.depth);
-            tok.ResetLevel(tok.depth);
-            TokRec := @tok.stack[tok.depth];
-            goto redo_char;
-          end
-        end;
-
-      tsArrayAdd:
-        begin
-          TokRec^.current.AsArray.Add(obj);
-          TokRec^.saved_state := tsArraySep;
-          TokRec^.state := tsEatws;
+          TokRec^.state := tsNumber;
+          tok.pb.Reset;
+          tok.is_double := 0;
+          tok.floatcount := -1;
           goto redo_char;
         end;
 
-      tsArraySep:
+      '0'..'9':
         begin
-          if (v = ']') then
-          begin
-            TokRec^.saved_state := tsFinish;
-            TokRec^.state := tsEatws;
-          end else
-            if (v = ',') then
-            begin
-              TokRec^.saved_state := tsArray;
-              TokRec^.state := tsEatws;
-            end else
-            begin
-              tok.err := teParseArray;
-              goto out;
-            end
-        end;
-
-      tsObjectFieldStart:
-        begin
-          if (v = '}') then
-          begin
-            TokRec^.saved_state := tsFinish;
-            TokRec^.state := tsEatws;
-          end else
-            if (SOIChar(v) < 256) and (AnsiChar(v) in ['"', '''']) then
-            begin
-              tok.quote_char := v;
-              tok.pb.Reset;
-              TokRec^.state := tsObjectField;
-            end else
-              if not ((SOIChar(v) < 256) and ((AnsiChar(v) in reserved) or strict)) then
+          if (tok.depth = 0) then
+            case ObjectGetType(this) of
+            stObject:
               begin
-                TokRec^.state := tsObjectUnquotedField;
-                tok.pb.Reset;
+                TokRec^.state := tsIdentifier;
+                TokRec^.current := this;
                 goto redo_char;
-              end else
-              begin
-                tok.err := teParseObjectKeyName;
-                goto out;
-              end
+              end;
+          end;
+          TokRec^.state := tsNumber;
+          tok.pb.Reset;
+          tok.is_double := 0;
+          tok.floatcount := -1;
+          goto redo_char;
         end;
-
-      tsObjectField:
+      '{':
         begin
-          if (v = tok.quote_char) then
-          begin
-            TokRec^.field_name := tok.pb.FBuf;
-            TokRec^.saved_state := tsObjectFieldEnd;
-            TokRec^.state := tsEatws;
-          end else
-            if (v = '\') then
-            begin
-              TokRec^.saved_state := tsObjectField;
-              TokRec^.state := tsStringEscape;
-            end else
-            begin
-              tok.pb.Append(@v, 1);
-            end
+          TokRec^.state := tsEatws;
+          TokRec^.saved_state := tsObjectFieldStart;
+          TokRec^.current := TSuperObject.Create(stObject);
         end;
-
-      tsObjectUnquotedField:
+      '[':
         begin
-          if (SOIChar(v) < 256) and (AnsiChar(v) in [':', #0]) then
+          TokRec^.state := tsEatws;
+          TokRec^.saved_state := tsArray;
+          TokRec^.current := TSuperObject.Create(stArray);
+        end;
+{$IFDEF SUPER_METHOD}
+      '(':
+        begin
+          if (tok.depth = 0) and ObjectIsType(this, stMethod) then
           begin
-            TokRec^.field_name := tok.pb.FBuf;
-            TokRec^.saved_state := tsObjectFieldEnd;
+            TokRec^.current := this;
+            TokRec^.state := tsParamValue;
+          end;
+        end;
+{$ENDIF}
+      'N',
+      'n':
+        begin
+          TokRec^.state := tsNull;
+          tok.pb.Reset;
+          tok.st_pos := 0;
+          goto redo_char;
+        end;
+      'T',
+      't',
+      'F',
+      'f':
+        begin
+          TokRec^.state := tsBoolean;
+          tok.pb.Reset;
+          tok.st_pos := 0;
+          goto redo_char;
+        end;
+      else
+        TokRec^.state := tsIdentifier;
+        tok.pb.Reset;
+        goto redo_char;
+      end;
+
+    tsFinish:
+      begin
+        if(tok.depth = 0) then goto out;
+        obj := TokRec^.current;
+        tok.ResetLevel(tok.depth);
+        dec(tok.depth);
+        TokRec := @tok.stack[tok.depth];
+        goto redo_char;
+      end;
+
+    tsNull:
+      begin
+        tok.pb.Append(@v, 1);
+        if (StrLComp(TOK_NULL, PSOChar(tok.pb.FBuf), min(tok.st_pos + 1, 4)) = 0) then
+        begin
+          if (tok.st_pos = 4) then
+          if (((SOIChar(v) < 256) and (AnsiChar(v) in path)) or (SOIChar(v) >= 256)) then
+            TokRec^.state := tsIdentifier else
+          begin
+            TokRec^.current := TSuperObject.Create(stNull);
+            TokRec^.saved_state := tsFinish;
             TokRec^.state := tsEatws;
             goto redo_char;
-          end else
-            if (v = '\') then
-            begin
-              TokRec^.saved_state := tsObjectUnquotedField;
-              TokRec^.state := tsStringEscape;
-            end else
-              tok.pb.Append(@v, 1);
-        end;
-
-      tsObjectFieldEnd:
+          end;
+        end else
         begin
-          if (v = ':') then
-          begin
-            TokRec^.saved_state := tsObjectValue;
-            TokRec^.state := tsEatws;
-          end else
-          begin
-            tok.err := teParseObjectKeySep;
-            goto out;
-          end
+          TokRec^.state := tsIdentifier;
+          tok.pb.FBuf[tok.st_pos] := #0;
+          dec(tok.pb.FBPos);
+          goto redo_char;
         end;
+        inc(tok.st_pos);
+      end;
 
-      tsObjectValue:
+    tsCommentStart:
+      begin
+        if(v = '*') then
         begin
-          if (tok.depth >= SUPER_TOKENER_MAX_DEPTH - 1) then
+          TokRec^.state := tsComment;
+        end else
+        if (v = '/') then
+        begin
+          TokRec^.state := tsCommentEol;
+        end else
+        begin
+          tok.err := teParseComment;
+          goto out;
+        end;
+        tok.pb.Append(@v, 1);
+      end;
+
+    tsComment:
+      begin
+        if(v = '*') then
+          TokRec^.state := tsCommentEnd;
+        tok.pb.Append(@v, 1);
+      end;
+
+    tsCommentEol:
+      begin
+        if (v = #10) then
+          TokRec^.state := tsEatws else
+          tok.pb.Append(@v, 1);
+      end;
+
+    tsCommentEnd:
+      begin
+        tok.pb.Append(@v, 1);
+        if (v = '/') then
+          TokRec^.state := tsEatws else
+          TokRec^.state := tsComment;
+      end;
+
+    tsString:
+      begin
+        if (v = tok.quote_char) then
+        begin
+          TokRec^.current := TSuperObject.Create(SOString(tok.pb.GetString));
+          TokRec^.saved_state := tsFinish;
+          TokRec^.state := tsEatws;
+        end else
+        if (v = '\') then
+        begin
+          TokRec^.saved_state := tsString;
+          TokRec^.state := tsStringEscape;
+        end else
+        begin
+          tok.pb.Append(@v, 1);
+        end
+      end;
+
+    tsEvalProperty:
+      begin
+        if (TokRec^.current = nil) and (foCreatePath in options) then
+        begin
+          TokRec^.current := TSuperObject.Create(stObject);
+          TokRec^.parent.AsObject.PutO(tok.pb.Fbuf, TokRec^.current)
+        end else
+        if not ObjectIsType(TokRec^.current, stObject) then
+        begin
+          tok.err := teEvalObject;
+          goto out;
+        end;
+        tok.pb.Reset;
+        TokRec^.state := tsIdentifier;
+        goto redo_char;
+      end;
+
+    tsEvalArray:
+      begin
+        if (TokRec^.current = nil) and (foCreatePath in options) then
+        begin
+          TokRec^.current := TSuperObject.Create(stArray);
+          TokRec^.parent.AsObject.PutO(tok.pb.Fbuf, TokRec^.current)
+        end else
+        if not ObjectIsType(TokRec^.current, stArray) then
+        begin
+          tok.err := teEvalArray;
+          goto out;
+        end;
+        tok.pb.Reset;
+        TokRec^.state := tsParamValue;
+        goto redo_char;
+      end;
+{$IFDEF SUPER_METHOD}
+    tsEvalMethod:
+      begin
+        if ObjectIsType(TokRec^.current, stMethod) and assigned(TokRec^.current.AsMethod) then
+        begin
+          tok.pb.Reset;
+          TokRec^.obj := TSuperObject.Create(stArray);
+          TokRec^.state := tsMethodValue;
+          goto redo_char;
+        end else
+        begin
+          tok.err := teEvalMethod;
+          goto out;
+        end;
+      end;
+
+    tsMethodValue:
+      begin
+        case v of
+        ')':
+            TokRec^.state := tsIdentifier;
+        else
+          if (tok.depth >= SUPER_TOKENER_MAX_DEPTH-1) then
           begin
             tok.err := teDepth;
             goto out;
           end;
-          TokRec^.state := tsObjectValueAdd;
+          inc(evalstack);
+          TokRec^.state := tsMethodPut;
           inc(tok.depth);
           tok.ResetLevel(tok.depth);
           TokRec := @tok.stack[tok.depth];
           goto redo_char;
         end;
+      end;
 
-      tsObjectValueAdd:
-        begin
-          TokRec^.current.AsObject.PutO(TokRec^.field_name, obj);
-          TokRec^.field_name := '';
-          TokRec^.saved_state := tsObjectSep;
-          TokRec^.state := tsEatws;
+    tsMethodPut:
+      begin
+        TokRec^.obj.AsArray.Add(obj);
+        case v of
+          ',':
+            begin
+              tok.pb.Reset;
+              TokRec^.saved_state := tsMethodValue;
+              TokRec^.state := tsEatws;
+            end;
+          ')':
+            begin
+              if TokRec^.obj.AsArray.Length = 1 then
+                TokRec^.obj := TokRec^.obj.AsArray.GetO(0);
+              dec(evalstack);
+              tok.pb.Reset;
+              TokRec^.saved_state := tsIdentifier;
+              TokRec^.state := tsEatws;
+            end;
+        else
+          tok.err := teEvalMethod;
+          goto out;
+        end;
+      end;
+{$ENDIF}
+    tsParamValue:
+      begin
+        case v of
+        ']':
+            TokRec^.state := tsIdentifier;
+        else
+          if (tok.depth >= SUPER_TOKENER_MAX_DEPTH-1) then
+          begin
+            tok.err := teDepth;
+            goto out;
+          end;
+          inc(evalstack);
+          TokRec^.state := tsParamPut;
+          inc(tok.depth);
+          tok.ResetLevel(tok.depth);
+          TokRec := @tok.stack[tok.depth];
           goto redo_char;
         end;
+      end;
 
-      tsObjectSep:
+    tsParamPut:
+      begin
+        dec(evalstack);
+        TokRec^.obj := obj;
+        tok.pb.Reset;
+        TokRec^.saved_state := tsIdentifier;
+        TokRec^.state := tsEatws;
+        if v <> ']' then
         begin
-          if (v = '}') then
+          tok.err := teEvalArray;
+          goto out;
+        end;
+      end;
+
+    tsIdentifier:
+      begin
+        if (this = nil) then
+        begin
+          if (SOIChar(v) < 256) and IsEndDelimiter(AnsiChar(v)) then
           begin
-            TokRec^.saved_state := tsFinish;
-            TokRec^.state := tsEatws;
-          end else
-            if (v = ',') then
+            if not strict then
             begin
-              TokRec^.saved_state := tsObjectFieldStart;
+              tok.pb.TrimRight;
+              TokRec^.current := TSuperObject.Create(tok.pb.Fbuf);
+              TokRec^.saved_state := tsFinish;
               TokRec^.state := tsEatws;
+              goto redo_char;
             end else
             begin
-              tok.err := teParseObjectValueSep;
+              tok.err := teParseString;
               goto out;
-            end
+            end;
+          end else
+          if (v = '\') then
+          begin
+            TokRec^.saved_state := tsIdentifier;
+            TokRec^.state := tsStringEscape;
+          end else
+            tok.pb.Append(@v, 1);
+        end else
+        begin
+         if (SOIChar(v) < 256) and (AnsiChar(v) in reserved) then
+         begin
+           TokRec^.gparent := TokRec^.parent;
+           if TokRec^.current = nil then
+             TokRec^.parent := this else
+             TokRec^.parent := TokRec^.current;
+
+             case ObjectGetType(TokRec^.parent) of
+               stObject:
+                 case v of
+                   '.':
+                     begin
+                       TokRec^.state := tsEvalProperty;
+                       if tok.pb.FBPos > 0 then
+                         TokRec^.current := TokRec^.parent.AsObject.GetO(tok.pb.Fbuf);
+                     end;
+                   '[':
+                     begin
+                       TokRec^.state := tsEvalArray;
+                       if tok.pb.FBPos > 0 then
+                         TokRec^.current := TokRec^.parent.AsObject.GetO(tok.pb.Fbuf);
+                     end;
+                   '(':
+                     begin
+                       TokRec^.state := tsEvalMethod;
+                       if tok.pb.FBPos > 0 then
+                         TokRec^.current := TokRec^.parent.AsObject.GetO(tok.pb.Fbuf);
+                     end;
+                 else
+                   if tok.pb.FBPos > 0 then
+                     TokRec^.current := TokRec^.parent.AsObject.GetO(tok.pb.Fbuf);
+                   if (foPutValue in options) and (evalstack = 0) then
+                   begin
+                     TokRec^.parent.AsObject.PutO(tok.pb.Fbuf, put);
+                     TokRec^.current := put
+                   end else
+                   if (foDelete in options) and (evalstack = 0) then
+                   begin
+                     TokRec^.current := TokRec^.parent.AsObject.Delete(tok.pb.Fbuf);
+                   end else
+                   if (TokRec^.current = nil) and (foCreatePath in options) then
+                   begin
+                     TokRec^.current := TSuperObject.Create(dt);
+                     TokRec^.parent.AsObject.PutO(tok.pb.Fbuf, TokRec^.current);
+                   end;
+                   TokRec^.current := TokRec^.parent.AsObject.GetO(tok.pb.Fbuf);
+                   TokRec^.state := tsFinish;
+                   goto redo_char;
+                 end;
+               stArray:
+                 begin
+                   if TokRec^.obj <> nil then
+                   begin
+                     if not ObjectIsType(TokRec^.obj, stInt) or (TokRec^.obj.AsInteger < 0) then
+                     begin
+                       tok.err := teEvalInt;
+                       TokRec^.obj := nil;
+                       goto out;
+                     end;
+                     numi := TokRec^.obj.AsInteger;
+                     TokRec^.obj := nil;
+
+                     TokRec^.current := TokRec^.parent.AsArray.GetO(numi);
+                     case v of
+                       '.':
+                         if (TokRec^.current = nil) and (foCreatePath in options) then
+                         begin
+                           TokRec^.current := TSuperObject.Create(stObject);
+                           TokRec^.parent.AsArray.PutO(numi, TokRec^.current);
+                         end else
+                         if (TokRec^.current = nil) then
+                         begin
+                           tok.err := teEvalObject;
+                           goto out;
+                         end;
+                       '[':
+                         begin
+                           if (TokRec^.current = nil) and (foCreatePath in options) then
+                           begin
+                             TokRec^.current := TSuperObject.Create(stArray);
+                             TokRec^.parent.AsArray.Add(TokRec^.current);
+                           end else
+                           if (TokRec^.current = nil) then
+                           begin
+                             tok.err := teEvalArray;
+                             goto out;
+                           end;
+                           TokRec^.state := tsEvalArray;
+                         end;
+                       '(': TokRec^.state := tsEvalMethod;
+                     else
+                       if (foPutValue in options) and (evalstack = 0) then
+                       begin
+                         TokRec^.parent.AsArray.PutO(numi, put);
+                         TokRec^.current := put;
+                       end else
+                       if (foDelete in options) and (evalstack = 0) then
+                       begin
+                         TokRec^.current := TokRec^.parent.AsArray.Delete(numi);
+                       end else
+                         TokRec^.current := TokRec^.parent.AsArray.GetO(numi);
+                       TokRec^.state := tsFinish;
+                       goto redo_char
+                     end;
+                   end else
+                   begin
+                     case v of
+                       '.':
+                         begin
+                           if (foPutValue in options) then
+                           begin
+                             TokRec^.current := TSuperObject.Create(stObject);
+                             TokRec^.parent.AsArray.Add(TokRec^.current);
+                           end else
+                             TokRec^.current := TokRec^.parent.AsArray.GetO(TokRec^.parent.AsArray.FLength - 1);
+                         end;
+                       '[':
+                         begin
+                           if (foPutValue in options) then
+                           begin
+                             TokRec^.current := TSuperObject.Create(stArray);
+                             TokRec^.parent.AsArray.Add(TokRec^.current);
+                           end else
+                             TokRec^.current := TokRec^.parent.AsArray.GetO(TokRec^.parent.AsArray.FLength - 1);
+                           TokRec^.state := tsEvalArray;
+                         end;
+                       '(':
+                         begin
+                           if not (foPutValue in options) then
+                             TokRec^.current := TokRec^.parent.AsArray.GetO(TokRec^.parent.AsArray.FLength - 1) else
+                             TokRec^.current := nil;
+
+                           TokRec^.state := tsEvalMethod;
+                         end;
+                     else
+                       if (foPutValue in options) and (evalstack = 0) then
+                       begin
+                         TokRec^.parent.AsArray.Add(put);
+                         TokRec^.current := put;
+                       end else
+                         if tok.pb.FBPos = 0 then
+                           TokRec^.current := TokRec^.parent.AsArray.GetO(TokRec^.parent.AsArray.FLength - 1);
+                       TokRec^.state := tsFinish;
+                       goto redo_char
+                     end;
+                   end;
+                 end;
+{$IFDEF SUPER_METHOD}
+               stMethod:
+                 case v of
+                   '.':
+                     begin
+                       TokRec^.current := nil;
+                       sm := TokRec^.parent.AsMethod;
+                       sm(TokRec^.gparent, TokRec^.obj, TokRec^.current);
+                       TokRec^.obj := nil;
+                     end;
+                   '[':
+                     begin
+                       TokRec^.current := nil;
+                       sm := TokRec^.parent.AsMethod;
+                       sm(TokRec^.gparent, TokRec^.obj, TokRec^.current);
+                       TokRec^.state := tsEvalArray;
+                       TokRec^.obj := nil;
+                     end;
+                   '(':
+                     begin
+                       TokRec^.current := nil;
+                       sm := TokRec^.parent.AsMethod;
+                       sm(TokRec^.gparent, TokRec^.obj, TokRec^.current);
+                       TokRec^.state := tsEvalMethod;
+                       TokRec^.obj := nil;
+                     end;
+                 else
+                   if not (foPutValue in options) or (evalstack > 0) then
+                   begin
+                     TokRec^.current := nil;
+                     sm := TokRec^.parent.AsMethod;
+                     sm(TokRec^.gparent, TokRec^.obj, TokRec^.current);
+                     TokRec^.obj := nil;
+                     TokRec^.state := tsFinish;
+                     goto redo_char
+                   end else
+                   begin
+                     tok.err := teEvalMethod;
+                     TokRec^.obj := nil;
+                     goto out;
+                   end;
+                 end;
+{$ENDIF}
+             end;
+          end else
+            tok.pb.Append(@v, 1);
         end;
+      end;
+
+    tsStringEscape:
+      case v of
+      'b',
+      'n',
+      'r',
+      't',
+      'f':
+        begin
+          if(v = 'b') then tok.pb.Append(TOK_BS, 1)
+          else if(v = 'n') then tok.pb.Append(TOK_LF, 1)
+          else if(v = 'r') then tok.pb.Append(TOK_CR, 1)
+          else if(v = 't') then tok.pb.Append(TOK_TAB, 1)
+          else if(v = 'f') then tok.pb.Append(TOK_FF, 1);
+          TokRec^.state := TokRec^.saved_state;
+        end;
+      'u':
+        begin
+          tok.ucs_char := 0;
+          tok.st_pos := 0;
+          TokRec^.state := tsEscapeUnicode;
+        end;
+      'x':
+        begin
+          tok.ucs_char := 0;
+          tok.st_pos := 0;
+          TokRec^.state := tsEscapeHexadecimal;
+        end
+      else
+        tok.pb.Append(@v, 1);
+        TokRec^.state := TokRec^.saved_state;
+      end;
+
+    tsEscapeUnicode:
+      begin
+        if ((SOIChar(v) < 256) and (AnsiChar(v) in super_hex_chars_set)) then
+        begin
+          inc(tok.ucs_char, (Word(hexdigit(v)) shl ((3-tok.st_pos)*4)));
+          inc(tok.st_pos);
+          if (tok.st_pos = 4) then
+          begin
+            tok.pb.Append(@tok.ucs_char, 1);
+            TokRec^.state := TokRec^.saved_state;
+          end
+        end else
+        begin
+          tok.err := teParseString;
+          goto out;
+        end
+      end;
+    tsEscapeHexadecimal:
+      begin
+        if ((SOIChar(v) < 256) and (AnsiChar(v) in super_hex_chars_set)) then
+        begin
+          inc(tok.ucs_char, (Word(hexdigit(v)) shl ((1-tok.st_pos)*4)));
+          inc(tok.st_pos);
+          if (tok.st_pos = 2) then
+          begin
+            tok.pb.Append(@tok.ucs_char, 1);
+            TokRec^.state := TokRec^.saved_state;
+          end
+        end else
+        begin
+          tok.err := teParseString;
+          goto out;
+        end
+      end;
+    tsBoolean:
+      begin
+        tok.pb.Append(@v, 1);
+        if (StrLComp('true', PSOChar(tok.pb.FBuf), min(tok.st_pos + 1, 4)) = 0) then
+        begin
+          if (tok.st_pos = 4) then
+          if (((SOIChar(v) < 256) and (AnsiChar(v) in path)) or (SOIChar(v) >= 256)) then
+            TokRec^.state := tsIdentifier else
+          begin
+            TokRec^.current := TSuperObject.Create(true);
+            TokRec^.saved_state := tsFinish;
+            TokRec^.state := tsEatws;
+            goto redo_char;
+          end
+        end else
+        if (StrLComp('false', PSOChar(tok.pb.FBuf), min(tok.st_pos + 1, 5)) = 0) then
+        begin
+          if (tok.st_pos = 5) then
+          if (((SOIChar(v) < 256) and (AnsiChar(v) in path)) or (SOIChar(v) >= 256)) then
+            TokRec^.state := tsIdentifier else
+          begin
+            TokRec^.current := TSuperObject.Create(false);
+            TokRec^.saved_state := tsFinish;
+            TokRec^.state := tsEatws;
+            goto redo_char;
+          end
+        end else
+        begin
+          TokRec^.state := tsIdentifier;
+          tok.pb.FBuf[tok.st_pos] := #0;
+          dec(tok.pb.FBPos);
+          goto redo_char;
+        end;
+        inc(tok.st_pos);
+      end;
+
+    tsNumber:
+      begin
+        if (SOIChar(v) < 256) and (AnsiChar(v) in super_number_chars_set) then
+        begin
+          tok.pb.Append(@v, 1);
+          if (SOIChar(v) < 256) then
+          case v of
+          '.': begin
+                 tok.is_double := 1;
+                 tok.floatcount := 0;
+               end;
+          'e','E':
+            begin
+              tok.is_double := 1;
+              tok.floatcount := -1;
+            end;
+          '0'..'9':
+            begin
+
+              if (tok.is_double = 1) and (tok.floatcount >= 0) then
+              begin
+                inc(tok.floatcount);
+                if tok.floatcount > 4 then
+                  tok.floatcount := -1;
+              end;
+            end;
+          end;
+        end else
+        begin
+          if (tok.is_double = 0) then
+          begin
+            val(tok.pb.FBuf, numi, code);
+            if ObjectIsType(this, stArray) then
+            begin
+              if (foPutValue in options) and (evalstack = 0) then
+              begin
+                this.AsArray.PutO(numi, put);
+                TokRec^.current := put;
+              end else
+              if (foDelete in options) and (evalstack = 0) then
+                TokRec^.current := this.AsArray.Delete(numi) else
+                TokRec^.current := this.AsArray.GetO(numi);
+            end else
+              TokRec^.current := TSuperObject.Create(numi);
+
+          end else
+          if (tok.is_double <> 0) then
+          begin
+            if tok.floatcount >= 0 then
+            begin
+              p := tok.pb.FBuf;
+              while p^ <> '.' do inc(p);
+              for code := 0 to tok.floatcount - 1 do
+              begin
+                p^ := p[1];
+                inc(p);
+              end;
+              p^ := #0;
+              val(tok.pb.FBuf, numi, code);
+              case tok.floatcount of
+                0: numi := numi * 10000;
+                1: numi := numi * 1000;
+                2: numi := numi * 100;
+                3: numi := numi * 10;
+              end;
+              TokRec^.current := TSuperObject.CreateCurrency(PCurrency(@numi)^);
+            end else
+            begin
+              val(tok.pb.FBuf, numd, code);
+              TokRec^.current := TSuperObject.Create(numd);
+            end;
+          end else
+          begin
+            tok.err := teParseNumber;
+            goto out;
+          end;
+          TokRec^.saved_state := tsFinish;
+          TokRec^.state := tsEatws;
+          goto redo_char;
+        end
+      end;
+
+    tsArray:
+      begin
+        if (v = ']') then
+        begin
+          TokRec^.saved_state := tsFinish;
+          TokRec^.state := tsEatws;
+        end else
+        begin
+          if(tok.depth >= SUPER_TOKENER_MAX_DEPTH-1) then
+          begin
+            tok.err := teDepth;
+            goto out;
+          end;
+          TokRec^.state := tsArrayAdd;
+          inc(tok.depth);
+          tok.ResetLevel(tok.depth);
+          TokRec := @tok.stack[tok.depth];
+          goto redo_char;
+        end
+      end;
+
+    tsArrayAdd:
+      begin
+        TokRec^.current.AsArray.Add(obj);
+        TokRec^.saved_state := tsArraySep;
+        TokRec^.state := tsEatws;
+        goto redo_char;
+      end;
+
+    tsArraySep:
+      begin
+        if (v = ']') then
+        begin
+          TokRec^.saved_state := tsFinish;
+          TokRec^.state := tsEatws;
+        end else
+        if (v = ',') then
+        begin
+          TokRec^.saved_state := tsArray;
+          TokRec^.state := tsEatws;
+        end else
+        begin
+          tok.err := teParseArray;
+          goto out;
+        end
+      end;
+
+    tsObjectFieldStart:
+      begin
+        if (v = '}') then
+        begin
+          TokRec^.saved_state := tsFinish;
+          TokRec^.state := tsEatws;
+        end else
+        if (SOIChar(v) < 256) and (AnsiChar(v) in ['"', '''']) then
+        begin
+          tok.quote_char := v;
+          tok.pb.Reset;
+          TokRec^.state := tsObjectField;
+        end else
+        if not((SOIChar(v) < 256) and ((AnsiChar(v) in reserved) or strict)) then
+        begin
+          TokRec^.state := tsObjectUnquotedField;
+          tok.pb.Reset;
+          goto redo_char;
+        end else
+        begin
+          tok.err := teParseObjectKeyName;
+          goto out;
+        end
+      end;
+
+    tsObjectField:
+      begin
+        if (v = tok.quote_char) then
+        begin
+          TokRec^.field_name := tok.pb.FBuf;
+          TokRec^.saved_state := tsObjectFieldEnd;
+          TokRec^.state := tsEatws;
+        end else
+        if (v = '\') then
+        begin
+          TokRec^.saved_state := tsObjectField;
+          TokRec^.state := tsStringEscape;
+        end else
+        begin
+          tok.pb.Append(@v, 1);
+        end
+      end;
+
+    tsObjectUnquotedField:
+      begin
+        if (SOIChar(v) < 256) and (AnsiChar(v) in [':', #0]) then
+        begin
+          TokRec^.field_name := tok.pb.FBuf;
+          TokRec^.saved_state := tsObjectFieldEnd;
+          TokRec^.state := tsEatws;
+          goto redo_char;
+        end else
+        if (v = '\') then
+        begin
+          TokRec^.saved_state := tsObjectUnquotedField;
+          TokRec^.state := tsStringEscape;
+        end else
+          tok.pb.Append(@v, 1);
+      end;
+
+    tsObjectFieldEnd:
+      begin
+        if (v = ':') then
+        begin
+          TokRec^.saved_state := tsObjectValue;
+          TokRec^.state := tsEatws;
+        end else
+        begin
+          tok.err := teParseObjectKeySep;
+          goto out;
+        end
+      end;
+
+    tsObjectValue:
+      begin
+        if (tok.depth >= SUPER_TOKENER_MAX_DEPTH-1) then
+        begin
+          tok.err := teDepth;
+          goto out;
+        end;
+        TokRec^.state := tsObjectValueAdd;
+        inc(tok.depth);
+        tok.ResetLevel(tok.depth);
+        TokRec := @tok.stack[tok.depth];
+        goto redo_char;
+      end;
+
+    tsObjectValueAdd:
+      begin
+        TokRec^.current.AsObject.PutO(TokRec^.field_name, obj);
+        TokRec^.field_name := '';
+        TokRec^.saved_state := tsObjectSep;
+        TokRec^.state := tsEatws;
+        goto redo_char;
+      end;
+
+    tsObjectSep:
+      begin
+        if (v = '}') then
+        begin
+          TokRec^.saved_state := tsFinish;
+          TokRec^.state := tsEatws;
+        end else
+        if (v = ',') then
+        begin
+          TokRec^.saved_state := tsObjectFieldStart;
+          TokRec^.state := tsEatws;
+        end else
+        begin
+          tok.err := teParseObjectValueSep;
+          goto out;
+        end
+      end;
     end;
     inc(str);
     inc(tok.char_offset);
   until v = #0;
 
-  if (TokRec^.state <> tsFinish) and
-    (TokRec^.saved_state <> tsFinish) then
+  if(TokRec^.state <> tsFinish) and
+     (TokRec^.saved_state <> tsFinish) then
     tok.err := teParseEof;
 
-  out:
-  if (tok.err in [teSuccess]) then
+ out:
+  if(tok.err in [teSuccess]) then
   begin
 {$IFDEF SUPER_METHOD}
     if (foCallMethod in options) and ObjectIsType(TokRec^.current, stMethod) and assigned(TokRec^.current.AsMethod) then
@@ -4211,7 +4229,7 @@ begin
       sm(TokRec^.parent, put, Result);
     end else
 {$ENDIF}
-      Result := TokRec^.current;
+    Result := TokRec^.current;
   end else
     Result := nil;
 end;
@@ -4246,7 +4264,12 @@ begin
   ParseString(PSOChar(path), true, False, self, [foCreatePath, foPutValue], TSuperObject.Create(Value));
 end;
 
+
+{$IFDEF FPC}
+function TSuperObject.QueryInterface({$IFDEF FPC_HAS_CONSTREF}constref{$ELSE}const{$ENDIF} iid: tguid; out obj): longint;{$IFNDEF WINDOWS}cdecl{$ELSE}stdcall{$ENDIF};
+{$ELSE}
 function TSuperObject.QueryInterface(const IID: TGUID; out Obj): HResult; stdcall;
+{$ENDIF}
 begin
   if GetInterface(IID, Obj) then
     Result := 0
@@ -4254,8 +4277,7 @@ begin
     Result := E_NOINTERFACE;
 end;
 
-function TSuperObject.SaveTo(stream: TStream; indent: boolean = false; escape:
-  boolean = false): integer;
+function TSuperObject.SaveTo(stream: TStream; indent, escape: boolean): integer;
 var
   pb: TSuperWriterStream;
 begin
@@ -4263,7 +4285,7 @@ begin
     pb := TSuperAnsiWriterStream.Create(stream) else
     pb := TSuperUnicodeWriterStream.Create(stream);
 
-  if (Write(pb, indent, escape, 0) < 0) then
+  if(Write(pb, indent, escape, 0) < 0) then
   begin
     pb.Reset;
     pb.Free;
@@ -4274,13 +4296,12 @@ begin
   pb.Free;
 end;
 
-function TSuperObject.CalcSize(indent: boolean = false; escape: boolean =
-  false): integer;
+function TSuperObject.CalcSize(indent, escape: boolean): integer;
 var
   pb: TSuperWriterFake;
 begin
   pb := TSuperWriterFake.Create;
-  if (Write(pb, indent, escape, 0) < 0) then
+  if(Write(pb, indent, escape, 0) < 0) then
   begin
     pb.Free;
     Result := 0;
@@ -4290,13 +4311,12 @@ begin
   pb.Free;
 end;
 
-function TSuperObject.SaveTo(socket: longint; indent: boolean = false; escape:
-  boolean = false): integer;
+function TSuperObject.SaveTo(socket: Integer; indent, escape: boolean): integer;
 var
   pb: TSuperWriterSock;
 begin
   pb := TSuperWriterSock.Create(socket);
-  if (Write(pb, indent, escape, 0) < 0) then
+  if(Write(pb, indent, escape, 0) < 0) then
   begin
     pb.Free;
     Result := 0;
@@ -4386,17 +4406,10 @@ begin
       begin
         Result := TSuperObject.Create(stObject);
         if ObjectFindFirst(self, ite) then
-          with Result.AsObject do
-            repeat
-              //modify by mofen
-              if ite.val = nil then
-              begin
-                PutO(ite.key, nil);
-              end else
-              begin
-                PutO(ite.key, ite.val.Clone);
-              end;
-            until not ObjectFindNext(ite);
+        with Result.AsObject do
+        repeat
+          PutO(ite.key, ite.val.Clone);
+        until not ObjectFindNext(ite);
         ObjectFindClose(ite);
       end;
     stArray:
@@ -4404,112 +4417,71 @@ begin
         Result := TSuperObject.Create(stArray);
         arr := AsArray;
         with Result.AsArray do
-          for j := 0 to arr.Length - 1 do
-            Add(arr.GetO(j).Clone);
+        for j := 0 to arr.Length - 1 do
+          Add(arr.GetO(j).Clone);
       end;
   else
     Result := nil;
   end;
 end;
 
-procedure TSuperObject.Merge(const obj: ISuperObject; reference: boolean =
-  false; pvOverlay: boolean = true);
+procedure TSuperObject.Merge(const obj: ISuperObject; reference: boolean);
 var
   prop1, prop2: ISuperObject;
   ite: TSuperObjectIter;
   arr: TSuperArray;
   j: integer;
 begin
-  if not pvOverlay then
-  begin //不覆盖本身的值,以本身的值为准
-    //if FO.c_object.FRoot.Value.IsType(stObject) then
-    if ObjectIsType(obj, FDataType) then
-      case FDataType of
-        stObject:
-          begin
-            if ObjectFindFirst(obj, ite) then
-              with FO.c_object do
-                repeat
-                  prop1 := FO.c_object.GetO(ite.key);
-                  if (prop1 <> nil) and (ite.val <> nil) and (prop1.DataType = ite.val.DataType) then
-                    prop1.Merge(ite.val, reference, pvOverlay)
-                  else if (prop1 <> nil) and (ite.val <> nil) and (prop1.DataType <> ite.val.DataType) then
-                  begin
-                    //类型不相等，不进行合并
-                  end else
-                    if reference then
-                      PutO(ite.key, ite.val)
-                    else
-                      if ite.val <> nil then
-                        PutO(ite.key, ite.val.Clone)
-                      else
-                        PutO(ite.key, nil)
-
-                until not ObjectFindNext(ite);
-            ObjectFindClose(ite);
-          end;
-      end;
-  end else
-  begin
-    if ObjectIsType(obj, FDataType) then
-      case FDataType of
-        stBoolean:
-          begin
-            FO.c_boolean := obj.AsBoolean;
-          end;
-        stDouble: FO.c_double := obj.AsDouble;
-        stCurrency: FO.c_currency := obj.AsCurrency;
-        stInt: FO.c_int := obj.AsInteger;
-        stString:
-          begin
-            FOString := obj.AsString;
-          end;
+  if ObjectIsType(obj, FDataType) then
+  case FDataType of
+    stBoolean: FO.c_boolean := obj.AsBoolean;
+    stDouble: FO.c_double := obj.AsDouble;
+    stCurrency: FO.c_currency := obj.AsCurrency;
+    stInt: FO.c_int := obj.AsInteger;
+    stString: FOString := obj.AsString;
 {$IFDEF SUPER_METHOD}
-        stMethod: FO.c_method := obj.AsMethod;
+    stMethod: FO.c_method := obj.AsMethod;
 {$ENDIF}
-        stObject:
-          begin
-            if ObjectFindFirst(obj, ite) then
-              with FO.c_object do
-                repeat
-                  prop1 := FO.c_object.GetO(ite.key);
-                  if (prop1 <> nil) and (ite.val <> nil) and (prop1.DataType = ite.val.DataType) then
-                    prop1.Merge(ite.val) else
-                    if reference then
-                      PutO(ite.key, ite.val) else
-                      if ite.val <> nil then
-                        PutO(ite.key, ite.val.Clone) else
-                        PutO(ite.key, nil)
+    stObject:
+      begin
+        if ObjectFindFirst(obj, ite) then
+        with FO.c_object do
+        repeat
+          prop1 := FO.c_object.GetO(ite.key);
+          if (prop1 <> nil) and (ite.val <> nil) and (prop1.DataType = ite.val.DataType) then
+            prop1.Merge(ite.val) else
+            if reference then
+              PutO(ite.key, ite.val) else
+              if ite.val <> nil then
+                PutO(ite.key, ite.val.Clone) else
+                PutO(ite.key, nil)
 
-                until not ObjectFindNext(ite);
-            ObjectFindClose(ite);
-          end;
-        stArray:
-          begin
-            arr := obj.AsArray;
-            with FO.c_array do
-              for j := 0 to arr.Length - 1 do
-              begin
-                prop1 := GetO(j);
-                prop2 := arr.GetO(j);
-                if (prop1 <> nil) and (prop2 <> nil) and (prop1.DataType = prop2.DataType) then
-                  prop1.Merge(prop2) else
-                  if reference then
-                    PutO(j, prop2) else
-                    if prop2 <> nil then
-                      PutO(j, prop2.Clone) else
-                      PutO(j, nil);
-              end;
-          end;
+        until not ObjectFindNext(ite);
+        ObjectFindClose(ite);
+      end;
+    stArray:
+      begin
+        arr := obj.AsArray;
+        with FO.c_array do
+        for j := 0 to arr.Length - 1 do
+        begin
+          prop1 := GetO(j);
+          prop2 := arr.GetO(j);
+          if (prop1 <> nil) and (prop2 <> nil) and (prop1.DataType = prop2.DataType) then
+            prop1.Merge(prop2) else
+            if reference then
+              PutO(j, prop2) else
+              if prop2 <> nil then
+                PutO(j, prop2.Clone) else
+                PutO(j, nil);
+        end;
       end;
   end;
-
 end;
 
-procedure TSuperObject.Merge(const str: SOString; pvOverlay:
-  boolean = true);
+procedure TSuperObject.Merge(const str: SOString);
 begin
-  Merge(TSuperObject.ParseString(PSOChar(str), False), true, pvOverlay);
+  Merge(TSuperObject.ParseString(PSOChar(str), False), true);
 end;
 
 class function TSuperObject.NewInstance: TObject;
@@ -4532,26 +4504,26 @@ begin
   p1 := p2;
   while true do
     if p2^ = BeginSep then
-    begin
-      if p2 > p1 then
-        Result := Result + Copy(p1, 0, p2 - p1);
-      inc(p2);
-      p1 := p2;
-      while true do
-        if p2^ = EndSep then Break else
-          if p2^ = #0 then Exit else
+      begin
+        if p2 > p1 then
+          Result := Result + Copy(p1, 0, p2-p1);
+        inc(p2);
+        p1 := p2;
+        while true do
+          if p2^ = EndSep then Break else
+          if p2^ = #0     then Exit else
             inc(p2);
-      Result := Result + GetS(copy(p1, 0, p2 - p1));
-      inc(p2);
-      p1 := p2;
-    end
+        Result := Result + GetS(copy(p1, 0, p2-p1));
+        inc(p2);
+        p1 := p2;
+      end
     else if p2^ = #0 then
-    begin
-      if p2 > p1 then
-        Result := Result + Copy(p1, 0, p2 - p1);
-      Break;
-    end else
-      inc(p2);
+      begin
+        if p2 > p1 then
+          Result := Result + Copy(p1, 0, p2-p1);
+        Break;
+      end else
+        inc(p2);
 end;
 
 function TSuperObject.GetO(const path: SOString): ISuperObject;
@@ -4629,8 +4601,7 @@ begin
     Result := '';
 end;
 
-function TSuperObject.SaveTo(const FileName: string; indent: boolean = false;
-  escape: boolean = false): integer;
+function TSuperObject.SaveTo(const FileName: string; indent, escape: boolean): integer;
 var
   stream: TFileStream;
 begin
@@ -4650,7 +4621,7 @@ end;
 function TSuperObject.Validate(const rules: ISuperObject; const defs: ISuperObject = nil; callback: TSuperOnValidateError = nil; sender: Pointer = nil): boolean;
 type
   TDataType = (dtUnknown, dtStr, dtInt, dtFloat, dtNumber, dtText, dtBool,
-    dtMap, dtSeq, dtScalar, dtAny);
+               dtMap, dtSeq, dtScalar, dtAny);
 var
   datatypes: ISuperObject;
   names: ISuperObject;
@@ -4663,17 +4634,17 @@ var
     o := p[prop];
     if o <> nil then
       result := o else
-    begin
-      o := p['inherit'];
-      if (o <> nil) and ObjectIsType(o, stString) then
       begin
-        e := names.AsObject.Search(o.AsString);
-        if (e <> nil) then
-          Result := FindInheritedProperty(prop, e.Value) else
-          Result := nil;
-      end else
-        Result := nil;
-    end;
+        o := p['inherit'];
+        if (o <> nil) and ObjectIsType(o, stString) then
+          begin
+            e := names.AsObject.Search(o.AsString);
+            if (e <> nil) then
+              Result := FindInheritedProperty(prop, e.Value) else
+              Result := nil;
+          end else
+            Result := nil;
+      end;
   end;
 
   function FindDataType(o: ISuperObject): TDataType;
@@ -4685,7 +4656,7 @@ var
     if obj <> nil then
     begin
       e := datatypes.AsObject.Search(obj.AsString);
-      if e <> nil then
+      if  e <> nil then
         Result := TDataType(e.Value.AsInteger) else
         Result := dtUnknown;
     end else
@@ -4708,10 +4679,10 @@ var
           if ObjectIsType(obj, stObject) then
           begin
             if ObjectFindFirst(obj, f) then
-              repeat
-                if ObjectIsType(f.val, stObject) then
-                  GetNames(f.val);
-              until not ObjectFindNext(f);
+            repeat
+              if ObjectIsType(f.val, stObject) then
+                GetNames(f.val);
+            until not ObjectFindNext(f);
             ObjectFindClose(f);
           end;
         end;
@@ -4753,9 +4724,9 @@ var
 
   function InheritedFieldExist(const obj: ISuperObject; p: ISuperObject; const name: SOString = ''): boolean;
   var
-    o: ISuperObject;
-    e: TSuperAvlEntry;
-    j: TSuperAvlIterator;
+   o: ISuperObject;
+   e: TSuperAvlEntry;
+   j: TSuperAvlIterator;
   begin
     Result := true;
     o := p['mapping'];
@@ -4808,9 +4779,9 @@ var
 
   procedure GetInheritedFieldList(list: ISuperObject; p: ISuperObject);
   var
-    o: ISuperObject;
-    e: TSuperAvlEntry;
-    i: TSuperAvlIterator;
+   o: ISuperObject;
+   e: TSuperAvlEntry;
+   i: TSuperAvlIterator;
   begin
     Result := true;
     o := p['mapping'];
@@ -5038,7 +5009,7 @@ var
                   ent := ite.GetIter;
                   while ent <> nil do
                   begin
-                    p2 := FindInheritedField(ent.Name, p);
+                    p2 :=  FindInheritedField(ent.Name, p);
                     if ObjectIsType(p2, stObject) then
                       result := process(ent.Value, p2, objpath + '.' + ent.Name) and result else
                     begin
@@ -5054,7 +5025,7 @@ var
                 end;
 
                 // all expected field exists ?
-                Result := InheritedFieldExist(o, p, objpath) and Result;
+                Result :=  InheritedFieldExist(o, p, objpath) and Result;
               end;
             stNull: {nop};
           else
@@ -5068,90 +5039,90 @@ var
               begin
                 sequence := FindInheritedProperty('sequence', p);
                 if sequence <> nil then
-                  case ObjectGetType(sequence) of
-                    stObject:
+                case ObjectGetType(sequence) of
+                  stObject:
+                    begin
+                      for i := 0 to o.AsArray.Length - 1 do
+                        result := process(o.AsArray.GetO(i), sequence, objpath + '[' + IntToStr(i) + ']') and result;
+                      if getInheritedBool('unique', sequence) then
                       begin
-                        for i := 0 to o.AsArray.Length - 1 do
-                          result := process(o.AsArray.GetO(i), sequence, objpath + '[' + IntToStr(i) + ']') and result;
-                        if getInheritedBool('unique', sequence) then
-                        begin
-                          // type is unique ?
-                          uniquelist := TSuperObject.Create(stObject);
-                          try
-                            for i := 0 to o.AsArray.Length - 1 do
+                        // type is unique ?
+                        uniquelist := TSuperObject.Create(stObject);
+                        try
+                          for i := 0 to o.AsArray.Length - 1 do
+                          begin
+                            s := o.AsArray.GetO(i).AsString;
+                            if (s <> '') then
                             begin
-                              s := o.AsArray.GetO(i).AsString;
-                              if (s <> '') then
-                              begin
-                                if uniquelist.AsObject.Search(s) = nil then
-                                  uniquelist[s] := nil else
+                              if uniquelist.AsObject.Search(s) = nil then
+                                uniquelist[s] := nil else
                                 begin
                                   Result := False;
                                   if Assigned(callback) then
                                     callback(sender, veDuplicateEntry, objpath + '[' + IntToStr(i) + ']');
                                 end;
-                              end;
                             end;
-                          finally
-                            uniquelist := nil;
                           end;
+                        finally
+                          uniquelist := nil;
                         end;
-
-                        // field is unique ?
-                        if (FindDataType(sequence) = dtMap) then
-                        begin
-                          fieldlist := TSuperObject.Create(stObject);
-                          try
-                            GetInheritedFieldList(fieldlist, sequence);
-                            ite := TSuperAvlIterator.Create(fieldlist.AsObject);
-                            try
-                              ite.First;
-                              ent := ite.GetIter;
-                              while ent <> nil do
-                              begin
-                                if getInheritedBool('unique', ent.Value) then
-                                begin
-                                  uniquelist := TSuperObject.Create(stObject);
-                                  try
-                                    for i := 0 to o.AsArray.Length - 1 do
-                                    begin
-                                      o2 := o.AsArray.GetO(i);
-                                      if o2 <> nil then
-                                      begin
-                                        s := o2.AsObject.GetO(ent.Name).AsString;
-                                        if (s <> '') then
-                                          if uniquelist.AsObject.Search(s) = nil then
-                                            uniquelist[s] := nil else
-                                          begin
-                                            Result := False;
-                                            if Assigned(callback) then
-                                              callback(sender, veDuplicateEntry, objpath + '[' + IntToStr(i) + '].' + ent.name);
-                                          end;
-                                      end;
-                                    end;
-                                  finally
-                                    uniquelist := nil;
-                                  end;
-                                end;
-                                ite.Next;
-                                ent := ite.GetIter;
-                              end;
-                            finally
-                              ite.Free;
-                            end;
-                          finally
-                            fieldlist := nil;
-                          end;
-                        end;
-
-
                       end;
-                    stNull: {nop};
-                  else
-                    result := false;
-                    if assigned(callback) then
-                      callback(sender, veRuleMalformated, objpath);
-                  end;
+
+                      // field is unique ?
+                      if (FindDataType(sequence) = dtMap) then
+                      begin
+                        fieldlist := TSuperObject.Create(stObject);
+                        try
+                          GetInheritedFieldList(fieldlist, sequence);
+                          ite := TSuperAvlIterator.Create(fieldlist.AsObject);
+                          try
+                            ite.First;
+                            ent := ite.GetIter;
+                            while ent <> nil do
+                            begin
+                              if getInheritedBool('unique', ent.Value) then
+                              begin
+                                uniquelist := TSuperObject.Create(stObject);
+                                try
+                                  for i := 0 to o.AsArray.Length - 1 do
+                                  begin
+                                    o2 := o.AsArray.GetO(i);
+                                    if o2 <> nil then
+                                    begin
+                                      s := o2.AsObject.GetO(ent.Name).AsString;
+                                      if (s <> '') then
+                                      if uniquelist.AsObject.Search(s) = nil then
+                                        uniquelist[s] := nil else
+                                        begin
+                                          Result := False;
+                                          if Assigned(callback) then
+                                            callback(sender, veDuplicateEntry, objpath + '[' + IntToStr(i) + '].' + ent.name);
+                                        end;
+                                    end;
+                                  end;
+                                finally
+                                  uniquelist := nil;
+                                end;
+                              end;
+                              ite.Next;
+                              ent := ite.GetIter;
+                            end;
+                          finally
+                            ite.Free;
+                          end;
+                        finally
+                          fieldlist := nil;
+                        end;
+                      end;
+
+
+                    end;
+                  stNull: {nop};
+                else
+                  result := false;
+                  if assigned(callback) then
+                    callback(sender, veRuleMalformated, objpath);
+                end;
                 Result := Result and CheckLength(o.AsArray.Length, p, objpath);
 
               end;
@@ -5163,7 +5134,7 @@ var
         dtNumber:
           case ObjectGetType(o) of
             stInt,
-              stDouble, stCurrency:
+            stDouble, stCurrency:
               begin
                 Result := Result and CheckRange(o, p, objpath);
               end;
@@ -5175,9 +5146,9 @@ var
         dtText:
           case ObjectGetType(o) of
             stInt,
-              stDouble,
-              stCurrency,
-              stString:
+            stDouble,
+            stCurrency,
+            stString:
               begin
                 result := result and CheckLength(Length(o.AsString), p, objpath);
                 Result := Result and CheckRange(o, p, objpath);
@@ -5190,10 +5161,10 @@ var
         dtScalar:
           case ObjectGetType(o) of
             stBoolean,
-              stDouble,
-              stCurrency,
-              stInt,
-              stString:
+            stDouble,
+            stCurrency,
+            stInt,
+            stString:
               begin
                 result := result and CheckLength(Length(o.AsString), p, objpath);
                 Result := Result and CheckRange(o, p, objpath);
@@ -5203,13 +5174,13 @@ var
               callback(sender, veInvalidDataType, objpath);
             result := false;
           end;
-        dtAny: ;
+        dtAny:;
       else
         if assigned(callback) then
           callback(sender, veRuleMalformated, objpath);
         result := false;
       end;
-    Result := Result and CheckEnum(o, p, objpath)
+      Result := Result and CheckEnum(o, p, objpath)
 
   end;
 var
@@ -5235,20 +5206,20 @@ begin
       for j := 0 to defs.AsArray.Length - 1 do
         if ObjectIsType(defs.AsArray[j], stObject) then
           GetNames(defs.AsArray[j]) else
-        begin
-          if assigned(callback) then
-            callback(sender, veRuleMalformated, '');
-          Exit;
-        end;
+          begin
+            if assigned(callback) then
+              callback(sender, veRuleMalformated, '');
+            Exit;
+          end;
 
 
     if ObjectIsType(rules, stObject) then
       GetNames(rules) else
-    begin
-      if assigned(callback) then
-        callback(sender, veRuleMalformated, '');
-      Exit;
-    end;
+      begin
+        if assigned(callback) then
+          callback(sender, veRuleMalformated, '');
+        Exit;
+      end;
 
     Result := process(self, rules);
 
@@ -5279,15 +5250,15 @@ function TSuperObject.Compare(const obj: ISuperObject): TSuperCompareResult;
   function GetIntCompResult(const i: int64): TSuperCompareResult;
   begin
     if i < 0 then result := cpLess else
-      if i = 0 then result := cpEqu else
-        Result := cpGreat;
+    if i = 0 then result := cpEqu else
+      Result := cpGreat;
   end;
 
   function GetDblCompResult(const d: double): TSuperCompareResult;
   begin
     if d < 0 then result := cpLess else
-      if d = 0 then result := cpEqu else
-        Result := cpGreat;
+    if d = 0 then result := cpEqu else
+      Result := cpGreat;
   end;
 
 begin
@@ -5295,50 +5266,50 @@ begin
     stBoolean:
       case ObjectGetType(obj) of
         stBoolean: Result := GetIntCompResult(ord(FO.c_boolean) - ord(obj.AsBoolean));
-        stDouble: Result := GetDblCompResult(ord(FO.c_boolean) - obj.AsDouble);
-        stCurrency: Result := GetDblCompResult(ord(FO.c_boolean) - obj.AsCurrency);
-        stInt: Result := GetIntCompResult(ord(FO.c_boolean) - obj.AsInteger);
-        stString: Result := GetIntCompResult(StrComp(PSOChar(AsString), PSOChar(obj.AsString)));
+        stDouble:  Result := GetDblCompResult(ord(FO.c_boolean) - obj.AsDouble);
+        stCurrency:Result := GetDblCompResult(ord(FO.c_boolean) - obj.AsCurrency);
+        stInt:     Result := GetIntCompResult(ord(FO.c_boolean) - obj.AsInteger);
+        stString:  Result := GetIntCompResult(StrComp(PSOChar(AsString), PSOChar(obj.AsString)));
       else
         Result := cpError;
       end;
     stDouble:
       case ObjectGetType(obj) of
         stBoolean: Result := GetDblCompResult(FO.c_double - ord(obj.AsBoolean));
-        stDouble: Result := GetDblCompResult(FO.c_double - obj.AsDouble);
-        stCurrency: Result := GetDblCompResult(FO.c_double - obj.AsCurrency);
-        stInt: Result := GetDblCompResult(FO.c_double - obj.AsInteger);
-        stString: Result := GetIntCompResult(StrComp(PSOChar(AsString), PSOChar(obj.AsString)));
+        stDouble:  Result := GetDblCompResult(FO.c_double - obj.AsDouble);
+        stCurrency:Result := GetDblCompResult(FO.c_double - obj.AsCurrency);
+        stInt:     Result := GetDblCompResult(FO.c_double - obj.AsInteger);
+        stString:  Result := GetIntCompResult(StrComp(PSOChar(AsString), PSOChar(obj.AsString)));
       else
         Result := cpError;
       end;
     stCurrency:
       case ObjectGetType(obj) of
         stBoolean: Result := GetDblCompResult(FO.c_currency - ord(obj.AsBoolean));
-        stDouble: Result := GetDblCompResult(FO.c_currency - obj.AsDouble);
-        stCurrency: Result := GetDblCompResult(FO.c_currency - obj.AsCurrency);
-        stInt: Result := GetDblCompResult(FO.c_currency - obj.AsInteger);
-        stString: Result := GetIntCompResult(StrComp(PSOChar(AsString), PSOChar(obj.AsString)));
+        stDouble:  Result := GetDblCompResult(FO.c_currency - obj.AsDouble);
+        stCurrency:Result := GetDblCompResult(FO.c_currency - obj.AsCurrency);
+        stInt:     Result := GetDblCompResult(FO.c_currency - obj.AsInteger);
+        stString:  Result := GetIntCompResult(StrComp(PSOChar(AsString), PSOChar(obj.AsString)));
       else
         Result := cpError;
       end;
     stInt:
       case ObjectGetType(obj) of
         stBoolean: Result := GetIntCompResult(FO.c_int - ord(obj.AsBoolean));
-        stDouble: Result := GetDblCompResult(FO.c_int - obj.AsDouble);
-        stCurrency: Result := GetDblCompResult(FO.c_int - obj.AsCurrency);
-        stInt: Result := GetIntCompResult(FO.c_int - obj.AsInteger);
-        stString: Result := GetIntCompResult(StrComp(PSOChar(AsString), PSOChar(obj.AsString)));
+        stDouble:  Result := GetDblCompResult(FO.c_int - obj.AsDouble);
+        stCurrency:Result := GetDblCompResult(FO.c_int - obj.AsCurrency);
+        stInt:     Result := GetIntCompResult(FO.c_int - obj.AsInteger);
+        stString:  Result := GetIntCompResult(StrComp(PSOChar(AsString), PSOChar(obj.AsString)));
       else
         Result := cpError;
       end;
     stString:
       case ObjectGetType(obj) of
         stBoolean,
-          stDouble,
-          stCurrency,
-          stInt,
-          stString: Result := GetIntCompResult(StrComp(PSOChar(AsString), PSOChar(obj.AsString)));
+        stDouble,
+        stCurrency,
+        stInt,
+        stString:  Result := GetIntCompResult(StrComp(PSOChar(AsString), PSOChar(obj.AsString)));
       else
         Result := cpError;
       end;
@@ -5348,7 +5319,6 @@ begin
 end;
 
 {$IFDEF SUPER_METHOD}
-
 function TSuperObject.AsMethod: TSuperMethod;
 begin
   if FDataType = stMethod then
@@ -5358,7 +5328,6 @@ end;
 {$ENDIF}
 
 {$IFDEF SUPER_METHOD}
-
 constructor TSuperObject.Create(m: TSuperMethod);
 begin
   Create(stMethod);
@@ -5367,7 +5336,6 @@ end;
 {$ENDIF}
 
 {$IFDEF SUPER_METHOD}
-
 function TSuperObject.GetM(const path: SOString): TSuperMethod;
 var
   v: ISuperObject;
@@ -5380,7 +5348,6 @@ end;
 {$ENDIF}
 
 {$IFDEF SUPER_METHOD}
-
 procedure TSuperObject.PutM(const path: SOString; Value: TSuperMethod);
 begin
   ParseString(PSOChar(path), False, True, Self, [foCreatePath, foPutValue], TSuperObject.Create(Value));
@@ -5388,7 +5355,6 @@ end;
 {$ENDIF}
 
 {$IFDEF SUPER_METHOD}
-
 function TSuperObject.call(const path: SOString; const param: ISuperObject): ISuperObject;
 begin
   Result := ParseString(PSOChar(path), False, True, Self, [foCallMethod], param);
@@ -5396,7 +5362,6 @@ end;
 {$ENDIF}
 
 {$IFDEF SUPER_METHOD}
-
 function TSuperObject.call(const path, param: SOString): ISuperObject;
 begin
   Result := ParseString(PSOChar(path), False, True, Self, [foCallMethod], TSuperObject.ParseString(PSOChar(param), False));
@@ -5426,6 +5391,31 @@ begin
   PutO(Result, data);
 end;
 
+function TSuperArray.Add(Data: SuperInt): Integer;
+begin
+  Result := Add(TSuperObject.Create(Data));
+end;
+
+function TSuperArray.Add(const Data: SOString): Integer;
+begin
+  Result := Add(TSuperObject.Create(Data));
+end;
+
+function TSuperArray.Add(Data: Boolean): Integer;
+begin
+  Result := Add(TSuperObject.Create(Data));
+end;
+
+function TSuperArray.Add(Data: Double): Integer;
+begin
+  Result := Add(TSuperObject.Create(Data));
+end;
+
+function TSuperArray.AddC(const Data: Currency): Integer;
+begin
+  Result := Add(TSuperObject.CreateCurrency(Data));
+end;
+
 function TSuperArray.Delete(index: Integer): ISuperObject;
 begin
   if (Index >= 0) and (Index < FLength) then
@@ -5445,18 +5435,18 @@ end;
 procedure TSuperArray.Insert(index: Integer; const value: ISuperObject);
 begin
   if (Index >= 0) then
-    if (index < FLength) then
-    begin
-      if FLength = FSize then
-        Expand(index);
-      if Index < FLength then
-        Move(FArray^[index], FArray^[index + 1],
-          (FLength - index) * SizeOf(Pointer));
-      Pointer(FArray^[index]) := nil;
-      FArray^[index] := value;
-      Inc(FLength);
-    end else
-      PutO(index, value);
+  if (index < FLength) then
+  begin
+    if FLength = FSize then
+      Expand(index);
+    if Index < FLength then
+      Move(FArray^[index], FArray^[index + 1],
+        (FLength - index) * SizeOf(Pointer));
+    Pointer(FArray^[index]) := nil;
+    FArray^[index] := value;
+    Inc(FLength);
+  end else
+    PutO(index, value);
 end;
 
 procedure TSuperArray.Clear(all: boolean);
@@ -5485,19 +5475,19 @@ begin
       while (StartIndex < FLength) and (FArray^[StartIndex] = nil) do
         Inc(StartIndex);
       if StartIndex < FLength then
-      begin
-        EndIndex := StartIndex;
-        while (EndIndex < FLength) and (FArray^[EndIndex] <> nil) do
-          Inc(EndIndex);
+        begin
+          EndIndex := StartIndex;
+          while (EndIndex < FLength) and  (FArray^[EndIndex] <> nil) do
+            Inc(EndIndex);
 
-        Dec(EndIndex);
+          Dec(EndIndex);
 
-        if StartIndex > PackedCount then
-          Move(FArray^[StartIndex], FArray^[PackedCount], (EndIndex - StartIndex + 1) * SizeOf(Pointer));
+          if StartIndex > PackedCount then
+            Move(FArray^[StartIndex], FArray^[PackedCount], (EndIndex - StartIndex + 1) * SizeOf(Pointer));
 
-        Inc(PackedCount, EndIndex - StartIndex + 1);
-        StartIndex := EndIndex + 1;
-      end;
+          Inc(PackedCount, EndIndex - StartIndex + 1);
+          StartIndex := EndIndex + 1;
+        end;
     until StartIndex >= FLength;
     FillChar(FArray^[PackedCount], (FLength - PackedCount) * sizeof(Pointer), 0);
     FLength := PackedCount;
@@ -5539,7 +5529,7 @@ end;
 
 function TSuperArray.GetO(const index: Integer): ISuperObject;
 begin
-  if (index >= FLength) then
+  if(index >= FLength) then
     Result := nil else
     Result := FArray^[index];
 end;
@@ -5588,7 +5578,7 @@ procedure TSuperArray.PutO(const index: Integer; const Value: ISuperObject);
 begin
   Expand(index);
   FArray^[index] := value;
-  if (FLength <= index) then FLength := index + 1;
+  if(FLength <= index) then FLength := index + 1;
 end;
 
 function TSuperArray.GetN(const index: integer): ISuperObject;
@@ -5641,7 +5631,6 @@ begin
 end;
 
 {$IFDEF SUPER_METHOD}
-
 function TSuperArray.GetM(const index: integer): TSuperMethod;
 var
   v: ISuperObject;
@@ -5654,23 +5643,16 @@ end;
 {$ENDIF}
 
 {$IFDEF SUPER_METHOD}
-
 procedure TSuperArray.PutM(const index: integer; Value: TSuperMethod);
 begin
   PutO(index, TSuperObject.Create(Value));
 end;
 {$ENDIF}
 
-constructor TSuperWriter.Create;
-begin
-  inherited Create;
-  FIndentWidth := 3;
-end;
-
 { TSuperWriterString }
 
 function TSuperWriterString.Append(buf: PSOChar; Size: Integer): Integer;
-  function max(a, b: Integer): integer; begin if a > b then Result := a else Result := b end;
+  function max(a, b: Integer): integer; begin if a > b then  Result := a else Result := b end;
 begin
   Result := size;
   if Size > 0 then
@@ -5682,9 +5664,9 @@ begin
     end;
     // fast move
     case size of
-      1: FBuf[FBPos] := buf^;
-      2: PInteger(@FBuf[FBPos])^ := PInteger(buf)^;
-      4: PInt64(@FBuf[FBPos])^ := PInt64(buf)^;
+    1: FBuf[FBPos] := buf^;
+    2: PInteger(@FBuf[FBPos])^ := PInteger(buf)^;
+    4: PInt64(@FBuf[FBPos])^ := PInt64(buf)^;
     else
       move(buf^, FBuf[FBPos], size * SizeOf(SOChar));
     end;
@@ -5726,7 +5708,7 @@ end;
 
 procedure TSuperWriterString.TrimRight;
 begin
-  while (FBPos > 0) and (FBuf[FBPos - 1] < #256) and (AnsiChar(FBuf[FBPos - 1]) in [#32, #13, #10]) do
+  while (FBPos > 0) and (FBuf[FBPos-1] < #256) and (AnsiChar(FBuf[FBPos-1]) in [#32, #13, #10]) do
   begin
     dec(FBPos);
     FBuf[FBPos] := #0;
@@ -5766,7 +5748,7 @@ begin
       GetMem(pBuffer, Size) else
       pBuffer := @Buffer;
     try
-      for i := 0 to Size - 1 do
+      for i :=  0 to Size - 1 do
         pBuffer[i] := AnsiChar(buf[i]);
       Result := FStream.Write(pBuffer^, Size);
     finally
@@ -5827,7 +5809,7 @@ begin
       GetMem(pBuffer, Size) else
       pBuffer := @Buffer;
     try
-      for i := 0 to Size - 1 do
+      for i :=  0 to Size - 1 do
         pBuffer[i] := AnsiChar(buf[i]);
 {$IFDEF FPC}
       Result := fpsend(FSocket, pBuffer, size, 0);
@@ -6050,18 +6032,9 @@ begin
       end;
       if hh.FHash <> h.FHash then
       begin
-        if nowSortMode = sosmDefault then
-        begin
-          //original code
-          if hh.FHash < h.FHash then cmp := -1 else
-            if hh.FHash > h.FHash then cmp := 1 else
-              cmp := 0;
-        end else
-        begin
-          // modify by mofen
-          cmp := CompareForSortModeString(h.Name, hh.Name);
-        end;
-
+        if hh.FHash < h.FHash then cmp := -1 else
+        if hh.FHash > h.FHash then cmp := 1 else
+          cmp := 0;
       end else
         cmp := CompareNodeNode(h, hh);
       if (cmp = 0) then
@@ -6134,10 +6107,7 @@ begin
         end;
       end;
 
-
-    //  original code
-    //    if (unbal <> nil) then
-    if (unbal <> nil) and (nowSortMode <> sosmAdd) then //modify by mofen
+    if (unbal <> nil) then
     begin
       unbal := balance(unbal);
       if (parentunbal = nil) then
@@ -6166,10 +6136,7 @@ begin
   ha := TSuperAvlEntry.Hash(k);
 
   match_h := nil;
-
   h := FRoot;
-
-
 
   if (stLess in st) then
     target_cmp := 1 else
@@ -6179,21 +6146,9 @@ begin
 
   while (h <> nil) do
   begin
-
-    // modify by mofen
-    if nowSortMode = sosmDefault then
-    begin
-      //original code
-      if h.FHash < ha then cmp := -1 else
-        if h.FHash > ha then cmp := 1 else
-          cmp := 0;
-    end else
-    begin
-      // modify by mofen
-      cmp := CompareForSortModeString(k, h.Name);
-    end;
-
-
+    if h.FHash < ha then cmp := -1 else
+    if h.FHash > ha then cmp := 1 else
+      cmp := 0;
 
     if cmp = 0 then
       cmp := CompareKeyNode(PSOChar(k), h);
@@ -6207,9 +6162,9 @@ begin
       cmp := -target_cmp;
     end
     else
-      if (target_cmp <> 0) then
-        if ((cmp xor target_cmp) and SUPER_AVL_MASK_HIGH_BIT) = 0 then
-          match_h := h;
+    if (target_cmp <> 0) then
+      if ((cmp xor target_cmp) and SUPER_AVL_MASK_HIGH_BIT) = 0 then
+        match_h := h;
     if cmp < 0 then
       h := h.FLt else
       h := h.FGt;
@@ -6236,23 +6191,9 @@ begin
   begin
     if (h = nil) then
       exit;
-
-    //    if h.FHash < ha then cmp := -1 else
-    //      if h.FHash > ha then cmp := 1 else
-    //        cmp := 0;
-
-            // modify by mofen
-    if nowSortMode = sosmDefault then
-    begin
-      //original code
-      if h.FHash < ha then cmp := -1 else
-        if h.FHash > ha then cmp := 1 else
-          cmp := 0;
-    end else
-    begin
-      // modify by mofen
-      cmp := CompareForSortModeString(k, h.Name);
-    end;
+    if h.FHash < ha then cmp := -1 else
+    if h.FHash > ha then cmp := 1 else
+      cmp := 0;
 
     if cmp = 0 then
       cmp := CompareKeyNode(k, h);
@@ -6464,24 +6405,13 @@ begin
 end;
 
 function TSuperAvlTree.CompareKeyNode(const k: SOString; h: TSuperAvlEntry): integer;
-var
-  s1, s2: SOString;
 begin
-  //modify mofen  without case
-  s1 := LowerCase(k);
-  s2 := LowerCase(h.FName);
-  Result := StrComp(PSOChar(s1), PSOChar(s2));
+  Result := StrComp(PSOChar(k), PSOChar(h.FName));
 end;
 
 function TSuperAvlTree.CompareNodeNode(node1, node2: TSuperAvlEntry): integer;
-var
-  s1, s2: SOString;
 begin
-
-  //modify mofen
-  s1 := LowerCase(node1.FName);
-  s2 := LowerCase(node2.FName);
-  Result := StrComp(PSOChar(s1), PSOChar(s2));
+  Result := StrComp(PSOChar(node1.FName), PSOChar(node2.FName));
 end;
 
 { TSuperAvlIterator }
@@ -6513,15 +6443,15 @@ begin
 
   if (stLess in st) then
     target_cmp := 1 else
-    if (stGreater in st) then
-      target_cmp := -1 else
-      target_cmp := 0;
+      if (stGreater in st) then
+        target_cmp := -1 else
+          target_cmp := 0;
 
   while true do
   begin
     if h.FHash < ha then cmp := -1 else
-      if h.FHash > ha then cmp := 1 else
-        cmp := 0;
+    if h.FHash > ha then cmp := 1 else
+      cmp := 0;
 
     if cmp = 0 then
       cmp := FTree.CompareKeyNode(k, h);
@@ -6535,9 +6465,9 @@ begin
       cmp := -target_cmp;
     end
     else
-      if (target_cmp <> 0) then
-        if ((cmp xor target_cmp) and SUPER_AVL_MASK_HIGH_BIT) = 0 then
-          FDepth := d;
+    if (target_cmp <> 0) then
+      if ((cmp xor target_cmp) and SUPER_AVL_MASK_HIGH_BIT) = 0 then
+        FDepth := d;
     if cmp < 0 then
       h := h.FLt else
       h := h.FGt;
@@ -6686,29 +6616,6 @@ begin
   Result := TSuperAvlIterator.Create(Self);
 end;
 
-function TSuperAvlTree.CompareForSortModeString(pvKey1, pvKey2: SOString):
-  Integer;
-var
-  cmp: integer;
-  lvKey1, lvKey2: SOString;
-begin
-  cmp := 0;
-  lvKey1 := LowerCase(pvKey1);
-  lvKey2 := LowerCase(pvKey2);
-  if lvKey1 <> lvKey2 then
-  begin
-    case nowSortMode of
-      sosmAdd: cmp := 1;
-      sosmASC: if lvKey2 < lvKey1 then cmp := 1 else if lvKey2 > lvKey1 then cmp := -1;
-      sosmDesc: if lvKey2 < lvKey1 then cmp := -1 else if lvKey2 > lvKey1 then cmp := 1;
-    else
-      raise Exception.Create('默认排序不采用compareForSortModeString');
-    end;
-  end else
-    cmp := 0;
-  Result := cmp;
-end;
-
 { TSuperAvlEntry }
 
 constructor TSuperAvlEntry.Create(const AName: SOString; Obj: Pointer);
@@ -6723,26 +6630,16 @@ begin
   Result := ISuperObject(FPtr)
 end;
 
-{$OVERFLOWCHECKS OFF}
-
 class function TSuperAvlEntry.Hash(const k: SOString): Cardinal;
 var
   h: cardinal;
   i: Integer;
-  s: string;
 begin
   h := 0;
-  //modify mofen  without case
-  s := LowerCase(k);
-  for i := 1 to Length(s) do
-  begin
-    //origial
-    h := h * 129 + ord(s[i]) + $9E370001;
-    //h := h + ord(s[i]) * (1 shl (i * 3));
-  end;
+  for i := 1 to Length(k) do
+    h := h*129 + ord(k[i]) + $9e370001;
   Result := h;
 end;
-{$OVERFLOWCHECKS ON}
 
 procedure TSuperAvlEntry.SetValue(const val: ISuperObject);
 begin
@@ -6816,6 +6713,11 @@ begin
     Result := False;
 end;
 
+function TSuperTableString.Exists(const k: SOString): Boolean;
+begin
+  Result := Search(k) <> nil;
+end;
+
 function TSuperTableString.GetO(const k: SOString): ISuperObject;
 var
   e: TSuperAvlEntry;
@@ -6844,10 +6746,10 @@ function TSuperTableString.GetS(const k: SOString): SOString;
 var
   obj: ISuperObject;
 begin
-  obj := GetO(k);
-  if obj <> nil then
-    Result := obj.AsString else
-    Result := '';
+ obj := GetO(k);
+ if obj <> nil then
+   Result := obj.AsString else
+   Result := '';
 end;
 
 procedure TSuperTableString.PutI(const k: SOString; value: SuperInt);
@@ -6859,10 +6761,10 @@ function TSuperTableString.GetI(const k: SOString): SuperInt;
 var
   obj: ISuperObject;
 begin
-  obj := GetO(k);
-  if obj <> nil then
-    Result := obj.AsInteger else
-    Result := 0;
+ obj := GetO(k);
+ if obj <> nil then
+   Result := obj.AsInteger else
+   Result := 0;
 end;
 
 procedure TSuperTableString.PutD(const k: SOString; value: Double);
@@ -6879,20 +6781,20 @@ function TSuperTableString.GetC(const k: SOString): Currency;
 var
   obj: ISuperObject;
 begin
-  obj := GetO(k);
-  if obj <> nil then
-    Result := obj.AsCurrency else
-    Result := 0.0;
+ obj := GetO(k);
+ if obj <> nil then
+   Result := obj.AsCurrency else
+   Result := 0.0;
 end;
 
 function TSuperTableString.GetD(const k: SOString): Double;
 var
   obj: ISuperObject;
 begin
-  obj := GetO(k);
-  if obj <> nil then
-    Result := obj.AsDouble else
-    Result := 0.0;
+ obj := GetO(k);
+ if obj <> nil then
+   Result := obj.AsDouble else
+   Result := 0.0;
 end;
 
 procedure TSuperTableString.PutB(const k: SOString; value: Boolean);
@@ -6904,14 +6806,13 @@ function TSuperTableString.GetB(const k: SOString): Boolean;
 var
   obj: ISuperObject;
 begin
-  obj := GetO(k);
-  if obj <> nil then
-    Result := obj.AsBoolean else
-    Result := False;
+ obj := GetO(k);
+ if obj <> nil then
+   Result := obj.AsBoolean else
+   Result := False;
 end;
 
 {$IFDEF SUPER_METHOD}
-
 procedure TSuperTableString.PutM(const k: SOString; value: TSuperMethod);
 begin
   PutO(k, TSuperObject.Create(Value));
@@ -6919,15 +6820,14 @@ end;
 {$ENDIF}
 
 {$IFDEF SUPER_METHOD}
-
 function TSuperTableString.GetM(const k: SOString): TSuperMethod;
 var
   obj: ISuperObject;
 begin
-  obj := GetO(k);
-  if obj <> nil then
-    Result := obj.AsMethod else
-    Result := nil;
+ obj := GetO(k);
+ if obj <> nil then
+   Result := obj.AsMethod else
+   Result := nil;
 end;
 {$ENDIF}
 
@@ -6942,10 +6842,10 @@ function TSuperTableString.GetN(const k: SOString): ISuperObject;
 var
   obj: ISuperObject;
 begin
-  obj := GetO(k);
-  if obj <> nil then
-    Result := obj else
-    Result := TSuperObject.Create(stNull);
+ obj := GetO(k);
+ if obj <> nil then
+   Result := obj else
+   Result := TSuperObject.Create(stNull);
 end;
 
 
@@ -6963,8 +6863,8 @@ end;
 constructor TSuperRttiContext.Create;
 begin
   Context := TRttiContext.Create;
-  SerialFromJson := TDictionary < PTypeInfo, TSerialFromJson > .Create;
-  SerialToJson := TDictionary < PTypeInfo, TSerialToJson > .Create;
+  SerialFromJson := TDictionary<PTypeInfo, TSerialFromJson>.Create;
+  SerialToJson := TDictionary<PTypeInfo, TSerialToJson>.Create;
 
   SerialFromJson.Add(TypeInfo(Boolean), serialfromboolean);
   SerialFromJson.Add(TypeInfo(TDateTime), serialfromdatetime);
@@ -7002,16 +6902,16 @@ begin
   Result := obj;
 end;
 
-function TSuperRttiContext.AsType < T > (const obj: ISuperObject): T;
+function TSuperRttiContext.AsType<T>(const obj: ISuperObject): T;
 var
   ret: TValue;
 begin
   if FromJson(TypeInfo(T), obj, ret) then
-    Result := ret.AsType < T > else
+    Result := ret.AsType<T> else
     raise exception.Create('Marshalling error');
 end;
 
-function TSuperRttiContext.AsJson < T > (const obj: T; const index: ISuperObject = nil): ISuperObject;
+function TSuperRttiContext.AsJson<T>(const obj: T; const index: ISuperObject = nil): ISuperObject;
 var
   v: TValue;
 begin
@@ -7027,11 +6927,11 @@ function TSuperRttiContext.FromJson(TypeInfo: PTypeInfo; const obj: ISuperObject
   procedure FromChar;
   begin
     if ObjectIsType(obj, stString) and (Length(obj.AsString) = 1) then
-    begin
-      Value := string(AnsiString(obj.AsString)[1]);
-      Result := True;
-    end else
-      Result := False;
+      begin
+        Value := string(AnsiString(obj.AsString)[1]);
+        Result := True;
+      end else
+        Result := False;
   end;
 
   procedure FromWideChar;
@@ -7049,22 +6949,22 @@ function TSuperRttiContext.FromJson(TypeInfo: PTypeInfo; const obj: ISuperObject
     i: Int64;
   begin
     case ObjectGetType(obj) of
-      stInt:
+    stInt:
+      begin
+        TValue.Make(nil, TypeInfo, Value);
+        TValueData(Value).FAsSInt64 := obj.AsInteger;
+        Result := True;
+      end;
+    stString:
+      begin
+        if TryStrToInt64(obj.AsString, i) then
         begin
           TValue.Make(nil, TypeInfo, Value);
-          TValueData(Value).FAsSInt64 := obj.AsInteger;
+          TValueData(Value).FAsSInt64 := i;
           Result := True;
-        end;
-      stString:
-        begin
-          if TryStrToInt64(obj.AsString, i) then
-          begin
-            TValue.Make(nil, TypeInfo, Value);
-            TValueData(Value).FAsSInt64 := i;
-            Result := True;
-          end else
-            Result := False;
-        end;
+        end else
+          Result := False;
+      end;
     else
       Result := False;
     end;
@@ -7077,23 +6977,23 @@ function TSuperRttiContext.FromJson(TypeInfo: PTypeInfo; const obj: ISuperObject
     o: ISuperObject;
   begin
     case ObjectGetType(obj) of
-      stInt, stBoolean:
-        begin
-          i := obj.AsInteger;
-          TypeData := GetTypeData(TypeInfo);
-          if TypeData.MaxValue > TypeData.MinValue then
-            Result := (i >= TypeData.MinValue) and (i <= TypeData.MaxValue) else
-            Result := (i >= TypeData.MinValue) and (i <= Int64(PCardinal(@TypeData.MaxValue)^));
-          if Result then
-            TValue.Make(@i, TypeInfo, Value);
-        end;
-      stString:
-        begin
-          o := SO(obj.AsString);
-          if not ObjectIsType(o, stString) then
-            FromInt(o) else
-            Result := False;
-        end;
+    stInt, stBoolean:
+      begin
+        i := obj.AsInteger;
+        TypeData := GetTypeData(TypeInfo);
+        if TypeData.MaxValue > TypeData.MinValue then
+          Result := (i >= TypeData.MinValue) and (i <= TypeData.MaxValue) else
+          Result := (i >= TypeData.MinValue) and (i <= Int64(PCardinal(@TypeData.MaxValue)^));
+        if Result then
+          TValue.Make(@i, TypeInfo, Value);
+      end;
+    stString:
+      begin
+        o := SO(obj.AsString);
+        if not ObjectIsType(o, stString) then
+          FromInt(o) else
+          Result := False;
+      end;
     else
       Result := False;
     end;
@@ -7104,22 +7004,22 @@ function TSuperRttiContext.FromJson(TypeInfo: PTypeInfo; const obj: ISuperObject
     i: Integer;
   begin
     case ObjectGetType(obj) of
-      stInt:
+    stInt:
+      begin
+        TValue.Make(nil, TypeInfo, Value);
+        TValueData(Value).FAsSLong := obj.AsInteger;
+        Result := True;
+      end;
+    stString:
+      begin
+        if TryStrToInt(obj.AsString, i) then
         begin
           TValue.Make(nil, TypeInfo, Value);
-          TValueData(Value).FAsSLong := obj.AsInteger;
+          TValueData(Value).FAsSLong := i;
           Result := True;
-        end;
-      stString:
-        begin
-          if TryStrToInt(obj.AsString, i) then
-          begin
-            TValue.Make(nil, TypeInfo, Value);
-            TValueData(Value).FAsSLong := i;
-            Result := True;
-          end else
-            Result := False;
-        end;
+        end else
+          Result := False;
+      end;
     else
       Result := False;
     end;
@@ -7130,40 +7030,40 @@ function TSuperRttiContext.FromJson(TypeInfo: PTypeInfo; const obj: ISuperObject
     o: ISuperObject;
   begin
     case ObjectGetType(obj) of
-      stInt, stDouble, stCurrency:
-        begin
-          TValue.Make(nil, TypeInfo, Value);
-          case GetTypeData(TypeInfo).FloatType of
-            ftSingle: TValueData(Value).FAsSingle := obj.AsDouble;
-            ftDouble: TValueData(Value).FAsDouble := obj.AsDouble;
-            ftExtended: TValueData(Value).FAsExtended := obj.AsDouble;
-            ftComp: TValueData(Value).FAsSInt64 := obj.AsInteger;
-            ftCurr: TValueData(Value).FAsCurr := obj.AsCurrency;
-          end;
-          Result := True;
+    stInt, stDouble, stCurrency:
+      begin
+        TValue.Make(nil, TypeInfo, Value);
+        case GetTypeData(TypeInfo).FloatType of
+          ftSingle: TValueData(Value).FAsSingle := obj.AsDouble;
+          ftDouble: TValueData(Value).FAsDouble := obj.AsDouble;
+          ftExtended: TValueData(Value).FAsExtended := obj.AsDouble;
+          ftComp: TValueData(Value).FAsSInt64 := obj.AsInteger;
+          ftCurr: TValueData(Value).FAsCurr := obj.AsCurrency;
         end;
-      stString:
-        begin
-          o := SO(obj.AsString);
-          if not ObjectIsType(o, stString) then
-            FromFloat(o) else
-            Result := False;
-        end
+        Result := True;
+      end;
+    stString:
+      begin
+        o := SO(obj.AsString);
+        if not ObjectIsType(o, stString) then
+          FromFloat(o) else
+          Result := False;
+      end
     else
-      Result := False;
+       Result := False;
     end;
   end;
 
   procedure FromString;
   begin
     case ObjectGetType(obj) of
-      stObject, stArray:
-        Result := False;
-      stnull:
-        begin
-          Value := '';
-          Result := True;
-        end;
+    stObject, stArray:
+      Result := False;
+    stnull:
+      begin
+        Value := '';
+        Result := True;
+      end;
     else
       Value := obj.AsString;
       Result := True;
@@ -7184,6 +7084,7 @@ function TSuperRttiContext.FromJson(TypeInfo: PTypeInfo; const obj: ISuperObject
           for f in Context.GetType(Value.AsObject.ClassType).GetFields do
             if f.FieldType <> nil then
             begin
+              v := TValue.Empty;
               Result := FromJson(f.FieldType.Handle, GetFieldDefault(f, obj.AsObject[GetFieldName(f)]), v);
               if Result then
                 f.SetValue(Value.AsObject, v) else
@@ -7222,7 +7123,10 @@ function TSuperRttiContext.FromJson(TypeInfo: PTypeInfo; const obj: ISuperObject
         Result := FromJson(f.FieldType.Handle, GetFieldDefault(f, obj.AsObject[GetFieldName(f)]), v);
         if Result then
           f.SetValue(p, v) else
-          Exit;
+          begin
+            //Writeln(f.Name);
+            Exit;
+          end;
       end else
       begin
         Result := False;
@@ -7241,36 +7145,36 @@ function TSuperRttiContext.FromJson(TypeInfo: PTypeInfo; const obj: ISuperObject
     el: PTypeInfo;
   begin
     case ObjectGetType(obj) of
-      stArray:
-        begin
-          i := obj.AsArray.Length;
-          p := nil;
-          DynArraySetLength(p, TypeInfo, 1, @i);
-          pb := p;
-          typ := GetTypeData(TypeInfo);
-          if typ.elType <> nil then
-            el := typ.elType^ else
-            el := typ.elType2^;
+    stArray:
+      begin
+        i := obj.AsArray.Length;
+        p := nil;
+        DynArraySetLength(p, TypeInfo, 1, @i);
+        pb := p;
+        typ := GetTypeData(TypeInfo);
+        if typ.elType <> nil then
+          el := typ.elType^ else
+          el := typ.elType2^;
 
-          Result := True;
-          for i := 0 to i - 1 do
-          begin
-            Result := FromJson(el, obj.AsArray[i], val);
-            if not Result then
-              Break;
-            val.ExtractRawData(pb);
-            val := TValue.Empty;
-            Inc(pb, typ.elSize);
-          end;
-          if Result then
-            TValue.MakeWithoutCopy(@p, TypeInfo, Value) else
-            DynArrayClear(p, TypeInfo);
-        end;
-      stNull:
+        Result := True;
+        for i := 0 to i - 1 do
         begin
-          TValue.MakeWithoutCopy(nil, TypeInfo, Value);
-          Result := True;
+          Result := FromJson(el, obj.AsArray[i], val);
+          if not Result then
+            Break;
+          val.ExtractRawData(pb);
+          val := TValue.Empty;
+          Inc(pb, typ.elSize);
         end;
+        if Result then
+          TValue.MakeWithoutCopy(@p, TypeInfo, Value) else
+          DynArrayClear(p, TypeInfo);
+      end;
+    stNull:
+      begin
+        TValue.MakeWithoutCopy(nil, TypeInfo, Value);
+        Result := True;
+      end;
     else
       i := 1;
       p := nil;
@@ -7301,9 +7205,9 @@ function TSuperRttiContext.FromJson(TypeInfo: PTypeInfo; const obj: ISuperObject
       v: TValue;
       a: PTypeData;
     begin
-      if ObjectIsType(o, stArray) and (ArrayData.Dims[dim - 1] <> nil) then
+      if ObjectIsType(o, stArray) and (ArrayData.Dims[dim-1] <> nil) then
       begin
-        a := @GetTypeData(ArrayData.Dims[dim - 1]^).ArrayData;
+        a := @GetTypeData(ArrayData.Dims[dim-1]^).ArrayData;
         if (a.MaxValue - a.MinValue + 1) <> o.AsArray.Length then
         begin
           Result := False;
@@ -7416,10 +7320,10 @@ function TSuperRttiContext.FromJson(TypeInfo: PTypeInfo; const obj: ISuperObject
     begin
       if obj <> nil then
         TValue.Make(@obj, TypeInfo, Value) else
-      begin
-        o := TSuperObject.Create(stNull);
-        TValue.Make(@o, TypeInfo, Value);
-      end;
+        begin
+          o := TSuperObject.Create(stNull);
+          TValue.Make(@o, TypeInfo, Value);
+        end;
       Result := True;
     end else
       Result := False;
@@ -7427,6 +7331,7 @@ function TSuperRttiContext.FromJson(TypeInfo: PTypeInfo; const obj: ISuperObject
 var
   Serial: TSerialFromJson;
 begin
+
   if TypeInfo <> nil then
   begin
     if not SerialFromJson.TryGetValue(TypeInfo, Serial) then
@@ -7449,10 +7354,10 @@ begin
       else
         FromUnknown
       end else
-    begin
-      TValue.Make(nil, TypeInfo, Value);
-      Result := Serial(Self, obj, Value);
-    end;
+      begin
+        TValue.Make(nil, TypeInfo, Value);
+        Result := Serial(Self, obj, Value);
+      end;
   end else
     Result := False;
 end;
@@ -7465,7 +7370,7 @@ function TSuperRttiContext.ToJson(var value: TValue; const index: ISuperObject):
 
   procedure ToChar;
   begin
-    Result := TSuperObject.Create(string(Value.AsType < AnsiChar > ));
+    Result := TSuperObject.Create(string(Value.AsType<AnsiChar>));
   end;
 
   procedure ToInteger;
@@ -7486,7 +7391,7 @@ function TSuperRttiContext.ToJson(var value: TValue; const index: ISuperObject):
 
   procedure ToString;
   begin
-    Result := TSuperObject.Create(string(Value.AsType < string > ));
+    Result := TSuperObject.Create(string(Value.AsType<string>));
   end;
 
   procedure ToClass;
@@ -7516,7 +7421,7 @@ function TSuperRttiContext.ToJson(var value: TValue; const index: ISuperObject):
 
   procedure ToWChar;
   begin
-    Result := TSuperObject.Create(string(Value.AsType < WideChar > ));
+    Result :=  TSuperObject.Create(string(Value.AsType<WideChar>));
   end;
 
   procedure ToVariant;
@@ -7553,8 +7458,8 @@ function TSuperRttiContext.ToJson(var value: TValue; const index: ISuperObject):
       o2: ISuperObject;
       v: TValue;
     begin
-      if ArrayData.Dims[dim - 1] = nil then Exit;
-      dt := GetTypeData(ArrayData.Dims[dim - 1]^);
+      if ArrayData.Dims[dim-1] = nil then Exit;
+      dt := GetTypeData(ArrayData.Dims[dim-1]^);
       if Dim = ArrayData.DimCount then
         for i := dt.MinValue to dt.MaxValue do
         begin
@@ -7603,17 +7508,17 @@ function TSuperRttiContext.ToJson(var value: TValue; const index: ISuperObject):
   procedure ToClassRef;
   begin
     if TValueData(Value).FAsClass <> nil then
-      Result := TSuperObject.Create(string(
+      Result :=  TSuperObject.Create(string(
         TValueData(Value).FAsClass.UnitName + '.' +
         TValueData(Value).FAsClass.ClassName)) else
       Result := nil;
   end;
 
   procedure ToInterface;
-  {$IFNDEF VER210}
+{$IFNDEF VER210}
   var
     intf: IInterface;
-  {$ENDIF}
+{$ENDIF}
   begin
 {$IFDEF VER210}
     if TValueData(Value).FHeapData <> nil then
@@ -7652,7 +7557,7 @@ begin
     else
       result := nil;
     end else
-    Result := Serial(Self, value, index);
+      Result := Serial(Self, value, index);
 end;
 
 { TSuperObjectHelper }
@@ -7702,13 +7607,14 @@ begin
       ctx.Free;
   end;
 end;
+
 {$ENDIF}
 
-{$IFDEF INNER_DEBUG}
+{$IFDEF DEBUG}
 initialization
 
 finalization
-  if Boolean(DebugHook) then
-    Assert(debugcount = 0, 'Memory leak');
+  Assert(debugcount = 0, 'Memory leak');
 {$ENDIF}
 end.
+

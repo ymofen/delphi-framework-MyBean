@@ -8,7 +8,7 @@ uses
 type
   TApplicationContext = class(TInterfacedObject, IApplicationContext)
   private
-    FLibObjectList: TList;
+    FLibObjectList: TStrings;
     FPlugins: TStrings;
 
     procedure DoRegisterPluginIDS(pvPluginIDS:String; pvLibObject:TLibObject);
@@ -16,6 +16,16 @@ type
   protected
     //直接加载模块文件
     procedure ExecuteLoadLibrary; stdcall;
+
+    function checkCreateLibObject(pvFileName:string): TLibObject;
+
+  private
+    procedure executeLoadFromFile(pvFileName:String);
+
+    procedure executeLoadFromFiles(pvFiles:TStrings);
+
+    function checkGetRoot:String;
+
 
     /// <summary>
     ///   从配置文件中加载
@@ -50,7 +60,7 @@ procedure appContextCleanup; stdcall;
 implementation
 
 uses
-  FileLogger;
+  FileLogger, superobject, uSOTools;
 
 var
   __instance:TApplicationContext;
@@ -123,17 +133,22 @@ begin
   FPlugins.Clear;
   while FLibObjectList.Count > 0 do
   begin
-    lvLibObject := TLibObject(FLibObjectList[0]);
+    lvLibObject := TLibObject(FLibObjectList.Objects[0]);
     lvLibObject.DoFreeLibrary;
     lvLibObject.Free;
     FLibObjectList.Delete(0);
   end;
 end;
 
+function TApplicationContext.checkGetRoot: String;
+begin
+  Result := ExtractFilePath(ParamStr(0));
+end;
+
 constructor TApplicationContext.Create;
 begin
   inherited Create;
-  FLibObjectList := TList.Create();
+  FLibObjectList := TStringList.Create();
   FPlugins := TStringList.Create;
 end;
 
@@ -143,6 +158,27 @@ begin
   FPlugins.Free;
   FLibObjectList.Free;
   inherited Destroy;
+end;
+
+function TApplicationContext.checkCreateLibObject(pvFileName:string):
+    TLibObject;
+var
+  lvFileName:String;
+  i:Integer;
+begin
+  lvFileName :=ExtractFileName(pvFileName);
+  if Length(lvFileName) = 0 then Exit;
+
+  i := FLibObjectList.IndexOf(lvFileName);
+  if i = -1 then
+  begin
+    Result := TLibObject.Create;
+    Result.LibFileName := pvFileName;
+  end else
+  begin
+    Result := TLibObject(FLibObjectList.Objects[i]);
+  end;
+
 end;
 
 function TApplicationContext.getBean(pvBeanID: PAnsiChar): IInterface;
@@ -209,8 +245,88 @@ begin
 end;
 
 procedure TApplicationContext.executeLoadConfigFiles;
+var
+  lvStrings: TStrings;
+  i: Integer;
+  lvFile: string;
+  lvLib:TLibObject;
+  lvIsOK:Boolean;
 begin
-  ;
+  lvStrings := TStringList.Create;
+  try
+    GetFileNameList(lvStrings, ExtractFilePath(ParamStr(0)) + '*.plug-ins');
+    executeLoadFromFiles(lvStrings);
+  finally
+    lvStrings.Free;
+  end;
+end;
+
+procedure TApplicationContext.executeLoadFromFile(pvFileName: String);
+var
+  lvConfig, lvPluginList:ISuperObject;
+  I: Integer;
+begin
+  lvConfig := TSOTools.JsnParseFromFile(pvFileName);
+  if lvConfig = nil then Exit;
+  if lvConfig.IsType(stArray) then lvPluginList := lvConfig
+  else if lvConfig.O['list'] <> nil then lvPluginList := lvConfig.O['list']
+  else if lvConfig.O['plugins'] <> nil then lvPluginList := lvConfig.O['plugins'];
+
+  if (lvPluginList = nil) or (not lvPluginList.IsType(stArray)) then
+  begin
+    TFileLogger.instance.logMessage(Format('配置文件[%s]非法', [pvFileName]), 'pluginsLoader');
+    exit;
+  end;
+
+  for I := 0 to lvPluginList.AsArray.Length - 1 do
+  begin
+
+  end;
+
+
+
+
+end;
+
+procedure TApplicationContext.executeLoadFromFiles(pvFiles: TStrings);
+var
+  i:Integer;
+  lvFile:String;
+begin
+    for i := 0 to pvFiles.Count - 1 do
+    begin
+      lvFile := pvFiles[i];
+      executeLoadFromFile(lvFile);
+      lvLib := TLibObject.Create;
+      lvIsOK := false;
+      try
+        lvLib.LibFileName := lvFile;
+        if lvLib.DoLoadLibrary then
+        begin
+          try
+            DoRegisterPluginIDS(lvLib.beanFactory.getBeanList, lvLib);
+
+            lvIsOK := true;
+          except
+            on E:Exception do
+            begin
+              TFileLogger.instance.logMessage(
+                            Format('加载插件文件[%s]出现异常', [lvLib.LibFileName]) + e.Message,
+                            'pluginLoaderErr');
+            end;
+          end;
+        end;
+      finally
+        if not lvIsOK then
+        begin
+          try
+            lvLib.DoFreeLibrary;
+            lvLib.Free;
+          except
+          end;
+        end;
+      end;
+    end;
 end;
 
 procedure TApplicationContext.ExecuteLoadLibrary;
@@ -235,7 +351,7 @@ begin
         begin
           try
             DoRegisterPluginIDS(lvLib.beanFactory.getBeanList, lvLib);
-            FLibObjectList.Add(lvLib);
+            FLibObjectList.AddObject(ExtractFileName(lvFile), lvLib);
             lvIsOK := true;
           except
             on E:Exception do
