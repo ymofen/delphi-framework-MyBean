@@ -1,0 +1,1 @@
+#delphi-framework-MyBean
