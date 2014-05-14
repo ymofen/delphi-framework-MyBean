@@ -3,7 +3,7 @@ unit uBeanFactory;
 interface
 
 uses
-  uIBeanFactory, Classes, SysUtils, SyncObjs;
+  uIBeanFactory, Classes, SysUtils, SyncObjs, Windows, Forms;
 
 type
   TBeanINfo = class(TObject)
@@ -30,7 +30,6 @@ type
   TBeanFactory = class(TInterfacedObject, IBeanFactory)
   private
     FCS: TCriticalSection;
-    __passString:AnsiString;
     FInitializeProcInvoked:Boolean;
     FLastErr:AnsiString;
     FOnCreateInstanceProc: TOnCreateInstanceProc;
@@ -60,7 +59,7 @@ type
     destructor Destroy; override;
     
     /// 获取所有的插件ID
-    function getBeanList: PAnsiChar; stdcall;
+    function getBeanList(pvIDs:PAnsiChar; pvLength:Integer): Integer; stdcall;
 
     /// 创建一个插件
     function getBean(pvPluginID: PAnsiChar): IInterface; stdcall;
@@ -86,7 +85,7 @@ function beanFactory: TBeanFactory;
 implementation
 
 uses
-  Forms, FileLogger;
+  FileLogger;
 
 var
   __instanceObject:TBeanFactory;
@@ -213,7 +212,9 @@ function TBeanFactory.getBean(pvPluginID: PAnsiChar): IInterface;
 var
   i:Integer;
   lvObject:TBeanINfo;
+  lvIDs:String;
 begin
+  lvIDs := String(AnsiString(pvPluginID));
   Result := nil;
   try
     if Assigned(FOnInitializeProc) and (not FInitializeProcInvoked) then
@@ -229,7 +230,7 @@ begin
         self.unLock;
       end;
     end;
-    i := FPlugins.IndexOf(pvPluginID);
+    i := FPlugins.IndexOf(lvIDs);
     if i = -1 then
     begin
       FLastErr := '找不到对应的插件[' + pvPluginID + ']';
@@ -261,15 +262,22 @@ begin
     on E:Exception do
     begin
       FLastErr := E.Message;
-      TFileLogger.instance.logErrMessage(FLastErr);
+      TFileLogger.instance.logErrMessage(string(FLastErr));
     end;
   end;
 end;
 
-function TBeanFactory.getBeanList: PAnsiChar;
+function TBeanFactory.getBeanList(pvIDs:PAnsiChar; pvLength:Integer): Integer;
+var
+  lvLen:Integer;
+  lvStr:AnsiString;
 begin
-  __passString := FPlugins.Text;
-  Result := PAnsiChar(__passString);
+  lvStr := AnsiString(FPlugins.Text);
+  lvLen := Length(lvStr);
+  if lvLen > pvLength then lvLen := pvLength;
+  
+  CopyMemory(pvIDs, PAnsiChar(lvStr), lvLen);
+  Result := lvLen;
 end;
 
 procedure TBeanFactory.lock;

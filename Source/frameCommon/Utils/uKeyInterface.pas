@@ -12,8 +12,9 @@ uses
   Classes, SysUtils, Windows;
 
 type
+  TKeyStr = string[255];
   TEntryBlock = record
-    key: string[255];
+    key: TKeyStr;
     intf: IInterface;
   end;
 
@@ -22,7 +23,7 @@ type
   TKeyInterface = class(TObject)
   private
     FList: TList;
-    function findBlock(const key:String): PEntryBlock;
+    function findBlock(const key: TKeyStr): PEntryBlock;
     function findIndex(const key:String): Integer;
     function Getcount: Integer;
     function GetValues(Index: Integer): IInterface;
@@ -39,7 +40,7 @@ type
 
     procedure Delete(pvIndex:Integer);
 
-    procedure put(const key:string; const intf:IInterface);
+    procedure put(const key: string; const intf: IInterface);
 
     property count: Integer read Getcount;
     
@@ -59,7 +60,11 @@ begin
   while FList.Count > 0 do
   begin
     lvBlock := PEntryBlock(FList[0]);
-    lvBlock.intf := nil;
+    try
+      lvBlock.intf := nil;
+    except
+      //∆¡±ŒµÙ Õ∑≈¥ÌŒÛ
+    end;
     FreeMem(lvBlock, SizeOf(TEntryBlock));
     FList.Delete(0);
   end;
@@ -96,21 +101,21 @@ end;
 
 function TKeyInterface.exists(const key:string): Boolean;
 begin
-  Result := findBlock(key) <> nil;
+  Result := findBlock(TKeyStr(key)) <> nil;
 end;
 
 function TKeyInterface.find(const key:string): IInterface;
 var
   lvBlock:PEntryBlock;
 begin
-  lvBlock := findBlock(key);
+  lvBlock := findBlock(TKeyStr(key));
   if lvBlock <> nil then
   begin
     Result := lvBlock.intf;
   end;
 end;
 
-function TKeyInterface.findBlock(const key:String): PEntryBlock;
+function TKeyInterface.findBlock(const key: TKeyStr): PEntryBlock;
 var
   i:Integer;
   lvBlock:PEntryBlock;
@@ -119,7 +124,8 @@ begin
   for i := 0 to FList.Count - 1 do
   begin
     lvBlock := PEntryBlock(FList[i]);
-    if sameText(lvBlock.key, key) then
+
+    if sameText(string(lvBlock.key), String(key)) then
     begin
       Result := lvBlock;
       Break;
@@ -136,7 +142,7 @@ begin
   for i := 0 to FList.Count - 1 do
   begin
     lvBlock := PEntryBlock(FList[i]);
-    if sameText(lvBlock.key, key) then
+    if sameText(string(lvBlock.key), key) then
     begin
       Result := i;
       Break;
@@ -164,15 +170,11 @@ end;
 procedure TKeyInterface.put(const key: string; const intf: IInterface);
 var
   lvBlock:PEntryBlock;
-  lvkey:AnsiString;
+  lvkey:TKeyStr;
 begin
-  lvkey := key;
-  if Length(lvkey) > 255 then
-  begin
-    SetLength(lvkey, 255);
-  end;
+  lvkey := TKeyStr(key);
   
-  lvBlock := findBlock(key);
+  lvBlock := findBlock(lvkey);
   if lvBlock <> nil then
   begin
     lvBlock.intf := intf;
@@ -180,7 +182,7 @@ begin
   begin
     GetMem(lvBlock, SizeOf(TEntryBlock));
     ZeroMemory(lvBlock, SizeOf(TEntryBlock));
-    lvBlock.key := key;
+    lvBlock.key := lvkey;
     lvBlock.intf := intf;
     FList.Add(lvBlock);
   end;

@@ -5,6 +5,7 @@ souce\plug-xx\project\package\delphixxx\xxx.dpr
 
 Outputs\
   ..\..\..\..\..\BIN
+  ..\..\..\..\..\BIN\plug-ins
 
 Search path:
   ..\..\..\..\..\Source\frameCommon\Interface;..\..\..\..\..\Source\frameCommon\Service;..\..\..\..\..\Source\frameCommon\Tools;..\..\..\..\..\Source\frameCommon\Utils;..\..\..\..\..\Source\DUtils;

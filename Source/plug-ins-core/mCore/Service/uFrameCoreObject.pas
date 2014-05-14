@@ -56,18 +56,18 @@ end;
 
 function TFrameCoreObject.existsObject(const pvKey: PAnsiChar): Boolean;
 begin
-  Result := FKeyIntface.exists(pvKey);
+  Result := FKeyIntface.exists(string(AnsiString(pvKey)));
 end;
 
 function TFrameCoreObject.getObject(const pvKey: PAnsiChar): IInterface;
 begin
-  Result := FKeyIntface.find(pvKey);
+  Result := FKeyIntface.find(string(AnsiString(pvKey)));
 end;
 
 procedure TFrameCoreObject.removeObject(const pvKey: PAnsiChar);
 begin
   try
-    FKeyIntface.remove(pvKey);
+    FKeyIntface.remove(string(AnsiString(pvKey)));
   except
   end;
 end;
@@ -76,7 +76,7 @@ procedure TFrameCoreObject.setObject(const pvKey: PAnsiChar;
   const pvIntf: IInterface);
 begin
   try
-    FKeyIntface.put(pvKey, pvIntf);
+    FKeyIntface.put(string(AnsiString(pvKey)), pvIntf);
   except
   end;
 end;

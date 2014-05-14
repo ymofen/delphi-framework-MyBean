@@ -3,7 +3,7 @@ unit uBeanMgr;
 interface
 
 uses
-  Classes, SysUtils, uLibObject, uIAppliationContext;
+  Classes, SysUtils, uLibObject, uIAppliationContext, Windows;
 
 type
   TApplicationContext = class(TInterfacedObject, IApplicationContext)
@@ -20,17 +20,21 @@ type
     function checkCreateLibObject(pvFileName:string): TLibObject;
 
   private
-    procedure executeLoadFromFile(pvFileName:String);
+    FLibCachePath:String;
+    FRootPath:String;
+    procedure executeLoadFromConfigFile(pvFileName:String);
 
-    procedure executeLoadFromFiles(pvFiles:TStrings);
+    procedure executeLoadFromConfigFiles(pvFiles:TStrings);
 
-    function checkGetRoot:String;
+    procedure checkReady;
+
+    procedure checkRegisterBean(pvBeanID:string; pvLibObj:TLibObject);
 
 
     /// <summary>
     ///   从配置文件中加载
     /// </summary>
-    procedure executeLoadConfigFiles;
+    procedure checkInitializeFromConfigFiles;
 
   public
     constructor Create;
@@ -70,7 +74,8 @@ exports
    appPluginContext, appContextCleanup;
 
 function GetFileNameList(aList: TStrings; const aSearchPath: string): integer;
-var dirinfo: TSearchRec;
+var
+  dirinfo: TSearchRec;
   dir, lCurrentDir: string;
 begin
   result := 0;
@@ -81,11 +86,11 @@ begin
     if (dir <> '') then
       dir := IncludeTrailingPathDelimiter(dir);
 
-    if (FindFirst(aSearchPath, faArchive, dirinfo) = 0) then repeat
+    if (SysUtils.FindFirst(aSearchPath, faArchive, dirinfo) = 0) then repeat
         aList.Add(dir + dirinfo.Name);
         Inc(result);
       until (FindNext(dirinfo) <> 0);
-    FindClose(dirinfo);
+    SysUtils.FindClose(dirinfo);
   finally
     SetCurrentDir(lCurrentDir);
   end;
@@ -117,7 +122,39 @@ procedure TApplicationContext.checkInitialize;
 begin
   if FLibObjectList.Count = 0 then
   begin
-    ExecuteLoadLibrary;
+    //ExecuteLoadLibrary;
+    checkReady;
+    checkInitializeFromConfigFiles;
+  end;
+end;
+
+procedure TApplicationContext.checkReady;
+begin
+  FLibCachePath := ExtractFileName(ParamStr(0)) + 'plug-ins-cache\';
+  ForceDirectories(FLibCachePath);
+  FRootPath := ExtractFileName(ParamStr(0));
+end;
+
+procedure TApplicationContext.checkRegisterBean(pvBeanID: string;
+  pvLibObj: TLibObject);
+var
+  j:Integer;
+  lvID:String;
+  lvLibObject:TLibObject;
+begin
+  lvID := trim(pvBeanID);
+  if (lvID <> '') then
+  begin
+    j := FPlugins.IndexOf(lvID);
+    if j <> -1 then
+    begin
+      lvLibObject := TLibObject(FPlugins.Objects[j]);
+      TFileLogger.instance.logMessage(Format('在注册插件[%s]时发现重复,已经在[%s]进行了注册',
+         [lvID,lvLibObject.LibFileName]));
+    end else
+    begin
+      FPlugins.AddObject(lvID, pvLibObj);
+    end;
   end;
 end;
 
@@ -140,11 +177,6 @@ begin
   end;
 end;
 
-function TApplicationContext.checkGetRoot: String;
-begin
-  Result := ExtractFilePath(ParamStr(0));
-end;
-
 constructor TApplicationContext.Create;
 begin
   inherited Create;
@@ -163,17 +195,25 @@ end;
 function TApplicationContext.checkCreateLibObject(pvFileName:string):
     TLibObject;
 var
-  lvFileName:String;
+  lvFileName, lvCacheFile:String;
   i:Integer;
 begin
+  Result := nil;
   lvFileName :=ExtractFileName(pvFileName);
   if Length(lvFileName) = 0 then Exit;
 
   i := FLibObjectList.IndexOf(lvFileName);
   if i = -1 then
   begin
+    lvCacheFile := FLibCachePath + lvFileName;
+    if FileExists(lvCacheFile) then
+      DeleteFile(PChar(lvCacheFile));
+
+    CopyFile(PChar(pvFileName), PChar(lvCacheFile),False);
+
+
     Result := TLibObject.Create;
-    Result.LibFileName := pvFileName;
+    Result.LibFileName := lvCacheFile;
   end else
   begin
     Result := TLibObject(FLibObjectList.Objects[i]);
@@ -244,7 +284,7 @@ begin
   end;
 end;
 
-procedure TApplicationContext.executeLoadConfigFiles;
+procedure TApplicationContext.checkInitializeFromConfigFiles;
 var
   lvStrings: TStrings;
   i: Integer;
@@ -254,17 +294,23 @@ var
 begin
   lvStrings := TStringList.Create;
   try
-    GetFileNameList(lvStrings, ExtractFilePath(ParamStr(0)) + '*.plug-ins');
-    executeLoadFromFiles(lvStrings);
+    GetFileNameList(lvStrings, FRootPath + '*.plug-ins');
+    executeLoadFromConfigFiles(lvStrings);
+
+    lvStrings.Clear;
+    GetFileNameList(lvStrings, FRootPath + 'plug-ins\*.plug-ins');
+    executeLoadFromConfigFiles(lvStrings);
   finally
     lvStrings.Free;
   end;
 end;
 
-procedure TApplicationContext.executeLoadFromFile(pvFileName: String);
+procedure TApplicationContext.executeLoadFromConfigFile(pvFileName:String);
 var
-  lvConfig, lvPluginList:ISuperObject;
+  lvConfig, lvPluginList, lvItem:ISuperObject;
   I: Integer;
+  lvLibFile, lvID:String;
+  lvLibObj:TLibObject;
 begin
   lvConfig := TSOTools.JsnParseFromFile(pvFileName);
   if lvConfig = nil then Exit;
@@ -275,58 +321,42 @@ begin
   if (lvPluginList = nil) or (not lvPluginList.IsType(stArray)) then
   begin
     TFileLogger.instance.logMessage(Format('配置文件[%s]非法', [pvFileName]), 'pluginsLoader');
-    exit;
+    Exit;
   end;
 
   for I := 0 to lvPluginList.AsArray.Length - 1 do
   begin
-
+    lvItem := lvPluginList.AsArray.O[i];
+    lvLibFile := FRootPath + lvItem.S['lib'];
+    if not FileExists(lvLibFile) then
+    begin
+      TFileLogger.instance.logMessage(Format('未找到配置文件[%s]中的Lib文件[%s]', [pvFileName, lvLibFile]), 'pluginsLoader');
+    end else
+    begin
+      lvLibObj := checkCreateLibObject(lvLibFile);
+      if lvLibObj = nil then
+      begin
+        TFileLogger.instance.logMessage(Format('未找到Lib文件[%s]', [lvLibFile]), 'pluginsLoader');
+      end else
+      begin
+        lvID := lvItem.S['beanID'];
+        if lvID = '' then lvID := lvItem.S['id'];
+        checkRegisterBean(lvID, lvLibObj);
+      end;
+    end;
   end;
-
-
-
-
 end;
 
-procedure TApplicationContext.executeLoadFromFiles(pvFiles: TStrings);
+procedure TApplicationContext.executeLoadFromConfigFiles(pvFiles:TStrings);
 var
   i:Integer;
   lvFile:String;
 begin
-    for i := 0 to pvFiles.Count - 1 do
-    begin
-      lvFile := pvFiles[i];
-      executeLoadFromFile(lvFile);
-      lvLib := TLibObject.Create;
-      lvIsOK := false;
-      try
-        lvLib.LibFileName := lvFile;
-        if lvLib.DoLoadLibrary then
-        begin
-          try
-            DoRegisterPluginIDS(lvLib.beanFactory.getBeanList, lvLib);
-
-            lvIsOK := true;
-          except
-            on E:Exception do
-            begin
-              TFileLogger.instance.logMessage(
-                            Format('加载插件文件[%s]出现异常', [lvLib.LibFileName]) + e.Message,
-                            'pluginLoaderErr');
-            end;
-          end;
-        end;
-      finally
-        if not lvIsOK then
-        begin
-          try
-            lvLib.DoFreeLibrary;
-            lvLib.Free;
-          except
-          end;
-        end;
-      end;
-    end;
+  for i := 0 to pvFiles.Count - 1 do
+  begin
+    lvFile := pvFiles[i];
+    executeLoadFromConfigFile(lvFile);
+  end;
 end;
 
 procedure TApplicationContext.ExecuteLoadLibrary;
@@ -336,6 +366,8 @@ var
   lvFile: string;
   lvLib:TLibObject;
   lvIsOK:Boolean;
+
+  lvBeanIDs:array[1..4096] of AnsiChar;
 begin
   lvStrings := TStringList.Create;
   try
@@ -350,7 +382,9 @@ begin
         if lvLib.DoLoadLibrary then
         begin
           try
-            DoRegisterPluginIDS(lvLib.beanFactory.getBeanList, lvLib);
+            ZeroMemory(@lvBeanIDs[1], 4096);
+            lvLib.beanFactory.getBeanList(@lvBeanIDs[1], 4096);
+            DoRegisterPluginIDS(lvBeanIDs, lvLib);
             FLibObjectList.AddObject(ExtractFileName(lvFile), lvLib);
             lvIsOK := true;
           except
