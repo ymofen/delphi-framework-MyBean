@@ -18,8 +18,58 @@ type
     /// </summary>
     function getBeanList(pvIDs:PAnsiChar; pvLength:Integer): Integer; stdcall;
 
-    /// 创建一个插件
-    function getBean(pvPluginID: PAnsiChar): IInterface; stdcall;
+    /// <summary>
+    ///   根据beanID获取对应的插件
+    /// </summary>
+    function getBean(pvBeanID: PAnsiChar): IInterface; stdcall;
+
+
+    /// <summary>
+    ///   初始化,加载DLL后执行
+    /// </summary>
+    procedure checkInitalize;stdcall;
+
+    /// <summary>
+    ///   卸载DLL之前执行
+    /// </summary>
+    procedure checkFinalize;stdcall;
+
+
+
+    /// <summary>
+    ///   配置所有bean的相关的配置,会覆盖之前的Bean配置
+    ///    pvConfig是Json格式
+    ///      beanID(mapKey)
+    ///      {
+    ///          id:xxxx,
+    ///          .....
+    ///      }
+    /// </summary>
+    function configBeans(pvConfig:PAnsiChar):Integer; stdcall;
+
+    /// <summary>
+    ///   配置bean的相关信息
+    ///     pvConfig是Json格式的参数
+    ///     会覆盖之前的bean配置
+    ///      {
+    ///          id:xxxx,
+    ///          .....
+    ///      }
+    /// </summary>
+    function configBean(pvBeanID, pvConfig: PAnsiChar): Integer; stdcall;
+
+    /// <summary>
+    ///   配置bean配置
+    ///     pluginID,内部的插件ID
+    /// </summary>
+    function configBeanPluginID(pvBeanID, pvPluginID: PAnsiChar): Integer; stdcall;
+
+
+    /// <summary>
+    ///   配置bean配置
+    ///     singleton,单实例
+    /// </summary>
+    function configBeanSingleton(pvBeanID: PAnsiChar; pvSingleton:Boolean): Integer; stdcall;
   end;
 
 

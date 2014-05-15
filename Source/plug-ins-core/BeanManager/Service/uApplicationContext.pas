@@ -6,7 +6,8 @@ uses
   Classes, SysUtils, uLibFactoryObject, uIAppliationContext, Windows,
   uIBeanFactory,
   uIBeanFactoryRegister,
-  uFactoryInstanceObject, uBaseFactoryObject;
+  uFactoryInstanceObject, uBaseFactoryObject,
+  uKeyInterface, uKeyMapImpl, uIKeyMap;
 
 type
   TApplicationContext = class(TInterfacedObject
@@ -30,12 +31,16 @@ type
   private
     FLibCachePath:String;
     FRootPath:String;
+
     /// <summary>
     ///   从单个配置文件中配置插件
     /// </summary>
-    procedure executeLoadFromConfigFile(pvFileName: String; pvLoadLib: Boolean);
+    procedure executeLoadFromConfigFile(pvFileName: String);
 
-    procedure executeLoadFromConfigFiles(pvFiles: TStrings; pvLoadLib: Boolean);
+    /// <summary>
+    ///   从多个配置文件中读取配置插件
+    /// </summary>
+    procedure executeLoadFromConfigFiles(pvFiles: TStrings);
 
     procedure checkReady;
 
@@ -49,7 +54,13 @@ type
     /// <summary>
     ///   从配置文件中加载
     /// </summary>
-    procedure checkInitializeFromConfigFiles(pvLoadLib: Boolean);
+    procedure checkInitializeFromConfigFiles;
+
+
+    /// <summary>
+    ///   初始化工厂对象
+    /// </summary>
+    procedure checkInitializeFactoryObjects;
 
   public
     constructor Create;
@@ -85,11 +96,27 @@ type
 
   end;
 
+/// <summary>
+///   获取全局的appliationContext
+/// </summary>
 function appPluginContext: IApplicationContext; stdcall;
+
+/// <summary>
+///   应用程序清理
+/// </summary>
 procedure appContextCleanup; stdcall;
+
+/// <summary>
+///   注册beanFactory
+/// </summary>
 function registerFactoryObject(const pvBeanFactory:IBeanFactory; const
     pvNameSapce:PAnsiChar): Integer; stdcall;
 
+
+/// <summary>
+///   获取全局的KeyMap接口
+/// </summary>
+function applicationKeyMap: IKeyMap; stdcall;
 
 
 implementation
@@ -102,7 +129,7 @@ var
   __instanceIntf:IInterface;
 
 exports
-   appPluginContext, appContextCleanup, registerFactoryObject;
+   appPluginContext, appContextCleanup, registerFactoryObject, applicationKeyMap;
 
 function GetFileNameList(aList: TStrings; const aSearchPath: string): integer;
 var
@@ -134,7 +161,10 @@ end;
 
 procedure appContextCleanup; stdcall;
 begin
-  if __instanceIntf = nil then exit;  
+  //清理KeyMap对象
+  executeKeyMapCleanup;
+
+  if __instanceIntf = nil then exit;
   try
     try
       __instance.checkFinalize;
@@ -159,13 +189,24 @@ begin
   end;
 end;
 
+function applicationKeyMap: IKeyMap;
+begin
+  Result := TKeyMapImpl.instance;
+end;
+
 procedure TApplicationContext.checkInitialize(pvLoadLib:Boolean);
 begin
   if FFactoryObjectList.Count = 0 then
   begin
     //ExecuteLoadLibrary;
     checkReady;
-    checkInitializeFromConfigFiles(pvLoadLib);
+    checkInitializeFromConfigFiles();
+
+    if pvLoadLib then
+    begin
+      //加载DLL文件
+      checkInitializeFactoryObjects;
+    end;
   end;
 end;
 
@@ -209,6 +250,7 @@ procedure TApplicationContext.checkFinalize;
 var
   lvLibObject:TBaseFactoryObject;
 begin
+
   FPlugins.Clear;
   while FFactoryObjectList.Count > 0 do
   begin
@@ -320,26 +362,46 @@ begin
   end;
 end;
 
-procedure TApplicationContext.checkInitializeFromConfigFiles(pvLoadLib:
-    Boolean);
+procedure TApplicationContext.checkInitializeFactoryObjects;
+var
+  i: Integer;
+  lvFactoryObject:TBaseFactoryObject;
+begin
+  for i := 0 to FFactoryObjectList.Count -1  do
+  begin
+    lvFactoryObject := TBaseFactoryObject(FFactoryObjectList.Objects[i]);
+    try
+      lvFactoryObject.checkInitialize;
+    except
+      on E:Exception do
+      begin
+        TFileLogger.instance.logMessage(
+                      Format('加载插件文件[%s]出现异常', [lvFactoryObject.namespace]) + e.Message,
+                      'pluginLoaderErr');
+      end;
+    end;
+  end;
+
+end;
+
+procedure TApplicationContext.checkInitializeFromConfigFiles;
 var
   lvStrings: TStrings;
 begin
   lvStrings := TStringList.Create;
   try
     GetFileNameList(lvStrings, FRootPath + '*.plug-ins');
-    executeLoadFromConfigFiles(lvStrings, pvLoadLib);
+    executeLoadFromConfigFiles(lvStrings);
 
     lvStrings.Clear;
     GetFileNameList(lvStrings, FRootPath + 'plug-ins\*.plug-ins');
-    executeLoadFromConfigFiles(lvStrings, pvLoadLib);
+    executeLoadFromConfigFiles(lvStrings);
   finally
     lvStrings.Free;
   end;
 end;
 
-procedure TApplicationContext.executeLoadFromConfigFile(pvFileName: String;
-    pvLoadLib: Boolean);
+procedure TApplicationContext.executeLoadFromConfigFile(pvFileName: String);
 var
   lvConfig, lvPluginList, lvItem:ISuperObject;
   I: Integer;
@@ -374,13 +436,13 @@ begin
       end else
       begin
         try
-          if pvLoadLib then
+          lvID := lvItem.S['id'];
+
+          if lvID = '' then
           begin
-            lvLibObj.checkInitialize;
+            raise Exception.Create('非法的插件配置,没有指定beanID:' + sLineBreak + lvItem.AsJSon(true, false));
           end;
 
-          lvID := lvItem.S['beanID'];
-          if lvID = '' then lvID := lvItem.S['id'];
 
           //将配置放到对应的节点管理中
           lvLibObj.configBean(lvID, lvItem);
@@ -399,8 +461,7 @@ begin
   end;
 end;
 
-procedure TApplicationContext.executeLoadFromConfigFiles(pvFiles: TStrings;
-    pvLoadLib: Boolean);
+procedure TApplicationContext.executeLoadFromConfigFiles(pvFiles: TStrings);
 var
   i:Integer;
   lvFile:String;
@@ -408,7 +469,7 @@ begin
   for i := 0 to pvFiles.Count - 1 do
   begin
     lvFile := pvFiles[i];
-    executeLoadFromConfigFile(lvFile, pvLoadLib);
+    executeLoadFromConfigFile(lvFile);
   end;
 end;
 

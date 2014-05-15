@@ -102,7 +102,7 @@ end;
 
 function TLibFactoryObject.getBean(pvBeanID:string): IInterface;
 begin
-  ;
+  result := inherited getBean(pvBeanID);
 end;
 
 procedure TLibFactoryObject.SetlibFileName(const Value: String);

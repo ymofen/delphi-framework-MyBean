@@ -16,9 +16,10 @@ uses
   uApplicationContext in '..\..\Service\uApplicationContext.pas',
   uIAppliationContext,
   uIBeanFactory,
-  uLibObject in '..\..\Service\uLibObject.pas',
   uBaseFactoryObject in '..\..\Service\uBaseFactoryObject.pas',
-  uFactoryInstanceObject in '..\..\Service\uFactoryInstanceObject.pas';
+  uFactoryInstanceObject in '..\..\Service\uFactoryInstanceObject.pas',
+  uLibFactoryObject in '..\..\Service\uLibFactoryObject.pas',
+  uKeyMapImpl in '..\..\Service\uKeyMapImpl.pas';
 
 {$R *.res}
 

@@ -34,6 +34,7 @@ type
     ///     如果单实例内部开启互斥
     /// </summary>
     function getBean(pvPluginID: PAnsiChar): IInterface; stdcall;
+
   end;
 
 implementation

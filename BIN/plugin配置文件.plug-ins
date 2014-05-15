@@ -3,7 +3,7 @@
    [
       {
          "id":"frame-core",
-         "beanID":"frame-core",             //如果与id一致可以进行忽略
+         "pluginID":"frame-core",           //如果与id一致可以进行忽略
          "lib":"plug-ins\\mCore.dll",       //文件名
          "singleton":true,                  //是否单件模式
       }
