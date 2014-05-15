@@ -1,38 +1,35 @@
-unit uLibObject;
+unit uLibFactoryObject;
 
 interface
 
 uses
-  Windows, SysUtils, Classes, uIBeanFactory, superobject, uSOTools;
+  Windows, SysUtils, Classes, uIBeanFactory, superobject, uSOTools,
+  uBaseFactoryObject;
 
 type
   /// <summary>
   ///   DLL文件管理
   /// </summary>
-  TLibObject = class(TObject)
+  TLibFactoryObject = class(TBaseFactoryObject)
   private
     FLibHandle:THandle;
     FlibFileName: String;
 
-    /// <summary>
-    ///   bean的配置
-    /// </summary>
-    FConfig: ISuperObject;
-
   private
-    FBeanFactory: IBeanFactory;
 
     procedure doCreatePluginFactory;
 
     procedure doInitialize;
+    procedure SetlibFileName(const Value: String);
   public
-    constructor Create;
-    destructor Destroy; override;
+    procedure checkInitialize; override;
+
+    procedure cleanup;override;
 
     /// <summary>
-    ///   beanID和配置信息
+    ///   根据beanID获取插件
     /// </summary>
-    procedure configBean(pvBeanID: string; pvBeanConfig: ISuperObject);
+    function getBean(pvBeanID:string): IInterface; override;
 
     /// <summary>
     ///   释放Dll句柄
@@ -47,29 +44,13 @@ type
     /// <summary>
     ///   DLL文件
     /// </summary>
-    property libFileName: String read FlibFileName write FlibFileName;
+    property libFileName: String read FlibFileName write SetlibFileName;
 
-    /// <summary>
-    ///   DLL中BeanFactory接口
-    /// </summary>
-    property beanFactory: IBeanFactory read FBeanFactory;
   end;
 
 implementation
 
-constructor TLibObject.Create;
-begin
-  inherited Create;
-  FConfig := SO();
-end;
-
-destructor TLibObject.Destroy;
-begin
-  FConfig := nil;
-  inherited Destroy;
-end;
-
-procedure TLibObject.doCreatePluginFactory;
+procedure TLibFactoryObject.doCreatePluginFactory;
 var
   lvFunc:function:IBeanFactory; stdcall;
 begin
@@ -81,26 +62,26 @@ begin
   FBeanFactory := lvFunc;
 end;
 
-procedure TLibObject.doFreeLibrary;
+procedure TLibFactoryObject.doFreeLibrary;
 begin
   FBeanFactory := nil;
   if FLibHandle <> 0 then FreeLibrary(FLibHandle);
 end;
 
-procedure TLibObject.doInitialize;
+procedure TLibFactoryObject.doInitialize;
 begin
   doCreatePluginFactory;
 end;
 
-procedure TLibObject.configBean(pvBeanID: string; pvBeanConfig: ISuperObject);
-var
-  lvMapKey:String;
+procedure TLibFactoryObject.checkInitialize;
 begin
-  lvMapKey := TSOTools.makeMapKey(pvBeanID);
-  FConfig.O[lvMapKey] := pvBeanConfig;
+  if FbeanFactory <> nil then
+  begin
+    checkLoadLibrary;
+  end;
 end;
 
-function TLibObject.checkLoadLibrary: Boolean;
+function TLibFactoryObject.checkLoadLibrary: Boolean;
 begin
   if FLibHandle <> 0 then
   begin
@@ -112,6 +93,22 @@ begin
   FLibHandle := LoadLibrary(PChar(FlibFileName));
   Result := FLibHandle <> 0;
   if Result then doInitialize;
+end;
+
+procedure TLibFactoryObject.cleanup;
+begin
+  doFreeLibrary;
+end;
+
+function TLibFactoryObject.getBean(pvBeanID:string): IInterface;
+begin
+  ;
+end;
+
+procedure TLibFactoryObject.SetlibFileName(const Value: String);
+begin
+  FlibFileName := Value;
+  Fnamespace := FlibFileName;
 end;
 
 end.

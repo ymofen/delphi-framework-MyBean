@@ -13,10 +13,12 @@ library beanManager;
 uses
   SysUtils,
   Classes,
-  uBeanMgr in '..\..\Service\uBeanMgr.pas',
+  uApplicationContext in '..\..\Service\uApplicationContext.pas',
   uIAppliationContext,
   uIBeanFactory,
-  uLibObject in '..\..\Service\uLibObject.pas';
+  uLibObject in '..\..\Service\uLibObject.pas',
+  uBaseFactoryObject in '..\..\Service\uBaseFactoryObject.pas',
+  uFactoryInstanceObject in '..\..\Service\uFactoryInstanceObject.pas';
 
 {$R *.res}
 

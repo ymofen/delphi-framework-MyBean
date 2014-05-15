@@ -1,23 +1,31 @@
-unit uBeanMgr;
+unit uApplicationContext;
 
 interface
 
 uses
-  Classes, SysUtils, uLibObject, uIAppliationContext, Windows;
+  Classes, SysUtils, uLibFactoryObject, uIAppliationContext, Windows,
+  uIBeanFactory,
+  uIBeanFactoryRegister,
+  uFactoryInstanceObject, uBaseFactoryObject;
 
 type
-  TApplicationContext = class(TInterfacedObject, IApplicationContext)
+  TApplicationContext = class(TInterfacedObject
+     , IApplicationContext
+     , IbeanFactoryRegister
+     )
   private
-    FLibObjectList: TStrings;
+    FFactoryObjectList: TStrings;
     FPlugins: TStrings;
 
-    procedure DoRegisterPluginIDS(pvPluginIDS:String; pvLibObject:TLibObject);
-    procedure DoRegisterPlugins(pvPlugins:TStrings; pvLibObject:TLibObject);
+    procedure DoRegisterPluginIDS(pvPluginIDS: String; pvFactoryObject:
+        TBaseFactoryObject);
+    procedure DoRegisterPlugins(pvPlugins: TStrings; pvFactoryObject:
+        TBaseFactoryObject);
   protected
     //直接加载模块文件
     procedure ExecuteLoadLibrary; stdcall;
 
-    function checkCreateLibObject(pvFileName:string): TLibObject;
+    function checkCreateLibObject(pvFileName:string): TLibFactoryObject;
 
   private
     FLibCachePath:String;
@@ -31,7 +39,11 @@ type
 
     procedure checkReady;
 
-    procedure checkRegisterBean(pvBeanID:string; pvLibObj:TLibObject);
+    /// <summary>
+    ///   关联Bean和Lib对象
+    /// </summary>
+    procedure checkRegisterBean(pvBeanID: string; pvFactoryObject:
+        TBaseFactoryObject);
 
 
     /// <summary>
@@ -60,12 +72,23 @@ type
     /// </summary>
     function getBean(pvBeanID: PAnsiChar): IInterface; stdcall;
 
+  protected
+    /// <summary>
+    ///   直接注册Bean工厂插件
+    /// </summary>
+    function registerBeanFactory(const pvFactory: IBeanFactory; const pvNameSapce:PAnsiChar):Integer;stdcall;
+
+  public
+
 
     class function instance: TApplicationContext;
+
   end;
 
 function appPluginContext: IApplicationContext; stdcall;
 procedure appContextCleanup; stdcall;
+function registerFactoryObject(const pvBeanFactory:IBeanFactory; const
+    pvNameSapce:PAnsiChar): Integer; stdcall;
 
 
 
@@ -79,7 +102,7 @@ var
   __instanceIntf:IInterface;
 
 exports
-   appPluginContext, appContextCleanup;
+   appPluginContext, appContextCleanup, registerFactoryObject;
 
 function GetFileNameList(aList: TStrings; const aSearchPath: string): integer;
 var
@@ -126,9 +149,19 @@ begin
   end;
 end;
 
+function registerFactoryObject(const pvBeanFactory:IBeanFactory; const
+    pvNameSapce:PAnsiChar): Integer;
+begin
+  try
+    Result := TApplicationContext.instance.registerBeanFactory(pvBeanFactory, pvNameSapce);
+  except
+    Result := -1;
+  end;
+end;
+
 procedure TApplicationContext.checkInitialize(pvLoadLib:Boolean);
 begin
-  if FLibObjectList.Count = 0 then
+  if FFactoryObjectList.Count = 0 then
   begin
     //ExecuteLoadLibrary;
     checkReady;
@@ -138,17 +171,18 @@ end;
 
 procedure TApplicationContext.checkReady;
 begin
-  FLibCachePath := ExtractFileName(ParamStr(0)) + 'plug-ins-cache\';
+  FRootPath := ExtractFilePath(ParamStr(0));
+  FLibCachePath := FRootPath + 'plug-ins-cache\';
   ForceDirectories(FLibCachePath);
-  FRootPath := ExtractFileName(ParamStr(0));
+
 end;
 
 procedure TApplicationContext.checkRegisterBean(pvBeanID: string;
-  pvLibObj: TLibObject);
+    pvFactoryObject: TBaseFactoryObject);
 var
   j:Integer;
   lvID:String;
-  lvLibObject:TLibObject;
+  lvLibObject:TBaseFactoryObject;
 begin
   lvID := trim(pvBeanID);
   if (lvID <> '') then
@@ -156,12 +190,12 @@ begin
     j := FPlugins.IndexOf(lvID);
     if j <> -1 then
     begin
-      lvLibObject := TLibObject(FPlugins.Objects[j]);
+      lvLibObject := TBaseFactoryObject(FPlugins.Objects[j]);
       TFileLogger.instance.logMessage(Format('在注册插件[%s]时发现重复,已经在[%s]进行了注册',
-         [lvID,lvLibObject.LibFileName]));
+         [lvID,lvLibObject.namespace]));
     end else
     begin
-      FPlugins.AddObject(lvID, pvLibObj);
+      FPlugins.AddObject(lvID, pvFactoryObject);
     end;
   end;
 end;
@@ -173,22 +207,22 @@ end;
 
 procedure TApplicationContext.checkFinalize;
 var
-  lvLibObject:TLibObject;
+  lvLibObject:TBaseFactoryObject;
 begin
   FPlugins.Clear;
-  while FLibObjectList.Count > 0 do
+  while FFactoryObjectList.Count > 0 do
   begin
-    lvLibObject := TLibObject(FLibObjectList.Objects[0]);
-    lvLibObject.DoFreeLibrary;
+    lvLibObject := TBaseFactoryObject(FFactoryObjectList.Objects[0]);
+    lvLibObject.cleanup;
     lvLibObject.Free;
-    FLibObjectList.Delete(0);
+    FFactoryObjectList.Delete(0);
   end;
 end;
 
 constructor TApplicationContext.Create;
 begin
   inherited Create;
-  FLibObjectList := TStringList.Create();
+  FFactoryObjectList := TStringList.Create();
   FPlugins := TStringList.Create;
 end;
 
@@ -196,12 +230,12 @@ destructor TApplicationContext.Destroy;
 begin
   checkFinalize;
   FPlugins.Free;
-  FLibObjectList.Free;
+  FFactoryObjectList.Free;
   inherited Destroy;
 end;
 
 function TApplicationContext.checkCreateLibObject(pvFileName:string):
-    TLibObject;
+    TLibFactoryObject;
 var
   lvFileName, lvCacheFile:String;
   i:Integer;
@@ -210,7 +244,7 @@ begin
   lvFileName :=ExtractFileName(pvFileName);
   if Length(lvFileName) = 0 then Exit;
 
-  i := FLibObjectList.IndexOf(lvFileName);
+  i := FFactoryObjectList.IndexOf(lvFileName);
   if i = -1 then
   begin
     lvCacheFile := FLibCachePath + lvFileName;
@@ -220,11 +254,11 @@ begin
     CopyFile(PChar(pvFileName), PChar(lvCacheFile),False);
 
 
-    Result := TLibObject.Create;
+    Result := TLibFactoryObject.Create;
     Result.LibFileName := lvCacheFile;
   end else
   begin
-    Result := TLibObject(FLibObjectList.Objects[i]);
+    Result := TLibFactoryObject(FFactoryObjectList.Objects[i]);
   end;
 
 end;
@@ -232,7 +266,7 @@ end;
 function TApplicationContext.getBean(pvBeanID: PAnsiChar): IInterface;
 var
   j:Integer;
-  lvLibObject:TLibObject;
+  lvLibObject:TBaseFactoryObject;
   lvBeanID:AnsiString;
 begin
   Result := nil;
@@ -240,38 +274,32 @@ begin
   j := FPlugins.IndexOf(String(lvBeanID));
   if j <> -1 then
   begin
-    lvLibObject := TLibObject(FPlugins.Objects[j]);
-    if lvLibObject.beanFactory = nil then
-    begin
-      lvLibObject.checkLoadLibrary;
-    end;
+    lvLibObject := TBaseFactoryObject(FPlugins.Objects[j]);
+    Result := lvLibObject.getBean(lvBeanID);
 
-    if lvLibObject.beanFactory <> nil then
-    begin
-      Result := lvLibObject.beanFactory.getBean(PAnsiChar(AnsiString(pvBeanID)));
-    end;
   end;
 end;
 
 procedure TApplicationContext.DoRegisterPluginIDS(pvPluginIDS: String;
-  pvLibObject: TLibObject);
+    pvFactoryObject: TBaseFactoryObject);
 var
   lvStrings:TStrings;
 begin
   lvStrings := TStringList.Create;
   try
     lvStrings.Text := pvPluginIDS;
-    DoRegisterPlugins(lvStrings, pvLibObject);
+    DoRegisterPlugins(lvStrings, pvFactoryObject);
   finally
     lvStrings.Free;
   end;               
 end;
 
-procedure TApplicationContext.DoRegisterPlugins(pvPlugins: TStrings; pvLibObject: TLibObject);
+procedure TApplicationContext.DoRegisterPlugins(pvPlugins: TStrings;
+    pvFactoryObject: TBaseFactoryObject);
 var
   i, j:Integer;
   lvID:String;
-  lvLibObject:TLibObject;
+  lvLibObject:TBaseFactoryObject;
 begin
   for i := 0 to pvPlugins.Count - 1 do
   begin
@@ -281,12 +309,12 @@ begin
       j := FPlugins.IndexOf(lvID);
       if j <> -1 then
       begin
-        lvLibObject := TLibObject(FPlugins.Objects[j]);
+        lvLibObject := TBaseFactoryObject(FPlugins.Objects[j]);
         TFileLogger.instance.logMessage(Format('在注册插件[%s]时发现重复,已经在[%s]进行了注册',
-           [lvID,lvLibObject.LibFileName]));
+           [lvID,lvLibObject.namespace]));
       end else
       begin
-        FPlugins.AddObject(lvID, pvLibObject);
+        FPlugins.AddObject(lvID, pvFactoryObject);
       end;
     end;
   end;
@@ -316,7 +344,7 @@ var
   lvConfig, lvPluginList, lvItem:ISuperObject;
   I: Integer;
   lvLibFile, lvID:String;
-  lvLibObj:TLibObject;
+  lvLibObj:TBaseFactoryObject;
 begin
   lvConfig := TSOTools.JsnParseFromFile(pvFileName);
   if lvConfig = nil then Exit;
@@ -348,7 +376,7 @@ begin
         try
           if pvLoadLib then
           begin
-            lvLibObj.checkLoadLibrary;
+            lvLibObj.checkInitialize;
           end;
 
           lvID := lvItem.S['beanID'];
@@ -362,7 +390,7 @@ begin
           on E:Exception do
           begin
             TFileLogger.instance.logMessage(
-                          Format('加载插件文件[%s]出现异常:', [lvLibObj.libFileName]) + e.Message,
+                          Format('加载插件文件[%s]出现异常:', [lvLibObj.namespace]) + e.Message,
                           'pluginLoaderErr');
           end;
         end;
@@ -389,7 +417,7 @@ var
   lvStrings: TStrings;
   i: Integer;
   lvFile: string;
-  lvLib:TLibObject;
+  lvLib:TLibFactoryObject;
   lvIsOK:Boolean;
 
   lvBeanIDs:array[1..4096] of AnsiChar;
@@ -400,7 +428,7 @@ begin
     for i := 0 to lvStrings.Count - 1 do
     begin
       lvFile := lvStrings[i];
-      lvLib := TLibObject.Create;
+      lvLib := TLibFactoryObject.Create;
       lvIsOK := false;
       try
         lvLib.LibFileName := lvFile;
@@ -410,7 +438,7 @@ begin
             ZeroMemory(@lvBeanIDs[1], 4096);
             lvLib.beanFactory.getBeanList(@lvBeanIDs[1], 4096);
             DoRegisterPluginIDS(String(lvBeanIDs), lvLib);
-            FLibObjectList.AddObject(ExtractFileName(lvFile), lvLib);
+            FFactoryObjectList.AddObject(ExtractFileName(lvFile), lvLib);
             lvIsOK := true;
           except
             on E:Exception do
@@ -440,6 +468,26 @@ end;
 class function TApplicationContext.instance: TApplicationContext;
 begin
   Result := __instance;
+end;
+
+function TApplicationContext.registerBeanFactory(const pvFactory: IBeanFactory;
+  const pvNameSapce: PAnsiChar): Integer;
+var
+  lvObj:TFactoryInstanceObject;
+  lvBeanIDs:array[1..4096] of AnsiChar;
+begin
+  lvObj := TFactoryInstanceObject.Create;
+  try
+    lvObj.setFactoryObject(pvFactory);
+    lvObj.setNameSpace(pvNameSapce);
+    ZeroMemory(@lvBeanIDs[1], 4096);
+    lvObj.beanFactory.getBeanList(@lvBeanIDs[1], 4096);
+    DoRegisterPluginIDS(String(lvBeanIDs), lvObj);
+    FFactoryObjectList.AddObject(pvNameSapce, lvObj);
+    Result := 0;
+  except
+    Result := -1;
+  end;
 end;
 
 initialization
