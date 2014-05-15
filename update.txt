@@ -1,0 +1,6 @@
+2014年5月15日 20:56:36
+  ///   接口已经改变需要重新编译所有的DLL和主控台
+  ///     2014年5月15日 20:55:28
+  ///     D10.天地弦
+  ///     添加了 checkFinalize
+  ///     修改了 checkInitialize(pvLoadLib:Boolean);stdcall; 添加了参数。控制是否直接加载DLL

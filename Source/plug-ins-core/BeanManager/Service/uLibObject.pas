@@ -3,7 +3,7 @@ unit uLibObject;
 interface
 
 uses
-  Windows, SysUtils, Classes, uIBeanFactory, superobject;
+  Windows, SysUtils, Classes, uIBeanFactory, superobject, uSOTools;
 
 type
   /// <summary>
@@ -12,61 +12,106 @@ type
   TLibObject = class(TObject)
   private
     FLibHandle:THandle;
-    FLibFileName: String;
+    FlibFileName: String;
+
+    /// <summary>
+    ///   bean的配置
+    /// </summary>
+    FConfig: ISuperObject;
+
   private
-    FbeanFactory: IBeanFactory;
+    FBeanFactory: IBeanFactory;
 
-    procedure DoCreatePluginFactory;
+    procedure doCreatePluginFactory;
 
-    procedure DoInitialize;
+    procedure doInitialize;
   public
-    procedure DoFreeLibrary;
+    constructor Create;
+    destructor Destroy; override;
 
-    function DoLoadLibrary: Boolean;
+    /// <summary>
+    ///   beanID和配置信息
+    /// </summary>
+    procedure configBean(pvBeanID: string; pvBeanConfig: ISuperObject);
 
-    property LibFileName: String read FLibFileName write FLibFileName;
+    /// <summary>
+    ///   释放Dll句柄
+    /// </summary>
+    procedure doFreeLibrary;
 
-    property beanFactory: IBeanFactory read FbeanFactory;
+    /// <summary>
+    ///   加载dll文件
+    /// </summary>
+    function checkLoadLibrary: Boolean;
 
+    /// <summary>
+    ///   DLL文件
+    /// </summary>
+    property libFileName: String read FlibFileName write FlibFileName;
+
+    /// <summary>
+    ///   DLL中BeanFactory接口
+    /// </summary>
+    property beanFactory: IBeanFactory read FBeanFactory;
   end;
 
 implementation
 
-procedure TLibObject.DoCreatePluginFactory;
+constructor TLibObject.Create;
+begin
+  inherited Create;
+  FConfig := SO();
+end;
+
+destructor TLibObject.Destroy;
+begin
+  FConfig := nil;
+  inherited Destroy;
+end;
+
+procedure TLibObject.doCreatePluginFactory;
 var
   lvFunc:function:IBeanFactory; stdcall;
 begin
   @lvFunc := GetProcAddress(FLibHandle, PChar('getBeanFactory'));
   if (@lvFunc = nil) then
   begin
-    raise Exception.CreateFmt('非法的Plugin模块文件(%s),找不到入口函数(getBeanFactory)', [self.FLibFileName]);
+    raise Exception.CreateFmt('非法的Plugin模块文件(%s),找不到入口函数(getBeanFactory)', [self.FlibFileName]);
   end;
-  FbeanFactory := lvFunc;
+  FBeanFactory := lvFunc;
 end;
 
-procedure TLibObject.DoFreeLibrary;
+procedure TLibObject.doFreeLibrary;
 begin
-  FbeanFactory := nil;
+  FBeanFactory := nil;
   if FLibHandle <> 0 then FreeLibrary(FLibHandle);
 end;
 
-procedure TLibObject.DoInitialize;
+procedure TLibObject.doInitialize;
 begin
-  DoCreatePluginFactory;
+  doCreatePluginFactory;
 end;
 
-function TLibObject.DoLoadLibrary: Boolean;
+procedure TLibObject.configBean(pvBeanID: string; pvBeanConfig: ISuperObject);
+var
+  lvMapKey:String;
+begin
+  lvMapKey := TSOTools.makeMapKey(pvBeanID);
+  FConfig.O[lvMapKey] := pvBeanConfig;
+end;
+
+function TLibObject.checkLoadLibrary: Boolean;
 begin
   if FLibHandle <> 0 then
   begin
     Result := true;
     Exit;
   end;
-  if not FileExists(FLibFileName) then
-    raise Exception.Create('文件[' + FLibFileName + ']未找到!');
-  FLibHandle := LoadLibrary(PChar(FLibFileName));
+  if not FileExists(FlibFileName) then
+    raise Exception.Create('文件[' + FlibFileName + ']未找到!');
+  FLibHandle := LoadLibrary(PChar(FlibFileName));
   Result := FLibHandle <> 0;
-  if Result then DoInitialize;
+  if Result then doInitialize;
 end;
 
 end.

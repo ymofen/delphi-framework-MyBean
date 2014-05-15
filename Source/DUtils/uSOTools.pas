@@ -18,6 +18,10 @@ type
     /// </summary>
     class function JsnSaveToFile(pvData: ISuperObject; pvFile: string): Boolean;
 
+    /// <summary>
+    ///   制作一个JSonKey
+    /// </summary>
+    class function makeMapKey(pvStringData: string): String;
   end;
 
 implementation
@@ -66,6 +70,38 @@ begin
     Result := true;
   finally
     lvStream.Free;
+  end;
+end;
+
+class function TSOTools.makeMapKey(pvStringData: string): String;
+var
+  lvCheckCanKey:Boolean;
+  lvMapKey:AnsiString;
+  i:Integer;
+begin
+  Result := '';
+  lvMapKey := Trim(LowerCase(AnsiString(pvStringData)));
+  if lvMapKey = '' then exit;
+
+  lvCheckCanKey := True;
+
+  //判断是否可以做JSON主键
+  for I := 1 to Length(lvMapKey) do
+  begin
+    if not (lvMapKey[i] in ['a'..'z','0'..'9', '_']) then
+    begin
+      lvCheckCanKey := false;
+      Break;
+    end;
+  end;
+
+  if lvCheckCanKey then
+  begin
+    Result := lvMapKey;
+  end else
+  begin
+    //使用hash值
+    Result := '_' + IntToStr(TSuperAvlEntry.Hash(pvStringData));
   end;
 end;
 

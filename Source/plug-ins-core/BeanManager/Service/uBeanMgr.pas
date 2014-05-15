@@ -22,9 +22,12 @@ type
   private
     FLibCachePath:String;
     FRootPath:String;
-    procedure executeLoadFromConfigFile(pvFileName:String);
+    /// <summary>
+    ///   从单个配置文件中配置插件
+    /// </summary>
+    procedure executeLoadFromConfigFile(pvFileName: String; pvLoadLib: Boolean);
 
-    procedure executeLoadFromConfigFiles(pvFiles:TStrings);
+    procedure executeLoadFromConfigFiles(pvFiles: TStrings; pvLoadLib: Boolean);
 
     procedure checkReady;
 
@@ -34,7 +37,7 @@ type
     /// <summary>
     ///   从配置文件中加载
     /// </summary>
-    procedure checkInitializeFromConfigFiles;
+    procedure checkInitializeFromConfigFiles(pvLoadLib: Boolean);
 
   public
     constructor Create;
@@ -45,14 +48,19 @@ type
     /// <summary>
     ///   执行反初始化
     /// </summary>
-    procedure checkFinalization;
+    procedure checkFinalize; stdcall;
 
     /// <summary>
     ///   执行初始化
     /// </summary>
-    procedure checkInitialize;stdcall;
+    procedure checkInitialize(pvLoadLib:Boolean); stdcall;
 
+    /// <summary>
+    ///   获取根据BeanID获取一个对象
+    /// </summary>
     function getBean(pvBeanID: PAnsiChar): IInterface; stdcall;
+
+
     class function instance: TApplicationContext;
   end;
 
@@ -106,7 +114,7 @@ begin
   if __instanceIntf = nil then exit;  
   try
     try
-      __instance.checkFinalization;
+      __instance.checkFinalize;
     except
     end;
     if __instance.RefCount > 1 then
@@ -118,13 +126,13 @@ begin
   end;
 end;
 
-procedure TApplicationContext.checkInitialize;
+procedure TApplicationContext.checkInitialize(pvLoadLib:Boolean);
 begin
   if FLibObjectList.Count = 0 then
   begin
     //ExecuteLoadLibrary;
     checkReady;
-    checkInitializeFromConfigFiles;
+    checkInitializeFromConfigFiles(pvLoadLib);
   end;
 end;
 
@@ -163,7 +171,7 @@ begin
   inherited;  
 end;
 
-procedure TApplicationContext.checkFinalization;
+procedure TApplicationContext.checkFinalize;
 var
   lvLibObject:TLibObject;
 begin
@@ -186,7 +194,7 @@ end;
 
 destructor TApplicationContext.Destroy;
 begin
-  checkFinalization;
+  checkFinalize;
   FPlugins.Free;
   FLibObjectList.Free;
   inherited Destroy;
@@ -229,13 +237,13 @@ var
 begin
   Result := nil;
   lvBeanID := pvBeanID;
-  j := FPlugins.IndexOf(lvBeanID);
+  j := FPlugins.IndexOf(String(lvBeanID));
   if j <> -1 then
   begin
     lvLibObject := TLibObject(FPlugins.Objects[j]);
     if lvLibObject.beanFactory = nil then
     begin
-      lvLibObject.DoLoadLibrary;
+      lvLibObject.checkLoadLibrary;
     end;
 
     if lvLibObject.beanFactory <> nil then
@@ -284,28 +292,26 @@ begin
   end;
 end;
 
-procedure TApplicationContext.checkInitializeFromConfigFiles;
+procedure TApplicationContext.checkInitializeFromConfigFiles(pvLoadLib:
+    Boolean);
 var
   lvStrings: TStrings;
-  i: Integer;
-  lvFile: string;
-  lvLib:TLibObject;
-  lvIsOK:Boolean;
 begin
   lvStrings := TStringList.Create;
   try
     GetFileNameList(lvStrings, FRootPath + '*.plug-ins');
-    executeLoadFromConfigFiles(lvStrings);
+    executeLoadFromConfigFiles(lvStrings, pvLoadLib);
 
     lvStrings.Clear;
     GetFileNameList(lvStrings, FRootPath + 'plug-ins\*.plug-ins');
-    executeLoadFromConfigFiles(lvStrings);
+    executeLoadFromConfigFiles(lvStrings, pvLoadLib);
   finally
     lvStrings.Free;
   end;
 end;
 
-procedure TApplicationContext.executeLoadFromConfigFile(pvFileName:String);
+procedure TApplicationContext.executeLoadFromConfigFile(pvFileName: String;
+    pvLoadLib: Boolean);
 var
   lvConfig, lvPluginList, lvItem:ISuperObject;
   I: Integer;
@@ -339,15 +345,34 @@ begin
         TFileLogger.instance.logMessage(Format('未找到Lib文件[%s]', [lvLibFile]), 'pluginsLoader');
       end else
       begin
-        lvID := lvItem.S['beanID'];
-        if lvID = '' then lvID := lvItem.S['id'];
-        checkRegisterBean(lvID, lvLibObj);
+        try
+          if pvLoadLib then
+          begin
+            lvLibObj.checkLoadLibrary;
+          end;
+
+          lvID := lvItem.S['beanID'];
+          if lvID = '' then lvID := lvItem.S['id'];
+
+          //将配置放到对应的节点管理中
+          lvLibObj.configBean(lvID, lvItem);
+
+          checkRegisterBean(lvID, lvLibObj);
+        except
+          on E:Exception do
+          begin
+            TFileLogger.instance.logMessage(
+                          Format('加载插件文件[%s]出现异常:', [lvLibObj.libFileName]) + e.Message,
+                          'pluginLoaderErr');
+          end;
+        end;
       end;
     end;
   end;
 end;
 
-procedure TApplicationContext.executeLoadFromConfigFiles(pvFiles:TStrings);
+procedure TApplicationContext.executeLoadFromConfigFiles(pvFiles: TStrings;
+    pvLoadLib: Boolean);
 var
   i:Integer;
   lvFile:String;
@@ -355,7 +380,7 @@ begin
   for i := 0 to pvFiles.Count - 1 do
   begin
     lvFile := pvFiles[i];
-    executeLoadFromConfigFile(lvFile);
+    executeLoadFromConfigFile(lvFile, pvLoadLib);
   end;
 end;
 
@@ -379,12 +404,12 @@ begin
       lvIsOK := false;
       try
         lvLib.LibFileName := lvFile;
-        if lvLib.DoLoadLibrary then
+        if lvLib.checkLoadLibrary then
         begin
           try
             ZeroMemory(@lvBeanIDs[1], 4096);
             lvLib.beanFactory.getBeanList(@lvBeanIDs[1], 4096);
-            DoRegisterPluginIDS(lvBeanIDs, lvLib);
+            DoRegisterPluginIDS(String(lvBeanIDs), lvLib);
             FLibObjectList.AddObject(ExtractFileName(lvFile), lvLib);
             lvIsOK := true;
           except
