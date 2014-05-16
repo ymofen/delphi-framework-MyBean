@@ -41,6 +41,7 @@
     <DCCReference Include="..\..\Service\uApplicationContext.pas" />
     <DCCReference Include="..\..\Service\uBaseFactoryObject.pas" />
     <DCCReference Include="..\..\Service\uFactoryInstanceObject.pas" />
+    <DCCReference Include="..\..\Service\uKeyMapImpl.pas" />
     <DCCReference Include="..\..\Service\uLibFactoryObject.pas" />
   </ItemGroup>
 </Project>
