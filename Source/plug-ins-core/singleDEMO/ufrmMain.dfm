@@ -39,4 +39,13 @@ object frmMain: TfrmMain
     TabOrder = 2
     OnClick = btnStartClick
   end
+  object btnSingletonForm: TButton
+    Left = 26
+    Top = 144
+    Width = 185
+    Height = 25
+    Caption = 'btnSingletonForm'
+    TabOrder = 3
+    OnClick = btnSingletonFormClick
+  end
 end

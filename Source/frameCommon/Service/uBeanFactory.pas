@@ -6,6 +6,12 @@ uses
   uIBeanFactory, Classes, SysUtils, SyncObjs, Windows, Forms, superobject;
 
 type
+  ///uIFreeObject
+  IFreeObject = interface
+    ['{863109BC-513B-440C-A455-2AD4F5EDF508}']
+    procedure FreeObject; stdcall;
+  end;
+
   TPluginINfo = class(TObject)
   private
     FInstance: IInterface;
@@ -13,6 +19,7 @@ type
     FIsMainForm: Boolean;
     FPluginClass: TClass;
     FSingleton: Boolean;
+    procedure checkFreeInstance;
   public
     destructor Destroy; override;
     property ID: string read FID write FID;
@@ -25,6 +32,7 @@ type
   private
     FbeanID: string;
     FInstance: IInterface;
+    procedure checkFreeInstance;
   public
     destructor Destroy; override;
     property beanID: string read FbeanID write FbeanID;
@@ -79,6 +87,9 @@ type
     /// </summary>
     function beanIsSingleton(pvBeanID:PAnsiChar):Boolean;
 
+    ///
+    function checkGetBeanAccordingBeanConfig(pvBeanID: PAnsiChar; pvPluginINfo:
+        TPluginINfo): IInterface;
   protected
     procedure clear;
   public
@@ -108,7 +119,7 @@ type
     /// 创建一个插件
     function getBean(pvBeanID: PAnsiChar): IInterface; stdcall;
 
-
+  public
     /// <summary>
     ///   初始化,加载DLL后执行
     /// </summary>
@@ -213,6 +224,46 @@ begin
   clear;
 end;
 
+function TBeanFactory.checkGetBeanAccordingBeanConfig(pvBeanID: PAnsiChar;
+    pvPluginINfo: TPluginINfo): IInterface;
+var
+  i:Integer;
+  lvBeanINfo:TBeanINfo;
+  lvConfig:ISuperObject;
+  lvIsSingleton:Boolean;
+begin
+  lvIsSingleton := False;
+  lvConfig := findBeanConfig(pvBeanID);
+  if lvConfig <> nil then
+  begin
+    lvIsSingleton := lvConfig.B['singleton'];
+  end;
+  if lvIsSingleton then
+  begin
+    lock();
+    try
+      i := FBeanList.IndexOf(string(AnsiString(pvBeanID)));
+      if i = -1 then
+      begin
+        lvBeanINfo := TBeanINfo.Create;
+        lvBeanINfo.FbeanID := string(AnsiString(pvBeanID));
+        lvBeanINfo.FInstance := createInstance(pvPluginINfo);
+        Result := lvBeanINfo.FInstance;
+        FBeanList.AddObject(string(AnsiString(pvBeanID)), lvBeanINfo);
+      end else
+      begin
+        lvBeanINfo := TBeanINfo(FBeanList.Objects[i]);
+        Result := lvBeanINfo.FInstance;
+      end;
+    finally
+      unLock;
+    end;
+  end else
+  begin
+    Result := createInstance(pvPluginINfo);
+  end;
+end;
+
 function TBeanFactory.checkGetBeanConfig(pvBeanID: PAnsiChar): ISuperObject;
 var
   lvMapKey:String;
@@ -250,18 +301,20 @@ procedure TBeanFactory.clear;
 var
   i: Integer;
 begin
+  for i := 0 to FBeanList.Count -1 do
+  begin
+    FBeanList.Objects[i].Free;
+  end;
+  FBeanList.Clear;
+
   for i := 0 to FPlugins.Count -1 do
   begin
-    FPlugins.Objects[0].Free;
+    FPlugins.Objects[i].Free;
   end;
   FPlugins.Clear;
 
 
-  for i := 0 to FBeanList.Count -1 do
-  begin
-    FBeanList.Objects[0].Free;
-  end;
-  FBeanList.Clear;
+
 end;
 
 function TBeanFactory.configBean(pvBeanID, pvConfig: PAnsiChar): Integer;
@@ -321,6 +374,7 @@ begin
   inherited Create;
   FConfig := SO();
   FPlugins := TStringList.Create;
+  FBeanList := TStringList.Create;
   FCS := TCriticalSection.Create();
 end;
 
@@ -408,10 +462,11 @@ end;
 
 destructor TBeanFactory.Destroy;
 begin
-  FConfig := nil;
-  FreeAndNil(FCS);
   clear;
+  FreeAndNil(FCS);
+  FConfig := nil;
   FPlugins.Free;
+  FBeanList.Free;
   inherited Destroy;
 end;
 
@@ -419,7 +474,7 @@ function TBeanFactory.findBeanConfig(pvBeanID: PAnsiChar): ISuperObject;
 var
   lvMapKey:String;
 begin
-  Result := '';
+  Result := nil;
   lvMapKey := getBeanMapKey(pvBeanID);
   Result := FConfig.O[lvMapKey];
 end;
@@ -461,18 +516,7 @@ begin
       end;
     end else
     begin
-      if beanIsSingleton(pvBeanID) then
-      begin
-        i := FBeanList.IndexOf(pvBeanID);
-        if i = -1 then
-        begin
-          FLastErr := '找不到对应的插件[' + pvBeanID + ']';
-          exit;
-        end;
-      end else
-      begin
-        Result := createInstance(lvPluginINfo);
-      end;
+      Result :=  checkGetBeanAccordingBeanConfig(pvBeanID, lvPluginINfo);
     end;
   except
     on E:Exception do
@@ -566,16 +610,48 @@ end;
 destructor TPluginINfo.Destroy;
 begin
   try
-    FInstance := nil;
+    checkFreeInstance;
   except
   end;
   inherited Destroy;
 end;
 
+procedure TPluginINfo.checkFreeInstance;
+var
+  lvFree:IFreeObject;
+begin
+  if FInstance <> nil then
+  begin
+    if FInstance.QueryInterface(IFreeObject, lvFree)=S_OK then
+    begin
+      FInstance := nil;
+      lvFree.FreeObject;
+      lvFree := nil;
+    end;
+  end;
+end;
+
+procedure TBeanINfo.checkFreeInstance;
+var
+  lvFree:IFreeObject;
+begin
+  if FInstance <> nil then
+  begin
+    if FInstance.QueryInterface(IFreeObject, lvFree)=S_OK then
+    begin
+      FInstance := nil;
+      lvFree.FreeObject;
+      lvFree := nil;
+    end;
+  end;
+
+
+end;
+
 destructor TBeanINfo.Destroy;
 begin
   try
-    FInstance := nil;
+    checkFreeInstance;
   except
   end;
   inherited Destroy;

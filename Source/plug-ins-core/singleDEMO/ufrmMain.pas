@@ -11,6 +11,8 @@ type
     Button1: TButton;
     edtThreadCounter: TEdit;
     btnStart: TButton;
+    btnSingletonForm: TButton;
+    procedure btnSingletonFormClick(Sender: TObject);
     procedure btnStartClick(Sender: TObject);
     procedure Button1Click(Sender: TObject);
   private
@@ -26,13 +28,21 @@ var
 implementation
 
 uses
-  uIUIForm;
+  uIUIForm, uIShow;
 
 {$R *.dfm}
 
 function ThreadFunc(p: Pointer): Integer;
 begin
   TfrmMain(p).workerTester;
+end;
+
+procedure TfrmMain.btnSingletonFormClick(Sender: TObject);
+begin
+  with appPluginContext.getBean('singletonDEMO') as IShowForm do
+  begin
+    ShowForm;
+  end;
 end;
 
 procedure TfrmMain.btnStartClick(Sender: TObject);

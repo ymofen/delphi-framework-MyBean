@@ -8,20 +8,22 @@ uses
   ufrmMain in '..\..\ufrmMain.pas' {frmMain},
   ufrmTester in '..\..\Child\ufrmTester.pas' {frmTester},
   uIUIForm in '..\..\Interface\uIUIForm.pas',
+  ufrmSingleton in '..\..\Child\ufrmSingleton.pas' {frmSingleton},
+  uIShow in '..\..\Interface\uIShow.pas',
   uAppPluginContext in '..\..\..\..\frameCommon\Service\uAppPluginContext.pas';
 
-{$R *.res}
+{R *.res}
 
 begin
   Application.Initialize;
-  appPluginContext.checkInitialize(true);
+  applicationContextIntialize(False);
   try
     registerFactoryObject(beanFactory, 'default');
     Application.MainFormOnTaskbar := True;
     Application.CreateForm(TfrmMain, frmMain);
+    Application.CreateForm(TfrmSingleton, frmSingleton);
     Application.Run;
   finally
-    appPluginContext.checkFinalize;
-    appContextCleanup;
+    applicationContextFinalize;
   end;
 end.

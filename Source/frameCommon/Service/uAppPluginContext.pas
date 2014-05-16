@@ -26,7 +26,33 @@ procedure appContextCleanup; stdcall; external 'beanManager.dll';
 function registerFactoryObject(const pvBeanFactory:IBeanFactory;
   const pvNameSapce:PAnsiChar): Integer; stdcall; external 'beanManager.dll';
 
+
+/// <summary>
+///   主程序调用，其他插件请勿调用,封装成函数调用避免临时引用接口
+/// </summary>
+procedure applicationContextIntialize(pvLoadLib:Boolean);
+
+/// <summary>
+///   主程序调用，其他插件请勿调用,封装成函数调用避免临时引用接口
+/// </summary>
+procedure applicationContextFinalize;
+
 implementation
+
+procedure applicationContextIntialize(pvLoadLib:Boolean);
+begin
+  appPluginContext.checkInitialize(pvLoadLib);
+end;
+
+procedure applicationContextFinalize;
+var
+  lvIntf:IApplicationContext;
+begin
+  lvIntf := appPluginContext;
+  lvIntf.checkFinalize;
+  lvIntf := nil;
+  appContextCleanup;
+end;
 
 
 end.

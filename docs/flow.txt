@@ -1,0 +1,10 @@
+applicationContextIntialize   //初始化加载插件
+   applicationContext.checkInitialize;  //初始化加载插件
+
+
+applicationContextFinalize
+  applicationContext.checkFinalize;    //结束程序
+   //清理全局资源applicationKeyMap.cleanObjects
+   //插件工厂清理资源 beanFactory.checkFinalize
+   //卸载 插件DLL
+  appContextCleanup;    //清理剩余的全局对象

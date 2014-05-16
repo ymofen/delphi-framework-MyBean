@@ -1,0 +1,24 @@
+下列文件将作为bean的配置文件进行读取
+
+
+*.plug-ins
+
+beanConfig\*.plug-ins
+
+plug-ins\*.plug-ins
+
+
+配置文件样式:
+
+
+{
+   list:
+   [
+      {
+         "id":"frame-core",
+         "pluginID":"frame-core",           //如果与id一致可以进行忽略
+         "lib":"plug-ins\\mCore.dll",       //文件名
+         "singleton":true,                  //是否单件模式
+      }
+   ]
+}

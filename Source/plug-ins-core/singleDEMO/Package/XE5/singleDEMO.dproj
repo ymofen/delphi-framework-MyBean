@@ -119,6 +119,10 @@
             <Form>frmTester</Form>
         </DCCReference>
         <DCCReference Include="..\..\Interface\uIUIForm.pas"/>
+        <DCCReference Include="..\..\Child\ufrmSingleton.pas">
+            <Form>frmSingleton</Form>
+        </DCCReference>
+        <DCCReference Include="..\..\Interface\uIShow.pas"/>
         <DCCReference Include="..\..\..\..\frameCommon\Service\uAppPluginContext.pas"/>
         <BuildConfiguration Include="Debug">
             <Key>Cfg_2</Key>

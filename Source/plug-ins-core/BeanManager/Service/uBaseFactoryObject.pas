@@ -19,6 +19,8 @@ type
     constructor Create;
     destructor Destroy; override;
     procedure cleanup;virtual;
+
+    procedure checkFinalize;virtual;
     procedure checkInitialize;virtual;
     
     /// <summary>
@@ -71,9 +73,17 @@ end;
 
 { TBaseFactoryObject }
 
+procedure TBaseFactoryObject.checkFinalize;
+begin
+  if FbeanFactory <> nil then
+  begin
+    FbeanFactory.checkFinalize;
+  end;
+end;
+
 procedure TBaseFactoryObject.checkInitialize;
 begin
-  
+
 end;
 
 procedure TBaseFactoryObject.cleanup;

@@ -15,8 +15,15 @@ type
      , IbeanFactoryRegister
      )
   private
+    /// <summary>
+    ///   保存FactoryObject列表,LibFile -> FactoryObject
+    /// </summary>
     FFactoryObjectList: TStrings;
-    FPlugins: TStrings;
+
+    /// <summary>
+    ///   保存beanID和FactoryObject的对应关系
+    /// </summary>
+    FBeanMapList: TStrings;
 
     procedure DoRegisterPluginIDS(pvPluginIDS: String; pvFactoryObject:
         TBaseFactoryObject);
@@ -26,6 +33,9 @@ type
     //直接加载模块文件
     procedure ExecuteLoadLibrary; stdcall;
 
+    /// <summary>
+    ///   根据提供的Lib文件得到TLibFactoryObject对象，如果不列表中不存在则新增一个对象
+    /// </summary>
     function checkCreateLibObject(pvFileName:string): TLibFactoryObject;
 
   private
@@ -45,7 +55,7 @@ type
     procedure checkReady;
 
     /// <summary>
-    ///   关联Bean和Lib对象
+    ///   关联Bean和Lib对象(往FBeanMapList中注册关系)
     /// </summary>
     procedure checkRegisterBean(pvBeanID: string; pvFactoryObject:
         TBaseFactoryObject);
@@ -113,10 +123,7 @@ function registerFactoryObject(const pvBeanFactory:IBeanFactory; const
     pvNameSapce:PAnsiChar): Integer; stdcall;
 
 
-/// <summary>
-///   获取全局的KeyMap接口
-/// </summary>
-function applicationKeyMap: IKeyMap; stdcall;
+
 
 
 implementation
@@ -189,10 +196,7 @@ begin
   end;
 end;
 
-function applicationKeyMap: IKeyMap;
-begin
-  Result := TKeyMapImpl.instance;
-end;
+
 
 procedure TApplicationContext.checkInitialize(pvLoadLib:Boolean);
 begin
@@ -228,15 +232,15 @@ begin
   lvID := trim(pvBeanID);
   if (lvID <> '') then
   begin
-    j := FPlugins.IndexOf(lvID);
+    j := FBeanMapList.IndexOf(lvID);
     if j <> -1 then
     begin
-      lvLibObject := TBaseFactoryObject(FPlugins.Objects[j]);
+      lvLibObject := TBaseFactoryObject(FBeanMapList.Objects[j]);
       TFileLogger.instance.logMessage(Format('在注册插件[%s]时发现重复,已经在[%s]进行了注册',
          [lvID,lvLibObject.namespace]));
     end else
     begin
-      FPlugins.AddObject(lvID, pvFactoryObject);
+      FBeanMapList.AddObject(lvID, pvFactoryObject);
     end;
   end;
 end;
@@ -249,29 +253,44 @@ end;
 procedure TApplicationContext.checkFinalize;
 var
   lvLibObject:TBaseFactoryObject;
+  i:Integer;
 begin
+  ///清理掉applicationKeyMap中的全局资源
+  applicationKeyMap.cleanupObjects;
 
-  FPlugins.Clear;
-  while FFactoryObjectList.Count > 0 do
+
+  ///全部执行一次Finalize;
+  for i := 0 to FFactoryObjectList.Count -1 do
   begin
-    lvLibObject := TBaseFactoryObject(FFactoryObjectList.Objects[0]);
-    lvLibObject.cleanup;
-    lvLibObject.Free;
-    FFactoryObjectList.Delete(0);
+    lvLibObject := TBaseFactoryObject(FFactoryObjectList.Objects[i]);
+    lvLibObject.checkFinalize;
   end;
+
+  ///卸载DLL
+  for i := 0 to FFactoryObjectList.Count -1 do
+  begin
+    try
+      lvLibObject := TBaseFactoryObject(FFactoryObjectList.Objects[i]);
+      lvLibObject.cleanup;
+      lvLibObject.Free;
+    except
+    end;
+  end;
+  FFactoryObjectList.Clear;
+  FBeanMapList.Clear;
 end;
 
 constructor TApplicationContext.Create;
 begin
   inherited Create;
   FFactoryObjectList := TStringList.Create();
-  FPlugins := TStringList.Create;
+  FBeanMapList := TStringList.Create;
 end;
 
 destructor TApplicationContext.Destroy;
 begin
   checkFinalize;
-  FPlugins.Free;
+  FBeanMapList.Free;
   FFactoryObjectList.Free;
   inherited Destroy;
 end;
@@ -298,6 +317,7 @@ begin
 
     Result := TLibFactoryObject.Create;
     Result.LibFileName := lvCacheFile;
+    FFactoryObjectList.AddObject(lvFileName, Result);
   end else
   begin
     Result := TLibFactoryObject(FFactoryObjectList.Objects[i]);
@@ -313,10 +333,10 @@ var
 begin
   Result := nil;
   lvBeanID := pvBeanID;
-  j := FPlugins.IndexOf(String(lvBeanID));
+  j := FBeanMapList.IndexOf(String(lvBeanID));
   if j <> -1 then
   begin
-    lvLibObject := TBaseFactoryObject(FPlugins.Objects[j]);
+    lvLibObject := TBaseFactoryObject(FBeanMapList.Objects[j]);
     Result := lvLibObject.getBean(lvBeanID);
 
   end;
@@ -348,15 +368,15 @@ begin
     lvID := trim(pvPlugins[i]);
     if (lvID <> '') then
     begin
-      j := FPlugins.IndexOf(lvID);
+      j := FBeanMapList.IndexOf(lvID);
       if j <> -1 then
       begin
-        lvLibObject := TBaseFactoryObject(FPlugins.Objects[j]);
+        lvLibObject := TBaseFactoryObject(FBeanMapList.Objects[j]);
         TFileLogger.instance.logMessage(Format('在注册插件[%s]时发现重复,已经在[%s]进行了注册',
            [lvID,lvLibObject.namespace]));
       end else
       begin
-        FPlugins.AddObject(lvID, pvFactoryObject);
+        FBeanMapList.AddObject(lvID, pvFactoryObject);
       end;
     end;
   end;
@@ -391,6 +411,10 @@ begin
   lvStrings := TStringList.Create;
   try
     GetFileNameList(lvStrings, FRootPath + '*.plug-ins');
+    executeLoadFromConfigFiles(lvStrings);
+
+    lvStrings.Clear;
+    GetFileNameList(lvStrings, FRootPath + 'beanConfig\*.plug-ins');
     executeLoadFromConfigFiles(lvStrings);
 
     lvStrings.Clear;

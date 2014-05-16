@@ -41,15 +41,15 @@ type
   public
     procedure AfterConstruction; override;
     destructor Destroy; override;
-
-    /// <summary>
-    ///   单实例对象
-    /// </summary>
-    class function instance: TKeyMapImpl;
   end;
 
 
 procedure executeKeyMapCleanup;
+
+/// <summary>
+///   获取全局的KeyMap接口
+/// </summary>
+function applicationKeyMap: IKeyMap; stdcall;
 
 implementation
 
@@ -59,6 +59,12 @@ uses
 var
   __instance:TKeyMapImpl;
   __instanceIntf:IInterface;
+
+
+function applicationKeyMap: IKeyMap;
+begin
+  Result := __instance;
+end;
 
 procedure executeKeyMapCleanup;
 begin
@@ -73,7 +79,6 @@ begin
       TFileLogger.instance.logErrMessage(Format('keyMap存在[%d]未释放的情况',
         [__instance.RefCount-1]));
     end;
-    __instanceIntf := nil;
   except
   end;
 end;
@@ -110,10 +115,6 @@ begin
   Result := FKeyIntface.find(string(AnsiString(pvKey)));
 end;
 
-class function TKeyMapImpl.instance: TKeyMapImpl;
-begin
-  Result := __instance;
-end;
 
 procedure TKeyMapImpl.removeObject(const pvKey: PAnsiChar);
 begin
@@ -149,6 +150,7 @@ initialization
 
 finalization
   executeKeyMapCleanup;
+  __instanceIntf := nil;
 
 
 end.

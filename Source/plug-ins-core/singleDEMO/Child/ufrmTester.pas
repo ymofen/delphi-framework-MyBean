@@ -69,5 +69,6 @@ end;
 
 initialization
   beanFactory.RegisterBean('tester', TfrmTester);
+  beanFactory.configBeanSingleton('tester', true);
 
 end.
