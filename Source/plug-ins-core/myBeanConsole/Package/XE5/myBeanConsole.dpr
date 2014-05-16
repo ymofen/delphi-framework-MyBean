@@ -4,7 +4,6 @@ uses
   FastMM4,
   FastMM4Messages,
   Forms,
-  uAppPluginContext in '..\..\..\..\frameCommon\Service\uAppPluginContext.pas',
   ufrmMain in '..\..\mainForm\ufrmMain.pas' {Form1};
 
 {R *.res}

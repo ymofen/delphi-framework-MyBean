@@ -31,6 +31,12 @@
         <CfgParent>Base</CfgParent>
         <Base>true</Base>
     </PropertyGroup>
+    <PropertyGroup Condition="('$(Platform)'=='Win32' and '$(Cfg_2)'=='true') or '$(Cfg_2_Win32)'!=''">
+        <Cfg_2_Win32>true</Cfg_2_Win32>
+        <CfgParent>Cfg_2</CfgParent>
+        <Cfg_2>true</Cfg_2>
+        <Base>true</Base>
+    </PropertyGroup>
     <PropertyGroup Condition="'$(Base)'!=''">
         <DCC_Namespace>Vcl;Vcl.Imaging;Vcl.Touch;Vcl.Samples;Vcl.Shell;System;Xml;Data;Datasnap;Web;Soap;Winapi;$(DCC_Namespace)</DCC_Namespace>
         <VerInfo_Locale>2052</VerInfo_Locale>
@@ -57,6 +63,11 @@
         <DCC_ResourcePath>..\..\..\..\..\Source\frameCommon\Interface;..\..\..\..\..\Source\frameCommon\Service;..\..\..\..\..\Source\frameCommon\Tools;..\..\..\..\..\Source\frameCommon\Utils;..\..\..\..\..\Source\DUtils;$(DCC_ResourcePath)</DCC_ResourcePath>
         <DCC_ObjPath>..\..\..\..\..\Source\frameCommon\Interface;..\..\..\..\..\Source\frameCommon\Service;..\..\..\..\..\Source\frameCommon\Tools;..\..\..\..\..\Source\frameCommon\Utils;..\..\..\..\..\Source\DUtils;$(DCC_ObjPath)</DCC_ObjPath>
         <DCC_IncludePath>..\..\..\..\..\Source\frameCommon\Interface;..\..\..\..\..\Source\frameCommon\Service;..\..\..\..\..\Source\frameCommon\Tools;..\..\..\..\..\Source\frameCommon\Utils;..\..\..\..\..\Source\DUtils;$(DCC_IncludePath)</DCC_IncludePath>
+    </PropertyGroup>
+    <PropertyGroup Condition="'$(Cfg_2_Win32)'!=''">
+        <DCC_UnitSearchPath>..\..\..\..\..\Source\frameCommon\core;$(DCC_UnitSearchPath)</DCC_UnitSearchPath>
+        <VerInfo_Locale>1033</VerInfo_Locale>
+        <VerInfo_IncludeVerInfo>true</VerInfo_IncludeVerInfo>
     </PropertyGroup>
     <ProjectExtensions>
         <Borland.Personality>Delphi.Personality.12</Borland.Personality>
@@ -98,6 +109,10 @@
                 <Source>
                     <Source Name="MainSource">singleDEMO.dpr</Source>
                 </Source>
+                <Excluded_Packages>
+                    <Excluded_Packages Name="$(BDSBIN)\dcloffice2k190.bpl">Microsoft Office 2000 Sample Automation Server Wrapper Components</Excluded_Packages>
+                    <Excluded_Packages Name="$(BDSBIN)\dclofficexp190.bpl">Microsoft Office XP Sample Automation Server Wrapper Components</Excluded_Packages>
+                </Excluded_Packages>
             </Delphi.Personality>
             <Platforms>
                 <Platform value="Android">True</Platform>
@@ -123,7 +138,9 @@
             <Form>frmSingleton</Form>
         </DCCReference>
         <DCCReference Include="..\..\Interface\uIShow.pas"/>
-        <DCCReference Include="..\..\..\..\frameCommon\Service\uAppPluginContext.pas"/>
+        <DCCReference Include="..\..\..\..\frameCommon\core\uAppPluginContext.pas"/>
+        <DCCReference Include="..\..\..\..\frameCommon\core\uIErrorINfo.pas"/>
+        <DCCReference Include="..\..\..\..\frameCommon\core\uErrorINfoTools.pas"/>
         <BuildConfiguration Include="Debug">
             <Key>Cfg_2</Key>
             <CfgParent>Base</CfgParent>

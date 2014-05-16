@@ -9,7 +9,7 @@ type
   TBaseFactoryObject = class(TObject)
   protected
     /// <summary>
-    ///   bean的配置
+    ///   bean的配置,文件中读取的有一个list配置数组
     /// </summary>
     FConfig: ISuperObject;
   protected
@@ -26,7 +26,7 @@ type
     /// <summary>
     ///   beanID和配置信息
     /// </summary>
-    procedure configBean(pvBeanID: string; pvBeanConfig: ISuperObject);
+    procedure addBeanConfig(pvBeanConfig: ISuperObject);
 
     /// <summary>
     ///   根据beanID获取插件
@@ -50,6 +50,7 @@ constructor TBaseFactoryObject.Create;
 begin
   inherited Create;
   FConfig := SO();
+  FConfig.O['list'] := SO('[]');
 end;
 
 destructor TBaseFactoryObject.Destroy;
@@ -91,13 +92,9 @@ begin
   FbeanFactory := nil;
 end;
 
-procedure TBaseFactoryObject.configBean(pvBeanID: string; pvBeanConfig:
-    ISuperObject);
-var
-  lvMapKey:String;
+procedure TBaseFactoryObject.addBeanConfig(pvBeanConfig: ISuperObject);
 begin
-  lvMapKey := TSOTools.makeMapKey(pvBeanID);
-  FConfig.O[lvMapKey] := pvBeanConfig;
+  FConfig.A['list'].Add(pvBeanConfig);
 end;
 
 end.

@@ -3,7 +3,7 @@ unit uAppPluginContext;
 interface
 
 uses
-  uIAppliationContext, uIBeanFactory;
+  uIAppliationContext, uIBeanFactory, uIKeyMap;
 
 
 /// <summary>
@@ -25,6 +25,12 @@ procedure appContextCleanup; stdcall; external 'beanManager.dll';
 /// </summary>
 function registerFactoryObject(const pvBeanFactory:IBeanFactory;
   const pvNameSapce:PAnsiChar): Integer; stdcall; external 'beanManager.dll';
+
+
+/// <summary>
+///   获取全局的KeyMap接口
+/// </summary>
+function applicationKeyMap: IKeyMap; stdcall; external 'beanManager.dll';
 
 
 /// <summary>

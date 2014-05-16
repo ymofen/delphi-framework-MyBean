@@ -33,8 +33,13 @@ type
     ///   获取一个bean接口(线程安全)
     ///     如果单实例内部开启互斥
     /// </summary>
-    function getBean(pvPluginID: PAnsiChar): IInterface; stdcall;
+    function getBean(pvBeanID: PAnsiChar): IInterface; stdcall;
 
+
+    /// <summary>
+    ///   获取beanID对应的工厂接口
+    /// </summary>
+    function getBeanFactory(pvBeanID:PAnsiChar):IInterface; stdcall;
   end;
 
 implementation

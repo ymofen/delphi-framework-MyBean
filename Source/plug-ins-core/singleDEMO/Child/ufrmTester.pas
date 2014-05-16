@@ -8,9 +8,12 @@ uses
 
 type
   TfrmTester = class(TForm, IUIForm)
+    procedure FormCreate(Sender: TObject);
   private
     { Private declarations }
   public
+    constructor Create(AOwner: TComponent); override;
+
     procedure showAsMDI; stdcall;
 
     function showAsModal: Integer; stdcall;
@@ -34,6 +37,16 @@ var
 implementation
 
 {$R *.dfm}
+
+constructor TfrmTester.Create(AOwner: TComponent);
+begin
+  inherited;
+end;
+
+procedure TfrmTester.FormCreate(Sender: TObject);
+begin
+
+end;
 
 { TfrmTester }
 
@@ -69,6 +82,5 @@ end;
 
 initialization
   beanFactory.RegisterBean('tester', TfrmTester);
-  beanFactory.configBeanSingleton('tester', true);
 
 end.

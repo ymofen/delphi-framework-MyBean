@@ -57,8 +57,8 @@ type
     /// <summary>
     ///   关联Bean和Lib对象(往FBeanMapList中注册关系)
     /// </summary>
-    procedure checkRegisterBean(pvBeanID: string; pvFactoryObject:
-        TBaseFactoryObject);
+    function checkRegisterBean(pvBeanID: string; pvFactoryObject:
+        TBaseFactoryObject): Boolean;
 
 
     /// <summary>
@@ -92,6 +92,12 @@ type
     ///   获取根据BeanID获取一个对象
     /// </summary>
     function getBean(pvBeanID: PAnsiChar): IInterface; stdcall;
+
+
+    /// <summary>
+    ///   获取beanID对应的工厂接口
+    /// </summary>
+    function getBeanFactory(pvBeanID:PAnsiChar): IInterface; stdcall;
 
   protected
     /// <summary>
@@ -222,13 +228,14 @@ begin
 
 end;
 
-procedure TApplicationContext.checkRegisterBean(pvBeanID: string;
-    pvFactoryObject: TBaseFactoryObject);
+function TApplicationContext.checkRegisterBean(pvBeanID: string;
+    pvFactoryObject: TBaseFactoryObject): Boolean;
 var
   j:Integer;
   lvID:String;
   lvLibObject:TBaseFactoryObject;
 begin
+  Result := false;
   lvID := trim(pvBeanID);
   if (lvID <> '') then
   begin
@@ -241,6 +248,7 @@ begin
     end else
     begin
       FBeanMapList.AddObject(lvID, pvFactoryObject);
+      Result := true;
     end;
   end;
 end;
@@ -338,7 +346,6 @@ begin
   begin
     lvLibObject := TBaseFactoryObject(FBeanMapList.Objects[j]);
     Result := lvLibObject.getBean(lvBeanID);
-
   end;
 end;
 
@@ -468,10 +475,11 @@ begin
           end;
 
 
-          //将配置放到对应的节点管理中
-          lvLibObj.configBean(lvID, lvItem);
-
-          checkRegisterBean(lvID, lvLibObj);
+          if checkRegisterBean(lvID, lvLibObj) then
+          begin
+            //将配置放到对应的节点管理中
+            lvLibObj.addBeanConfig(lvItem);
+          end;
         except
           on E:Exception do
           begin
@@ -547,6 +555,37 @@ begin
     end;
   finally
     lvStrings.Free;
+  end;
+end;
+
+function TApplicationContext.getBeanFactory(pvBeanID:PAnsiChar): IInterface;
+var
+  j:Integer;
+  lvLibObject:TBaseFactoryObject;
+  lvBeanID:AnsiString;
+begin
+  Result := nil;
+  lvBeanID := pvBeanID;
+  try
+    j := FBeanMapList.IndexOf(String(lvBeanID));
+    if j <> -1 then
+    begin
+      lvLibObject := TBaseFactoryObject(FBeanMapList.Objects[j]);
+      lvLibObject.checkInitialize;
+      Result := lvLibObject.beanFactory;
+    end else
+    begin
+      TFileLogger.instance.logMessage(
+                    Format('找不到对应的[%s]插件工厂', [lvBeanID]),
+                    'pluginLoaderErr');
+    end;
+  except
+    on E:Exception do
+    begin
+      TFileLogger.instance.logMessage(
+                    Format('获取插件工厂[%s]出现异常', [lvBeanID]) + e.Message,
+                    'pluginLoaderErr');
+    end;
   end;
 end;
 

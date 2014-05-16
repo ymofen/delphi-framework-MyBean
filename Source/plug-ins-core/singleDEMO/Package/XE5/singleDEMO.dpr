@@ -10,7 +10,9 @@ uses
   uIUIForm in '..\..\Interface\uIUIForm.pas',
   ufrmSingleton in '..\..\Child\ufrmSingleton.pas' {frmSingleton},
   uIShow in '..\..\Interface\uIShow.pas',
-  uAppPluginContext in '..\..\..\..\frameCommon\Service\uAppPluginContext.pas';
+  uAppPluginContext in '..\..\..\..\frameCommon\core\uAppPluginContext.pas',
+  uIErrorINfo in '..\..\..\..\frameCommon\core\uIErrorINfo.pas',
+  uErrorINfoTools in '..\..\..\..\frameCommon\core\uErrorINfoTools.pas';
 
 {R *.res}
 
@@ -21,8 +23,8 @@ begin
     registerFactoryObject(beanFactory, 'default');
     Application.MainFormOnTaskbar := True;
     Application.CreateForm(TfrmMain, frmMain);
-    Application.CreateForm(TfrmSingleton, frmSingleton);
-    Application.Run;
+  Application.CreateForm(TfrmSingleton, frmSingleton);
+  Application.Run;
   finally
     applicationContextFinalize;
   end;

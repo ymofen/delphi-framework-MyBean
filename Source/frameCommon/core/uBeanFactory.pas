@@ -12,6 +12,20 @@ type
     procedure FreeObject; stdcall;
   end;
 
+  IErrorINfo = interface(IInterface)
+    ['{A15C511B-AD0A-43F9-AA3B-CAAE00DC372D}']
+    /// <summary>
+    ///   获取错误代码，没有错误返回 0
+    /// </summary>
+    function getErrorCode: Integer; stdcall;
+
+    /// <summary>
+    ///   获取错误信息数据，返回读取到的错误信息长度，
+    ///     如果传入的pvErrorDesc为nil指针，返回错误信息的长度
+    /// </summary>
+    function getErrorDesc(pvErrorDesc: PAnsiChar; pvLength: Integer): Integer;  stdcall;
+  end;
+
   TPluginINfo = class(TObject)
   private
     FInstance: IInterface;
@@ -51,7 +65,9 @@ type
       TObject stdcall;
 
 
-  TBeanFactory = class(TInterfacedObject, IBeanFactory)
+  TBeanFactory = class(TInterfacedObject,
+     IBeanFactory,
+     IErrorINfo)
   private
 
 
@@ -62,6 +78,7 @@ type
     FCS: TCriticalSection;
     FInitializeProcInvoked:Boolean;
     FLastErr:String;
+    FLastErrCode:Integer;
     FOnCreateInstanceProc: TOnCreateInstanceProc;
     FOnCreateInstanceProcEX: TOnCreateInstanceProcEX;
     FOnInitializeProc: TOnInitializeProc;
@@ -90,6 +107,19 @@ type
     ///
     function checkGetBeanAccordingBeanConfig(pvBeanID: PAnsiChar; pvPluginINfo:
         TPluginINfo): IInterface;
+
+  protected
+    procedure resetErrorINfo;
+    /// <summary>
+    ///   获取错误代码，没有错误返回 0
+    /// </summary>
+    function getErrorCode: Integer; stdcall;
+
+    /// <summary>
+    ///   获取错误信息数据，返回读取到的错误信息长度，
+    ///     如果传入的pvErrorDesc为nil指针，返回错误信息的长度
+    /// </summary>
+    function getErrorDesc(pvErrorDesc: PAnsiChar; pvLength: Integer): Integer;  stdcall;
   protected
     procedure clear;
   public
@@ -246,8 +276,13 @@ begin
       if i = -1 then
       begin
         lvBeanINfo := TBeanINfo.Create;
-        lvBeanINfo.FbeanID := string(AnsiString(pvBeanID));
-        lvBeanINfo.FInstance := createInstance(pvPluginINfo);
+        try
+          lvBeanINfo.FbeanID := string(AnsiString(pvBeanID));
+          lvBeanINfo.FInstance := createInstance(pvPluginINfo);
+        except
+          lvBeanINfo.Free;
+          raise;
+        end;
         Result := lvBeanINfo.FInstance;
         FBeanList.AddObject(string(AnsiString(pvBeanID)), lvBeanINfo);
       end else
@@ -347,6 +382,7 @@ function TBeanFactory.configBeans(pvConfig: PAnsiChar): Integer;
 var
   lvConfig:ISuperObject;
 begin
+  resetErrorINfo;
   lvConfig := SO(pvConfig);
   if lvConfig = nil then
   begin
@@ -487,12 +523,14 @@ var
   lvPluginINfo:TPluginINfo;
   lvPluginID:String;
 begin
+  resetErrorINfo;
   lvPluginID := getPluginID(pvBeanID);
   Result := nil;
   try
     i := FPlugins.IndexOf(lvPluginID);
     if i = -1 then
     begin
+      FLastErrCode := -1;
       FLastErr := '找不到对应的插件[' + pvBeanID + ']';
       exit;
     end;
@@ -521,6 +559,7 @@ begin
   except
     on E:Exception do
     begin
+      if FLastErrCode = 0 then FLastErrCode := -1;
       FLastErr := E.Message;
       TFileLogger.instance.logErrMessage(string(FLastErr));
     end;
@@ -543,6 +582,28 @@ end;
 function TBeanFactory.getBeanMapKey(pvBeanID:PAnsiChar): String;
 begin
   Result := TSOTools.makeMapKey(AnsiString(pvBeanID));
+end;
+
+function TBeanFactory.getErrorCode: Integer;
+begin
+  Result := FLastErrCode;
+end;
+
+function TBeanFactory.getErrorDesc(pvErrorDesc: PAnsiChar;
+  pvLength: Integer): Integer;
+var
+  j:Integer;
+  lvStr:AnsiString;
+begin
+  lvStr := AnsiString(FLastErr);
+  j := Length(lvStr);
+  if pvErrorDesc <> nil then
+  begin
+    if j > pvLength then  j := pvLength;
+    CopyMemory(pvErrorDesc, PAnsiChar(lvStr), j);
+  end;
+  Result := j;
+  lvStr := '';
 end;
 
 function TBeanFactory.getPluginID(pvBeanID: PAnsiChar): String;
@@ -584,6 +645,12 @@ begin
   lvObject.FIsMainForm := true;
   lvObject.FInstance := nil;
   FPlugins.AddObject(pvPluginID, lvObject);    
+end;
+
+procedure TBeanFactory.resetErrorINfo;
+begin
+  FLastErr := '';
+  FLastErrCode := 0;
 end;
 
 procedure TBeanFactory.unLock;

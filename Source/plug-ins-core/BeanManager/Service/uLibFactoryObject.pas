@@ -74,11 +74,30 @@ begin
 end;
 
 procedure TLibFactoryObject.checkInitialize;
+var
+  lvConfigStr, lvBeanID:AnsiString;
+  lvBeanConfig:ISuperObject;
+  i: Integer;
 begin
   if FbeanFactory <> nil then
   begin
     checkLoadLibrary;
+
+    //将配置传入到beanFactory中
+    for i := 0 to FConfig.A['list'].Length-1 do
+    begin
+      lvBeanConfig := FConfig.A['list'].O[i];
+      lvBeanID := AnsiString(lvBeanConfig.S['id']);
+      lvConfigStr := AnsiString(lvBeanConfig.AsJSon(false, false));
+
+      //配置单个bean
+      FbeanFactory.configBean(PAnsiChar(lvBeanID), PAnsiChar(lvConfigStr));
+    end;
   end;
+
+  //避免提前释放
+  lvConfigStr := '';
+  lvBeanID:= '';
 end;
 
 function TLibFactoryObject.checkLoadLibrary: Boolean;

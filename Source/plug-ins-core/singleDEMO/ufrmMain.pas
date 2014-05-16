@@ -28,7 +28,7 @@ var
 implementation
 
 uses
-  uIUIForm, uIShow;
+  uIUIForm, uIShow, mBeanFrameVars;
 
 {$R *.dfm}
 
@@ -39,6 +39,7 @@ end;
 
 procedure TfrmMain.btnSingletonFormClick(Sender: TObject);
 begin
+
   with appPluginContext.getBean('singletonDEMO') as IShowForm do
   begin
     ShowForm;
@@ -59,7 +60,7 @@ end;
 
 procedure TfrmMain.Button1Click(Sender: TObject);
 begin
-  with appPluginContext.getBean('tester') as IUIForm do
+  with TmBeanFrameVars.getBean('tester') as IUIForm do
   try
     showAsModal;
   finally
