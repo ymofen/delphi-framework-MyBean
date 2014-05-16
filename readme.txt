@@ -8,7 +8,7 @@ Outputs\
   ..\..\..\..\..\BIN\plug-ins
 
 Search path:
-  ..\..\..\..\..\Source\frameCommon\Interface;..\..\..\..\..\Source\frameCommon\Service;..\..\..\..\..\Source\frameCommon\Tools;..\..\..\..\..\Source\frameCommon\Utils;..\..\..\..\..\Source\DUtils;
+  ..\..\..\..\..\Source\frameCommon\core;..\..\..\..\..\Source\frameCommon\Interface;..\..\..\..\..\Source\frameCommon\Service;..\..\..\..\..\Source\frameCommon\Tools;..\..\..\..\..\Source\frameCommon\Utils;..\..\..\..\..\Source\DUtils;
 
     
-  $(myBean_HOME)\Source\frameCommon\Interface;$(myBean_HOME)\Source\frameCommon\Service;$(myBean_HOME)\Source\frameCommon\Tools;$(myBean_HOME)\Source\frameCommon\Utils;
+  $(myBean_HOME)\Source\frameCommon\core;$(myBean_HOME)\Source\frameCommon\Interface;$(myBean_HOME)\Source\frameCommon\Service;$(myBean_HOME)\Source\frameCommon\Tools;$(myBean_HOME)\Source\frameCommon\Utils;

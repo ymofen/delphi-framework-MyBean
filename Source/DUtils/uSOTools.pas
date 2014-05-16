@@ -131,15 +131,28 @@ begin
   if lvMapKey = '' then exit;
 
   lvCheckCanKey := True;
-
-  //判断是否可以做JSON主键
-  for I := 1 to Length(lvMapKey) do
+  if Length(lvMapKey) = 0 then
   begin
-    if not (lvMapKey[i] in ['a'..'z','0'..'9', '_']) then
+    Result := 'null';
+  end else if Length(lvMapKey) > 1 then
+  begin
+    lvCheckCanKey := lvMapKey[1]  in ['a'..'z','0'..'9', '_'];
+
+    if lvCheckCanKey then
     begin
-      lvCheckCanKey := false;
-      Break;
+      //判断是否可以做JSON主键
+      for I := 2 to Length(lvMapKey) do
+      begin
+        if not (lvMapKey[i] in ['a'..'z','0'..'9', '_', '-']) then
+        begin
+          lvCheckCanKey := false;
+          Break;
+        end;
+      end;
     end;
+  end else
+  begin
+    lvCheckCanKey := lvMapKey[1]  in ['a'..'z','0'..'9', '_'];
   end;
 
   if lvCheckCanKey then
@@ -148,8 +161,7 @@ begin
   end else
   begin
     //使用hash值
-    Result := '_' + IntToStr(hashOf(pvStringData));
-    //Result := '_' + IntToStr(TSuperAvlEntry.Hash(pvStringData));
+    Result := '_' + IntToStr(TSuperAvlEntry.Hash(pvStringData));
   end;
 end;
 
