@@ -14,38 +14,21 @@ object frmMain: TfrmMain
   PixelsPerInch = 96
   TextHeight = 13
   object Button1: TButton
-    Left = 32
+    Left = 26
     Top = 43
-    Width = 75
+    Width = 143
     Height = 25
-    Caption = 'Button1'
+    Caption = #21019#24314#19968#20010'bean'#31383#20307
     TabOrder = 0
     OnClick = Button1Click
-  end
-  object edtThreadCounter: TEdit
-    Left = 136
-    Top = 16
-    Width = 121
-    Height = 21
-    TabOrder = 1
-    Text = '100'
-  end
-  object btnStart: TButton
-    Left = 136
-    Top = 43
-    Width = 75
-    Height = 25
-    Caption = 'btnStart'
-    TabOrder = 2
-    OnClick = btnStartClick
   end
   object btnSingletonForm: TButton
     Left = 26
     Top = 144
     Width = 185
     Height = 25
-    Caption = 'btnSingletonForm'
-    TabOrder = 3
+    Caption = #21019#24314#19968#20010#21333#23454#20363#31383#20307
+    TabOrder = 1
     OnClick = btnSingletonFormClick
   end
 end

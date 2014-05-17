@@ -36,7 +36,7 @@ function applicationKeyMap: IKeyMap; stdcall; external 'beanManager.dll';
 /// <summary>
 ///   主程序调用，其他插件请勿调用,封装成函数调用避免临时引用接口
 /// </summary>
-procedure applicationContextIntialize(pvLoadLib:Boolean);
+procedure applicationContextIntialize;
 
 /// <summary>
 ///   主程序调用，其他插件请勿调用,封装成函数调用避免临时引用接口
@@ -45,9 +45,9 @@ procedure applicationContextFinalize;
 
 implementation
 
-procedure applicationContextIntialize(pvLoadLib:Boolean);
+procedure applicationContextIntialize;
 begin
-  appPluginContext.checkInitialize(pvLoadLib);
+  appPluginContext.checkInitialize();
 end;
 
 procedure applicationContextFinalize;

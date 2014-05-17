@@ -3,18 +3,19 @@ unit ufrmSingleton;
 interface
 
 uses
-  Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants, System.Classes, Vcl.Graphics,
-  Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.StdCtrls, uIFreeObject, uIShow;
+  Windows, Messages, SysUtils, Variants, Classes, Graphics,
+  Controls, Forms, Dialogs, StdCtrls, uIFreeObject,
+  uIFormShow;
 
 type
-  TfrmSingleton = class(TForm, IFreeObject, IShowForm)
+  TfrmSingleton = class(TForm, IFreeObject, IShowAsNormal)
     Memo1: TMemo;
   private
     { Private declarations }
   public
     { Public declarations }
     procedure FreeObject; stdcall;
-    procedure ShowForm(); stdcall;
+    procedure showAsNormal; stdcall;
   end;
 
 var
@@ -34,7 +35,7 @@ begin
   self.Free;
 end;
 
-procedure TfrmSingleton.ShowForm;
+procedure TfrmSingleton.showAsNormal;
 begin
   Show();
 end;

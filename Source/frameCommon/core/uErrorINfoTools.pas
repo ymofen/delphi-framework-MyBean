@@ -44,7 +44,7 @@ begin
 
       if lvErrCode = -1 then
       begin
-        raise Exception.Create(lvErrDesc);
+        raise Exception.Create(string(lvErrDesc));
       end else
       begin
         raise Exception.CreateFmt('´íÎóÐÅÏ¢:%s' + sLineBreak + '´íÎó´úÂë:%d', [lvErrDesc, lvErrCode]);

@@ -137,7 +137,6 @@
         <DCCReference Include="..\..\Child\ufrmSingleton.pas">
             <Form>frmSingleton</Form>
         </DCCReference>
-        <DCCReference Include="..\..\Interface\uIShow.pas"/>
         <DCCReference Include="..\..\..\..\frameCommon\core\uAppPluginContext.pas"/>
         <DCCReference Include="..\..\..\..\frameCommon\core\uIErrorINfo.pas"/>
         <DCCReference Include="..\..\..\..\frameCommon\core\uErrorINfoTools.pas"/>

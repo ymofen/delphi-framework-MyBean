@@ -18,8 +18,10 @@ type
     ///   初始化配置(线程不安全),
     ///      pvLoadLib为true时加载配置文件的同时加载DLL文件(服务端程序推荐)
     ///               为flase时只加载配置文件(客户端程序推荐)
+    ///      pvUseLibCache为true时copy,dll文件到Plug-ins-cache文件夹然后进行加载
+    ///                   为false时不进行copy，原来目录进行加载
     /// </summary>
-    procedure checkInitialize(pvLoadLib:Boolean);stdcall;
+    procedure checkInitialize; stdcall;
 
 
     /// <summary>

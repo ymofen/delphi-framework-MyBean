@@ -4,17 +4,18 @@ uses
   FastMM4,
   FastMM4Messages,
   Forms,
-  ufrmMain in '..\..\mainForm\ufrmMain.pas' {Form1};
+  uAppPluginContext,
+  ufrmMain in '..\..\mainForm\ufrmMain.pas' {frmMain};
 
 {R *.res}
 
 begin
   Application.Initialize;
-  applicationContextIntialize(False);
+  applicationContextIntialize();
   try
     Application.MainFormOnTaskbar := True;
-    Application.CreateForm(TForm1, Form1);
-  Application.Run;
+    Application.CreateForm(TfrmMain, frmMain);
+    Application.Run;
   finally
     applicationContextFinalize;
   end;

@@ -78,7 +78,7 @@
         <DCC_IncludePath>..\..\..\..\..\Source\frameCommon\Interface;..\..\..\..\..\Source\frameCommon\Service;..\..\..\..\..\Source\frameCommon\Tools;..\..\..\..\..\Source\frameCommon\Utils;$(DCC_IncludePath)</DCC_IncludePath>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Cfg_2_Win32)'!=''">
-        <Debugger_HostApplication>E:\workspace\d_workspace\delphi-framework-MyBean\BIN\singleDEMO.exe</Debugger_HostApplication>
+        <Debugger_HostApplication>..\..\..\..\..\BIN\myBeanConsole.exe</Debugger_HostApplication>
         <DCC_UnitSearchPath>..\..\..\..\..\Source\frameCommon\core;..\..\..\..\..\Source\DUtils;$(DCC_UnitSearchPath)</DCC_UnitSearchPath>
         <Manifest_File>None</Manifest_File>
         <VerInfo_IncludeVerInfo>true</VerInfo_IncludeVerInfo>

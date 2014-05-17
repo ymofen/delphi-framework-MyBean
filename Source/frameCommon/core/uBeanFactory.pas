@@ -3,7 +3,9 @@ unit uBeanFactory;
 interface
 
 uses
-  uIBeanFactory, Classes, SysUtils, SyncObjs, Windows, Forms, superobject;
+  uIBeanFactory, Classes, SysUtils, SyncObjs, Windows, Forms,
+
+  superobject;
 
 type
   ///uIFreeObject
@@ -98,11 +100,6 @@ type
     /// </summary>
     function getPluginID(pvBeanID:PAnsiChar):String;
 
-
-    /// <summary>
-    ///   bean是否单实例
-    /// </summary>
-    function beanIsSingleton(pvBeanID:PAnsiChar):Boolean;
 
     ///
     function checkGetBeanAccordingBeanConfig(pvBeanID: PAnsiChar; pvPluginINfo:
@@ -237,18 +234,6 @@ end;
 
 
 
-function TBeanFactory.beanIsSingleton(pvBeanID: PAnsiChar): Boolean;
-var
-  lvConfig:ISuperObject;
-begin
-  Result := False;
-  lvConfig := findBeanConfig(pvBeanID);
-  if lvConfig <> nil then
-  begin
-    Result := lvConfig.B['singleton'];
-  end;
-end;
-
 procedure TBeanFactory.checkFinalize;
 begin
   clear;
@@ -375,19 +360,22 @@ var
   lvConfig:ISuperObject;
 begin
   lvConfig := checkGetBeanConfig(pvBeanID);
-  lvConfig.S['pluginID'] := pvPluginID;
+  lvConfig.S['pluginID'] := String(AnsiString(pvPluginID));
+  Result := 0;
 end;
 
 function TBeanFactory.configBeans(pvConfig: PAnsiChar): Integer;
 var
   lvConfig:ISuperObject;
+  lvStr:string;
 begin
   resetErrorINfo;
-  lvConfig := SO(pvConfig);
+  lvStr := string(AnsiString(pvConfig));
+  lvConfig := SO(lvStr);
   if lvConfig = nil then
   begin
     Result := -1;
-    FLastErr := 'configBeans执行失败, 非法的配置' + sLineBreak + StrPas(pvConfig);
+    FLastErr := 'configBeans执行失败, 非法的配置' + sLineBreak + lvStr;
   end else
   begin
     FConfig.Merge(lvConfig);
@@ -581,7 +569,7 @@ end;
 
 function TBeanFactory.getBeanMapKey(pvBeanID:PAnsiChar): String;
 begin
-  Result := TSOTools.makeMapKey(AnsiString(pvBeanID));
+  Result := TSOTools.makeMapKey(String(AnsiString(pvBeanID)));
 end;
 
 function TBeanFactory.getErrorCode: Integer;
@@ -663,6 +651,7 @@ function TBeanFactory.RegisterBean(pvPluginID: String; pvClass: TClass;
 var
   lvObject:TPluginINfo;
 begin
+  Result := nil;
   if FPlugins.IndexOf(pvPluginID) <> -1 then Exit;
   lvObject := TPluginINfo.Create;
   lvObject.FID := pvPluginID;

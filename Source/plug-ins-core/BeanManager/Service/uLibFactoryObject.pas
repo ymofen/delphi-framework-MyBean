@@ -39,7 +39,7 @@ type
     /// <summary>
     ///   加载dll文件
     /// </summary>
-    function checkLoadLibrary: Boolean;
+    function checkLoadLibrary(pvRaiseIfNil: Boolean = true): Boolean;
 
     /// <summary>
     ///   DLL文件
@@ -79,7 +79,7 @@ var
   lvBeanConfig:ISuperObject;
   i: Integer;
 begin
-  if FbeanFactory <> nil then
+  if FbeanFactory = nil then
   begin
     checkLoadLibrary;
 
@@ -100,7 +100,8 @@ begin
   lvBeanID:= '';
 end;
 
-function TLibFactoryObject.checkLoadLibrary: Boolean;
+function TLibFactoryObject.checkLoadLibrary(pvRaiseIfNil: Boolean = true):
+    Boolean;
 begin
   if FLibHandle <> 0 then
   begin
@@ -108,10 +109,18 @@ begin
     Exit;
   end;
   if not FileExists(FlibFileName) then
-    raise Exception.Create('文件[' + FlibFileName + ']未找到!');
-  FLibHandle := LoadLibrary(PChar(FlibFileName));
-  Result := FLibHandle <> 0;
-  if Result then doInitialize;
+  begin
+    if pvRaiseIfNil then
+    begin
+      raise Exception.Create('文件[' + FlibFileName + ']未找到!');
+    end;
+    Result := false;
+  end else
+  begin
+    FLibHandle := LoadLibrary(PChar(FlibFileName));
+    Result := FLibHandle <> 0;
+    if Result then doInitialize;
+  end;
 end;
 
 procedure TLibFactoryObject.cleanup;

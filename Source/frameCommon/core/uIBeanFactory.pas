@@ -7,7 +7,7 @@ interface
 type
 
   /// <summary>
-  ///   插件工厂
+  ///   插件工厂接口,有DLL库文件提供
   /// </summary>
   IBeanFactory = interface(IInterface)
     ['{480EC845-2FC0-4B45-932A-57711D518E70}']
@@ -67,7 +67,9 @@ type
 
     /// <summary>
     ///   配置bean配置
-    ///     singleton,单实例
+    ///     singleton,单实例,
+    ///     配置单实例时，请注意要么对象有接口管理生命周期，要么实现IFreeObject接口
+    ///     不要手动释放释放对象.
     /// </summary>
     function configBeanSingleton(pvBeanID: PAnsiChar; pvSingleton:Boolean): Integer; stdcall;
   end;

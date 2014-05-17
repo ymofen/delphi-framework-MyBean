@@ -13,16 +13,16 @@ type
 
     class function DeleteChars(const s: string; pvCharSets: TSysCharSet): string;
 
-    class function ExtractFileNameWithoutExt(AFileName: string): string;
+    class function extractFileNameWithoutExt(AFileName: string): string;
+
     //1 判断一个文件是否正在使用
-    class function IsFileInUse(const FileName: string): boolean;
+    class function isFileInUse(const FileName: string): boolean;
 
     //1 根据基础路径和相对路径获取绝对路径(杨茂丰)
-    class function GetAbsolutePath(BasePath, RelativePath: string): string;
+    class function getAbsolutePath(BasePath, RelativePath: string): string;
 
-    
-    class function GetModuleFileNames(vFileList: TStrings; const aSearchPath:
-        string): integer;
+
+    class function getFileNameList(vFileList: TStrings; const aSearchPath: string): integer;
     class function GetWinTempPath: string;
 
     class function deleteInvalidChar(pvFileName:string): String;
@@ -55,8 +55,8 @@ type
     /// </summary>
     /// <param name="Path"></param>
     class procedure OpenDirectory(const Path:String);
-    class function PathWithBackslash(const Path: string): AnsiString;
-    class function PathWithoutBackslash(const Path: string): string;
+    class function pathWithBackslash(const Path: string): String;
+    class function pathWithoutBackslash(const Path: string): string;
 
     /// <summary>
     /// 获取应用程序的路径
@@ -158,7 +158,7 @@ begin
   SysUtils.FindClose(vSearchRec);
 end;
 
-class function TFileTools.ExtractFileNameWithoutExt(AFileName: string): string;
+class function TFileTools.extractFileNameWithoutExt(AFileName: string): string;
 begin
   AFileName := ExtractFileName(AFileName);
   Result := Copy(AFileName, 1, Length(AFileName) - Length(ExtractFileExt(AFileName)));
@@ -203,7 +203,7 @@ begin
   end;
 end;
 
-class function TFileTools.GetModuleFileNames(vFileList: TStrings; const
+class function TFileTools.getFileNameList(vFileList: TStrings; const
     aSearchPath: string): integer;
 var dirinfo: TSearchRec;
   dir, lCurrentDir: string;
@@ -226,8 +226,8 @@ begin
   end;
 end;
 
-class function TFileTools.GetAbsolutePath(BasePath, RelativePath: string):
-  string;
+class function TFileTools.getAbsolutePath(BasePath, RelativePath: string):
+    string;
 var
   Dest: array[0..MAX_PATH] of Char;
 begin
@@ -238,7 +238,7 @@ end;
 
 class function TFileTools.getAppPath: string;
 begin
-  Result := PathWithBackslash(ExtractFilePath(ParamStr(0)));
+  Result := pathWithBackslash(ExtractFilePath(ParamStr(0)));
 end;
 
 //得到windows的临时文件目录
@@ -253,7 +253,7 @@ begin
 end;
 
 {判断一个文件是否正在使用}
-class function TFileTools.IsFileInUse(const FileName: string): boolean;
+class function TFileTools.isFileInUse(const FileName: string): boolean;
 var
   HFileRes: HFILE;
 begin
@@ -271,17 +271,17 @@ begin
   ShellExecute(0,'open','Explorer.exe',PChar(Path),nil,1);
 end;
 
-class function TFileTools.PathWithBackslash(const Path: string): AnsiString;
+class function TFileTools.pathWithBackslash(const Path: string): String;
 var
   ilen: Integer;
 begin
   Result := Path;
   ilen := Length(Result);
   if (ilen > 0) and not (Result[ilen] in ['\', '/']) then
-    AppendStr(Result, '\');
+    Result := Result + '\';
 end;
 
-class function TFileTools.PathWithoutBackslash(const Path: string): string;
+class function TFileTools.pathWithoutBackslash(const Path: string): string;
 var
   I, ilen: Integer;
 begin

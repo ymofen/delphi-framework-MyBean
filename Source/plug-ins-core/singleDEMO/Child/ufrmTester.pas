@@ -52,17 +52,17 @@ end;
 
 function TfrmTester.getInstanceID: Integer;
 begin
-
+  Result := 0;
 end;
 
 function TfrmTester.getObject: TObject;
 begin
-
+  Result := self;
 end;
 
 procedure TfrmTester.showAsMDI;
 begin
-
+  Show;
 end;
 
 function TfrmTester.showAsModal: Integer;

@@ -9,7 +9,6 @@ uses
   ufrmTester in '..\..\Child\ufrmTester.pas' {frmTester},
   uIUIForm in '..\..\Interface\uIUIForm.pas',
   ufrmSingleton in '..\..\Child\ufrmSingleton.pas' {frmSingleton},
-  uIShow in '..\..\Interface\uIShow.pas',
   uAppPluginContext in '..\..\..\..\frameCommon\core\uAppPluginContext.pas',
   uIErrorINfo in '..\..\..\..\frameCommon\core\uIErrorINfo.pas',
   uErrorINfoTools in '..\..\..\..\frameCommon\core\uErrorINfoTools.pas';
@@ -18,7 +17,7 @@ uses
 
 begin
   Application.Initialize;
-  applicationContextIntialize(False);
+  applicationContextIntialize();
   try
     registerFactoryObject(beanFactory, 'default');
     Application.MainFormOnTaskbar := True;

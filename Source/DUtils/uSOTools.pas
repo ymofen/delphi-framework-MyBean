@@ -88,7 +88,7 @@ begin
       lvStream.Position := 0;
       SetLength(lvStr, lvStream.Size);
       lvStream.ReadBuffer(lvStr[1], lvStream.Size);
-      Result := SO(lvStr);
+      Result := SO(String(lvStr));
     finally
       lvStream.Free;
     end;
@@ -101,16 +101,14 @@ end;
 class function TSOTools.JsnSaveToFile(pvData: ISuperObject; pvFile: string):
     Boolean;
 var
-  lvStrings: TStrings;
   lvStream: TMemoryStream;
-
   lvStr: AnsiString;
 begin
   Result := false;
   if pvData = nil then exit;
   lvStream := TMemoryStream.Create;
   try
-    lvStr := pvData.AsJSon(True, False);
+    lvStr :=AnsiString(pvData.AsJSon(True, False));
     if lvStr <> '' then
       lvStream.WriteBuffer(lvStr[1], Length(lvStr));
     lvStream.SaveToFile(pvFile);
@@ -127,7 +125,7 @@ var
   i:Integer;
 begin
   Result := '';
-  lvMapKey := Trim(LowerCase(AnsiString(pvStringData)));
+  lvMapKey :=AnsiString(Trim(LowerCase(pvStringData)));
   if lvMapKey = '' then exit;
 
   lvCheckCanKey := True;
@@ -157,7 +155,7 @@ begin
 
   if lvCheckCanKey then
   begin
-    Result := lvMapKey;
+    Result := String(lvMapKey);
   end else
   begin
     // π”√hash÷µ

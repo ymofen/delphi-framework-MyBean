@@ -7,7 +7,7 @@ uses
   uIBeanFactory,
   uIBeanFactoryRegister,
   uFactoryInstanceObject, uBaseFactoryObject,
-  uKeyInterface, uKeyMapImpl, uIKeyMap;
+  uKeyInterface, uKeyMapImpl, uIKeyMap, IniFiles;
 
 type
   TApplicationContext = class(TInterfacedObject
@@ -15,6 +15,10 @@ type
      , IbeanFactoryRegister
      )
   private
+    FINIFile:TIniFile;
+
+    FTraceLoadFile: Boolean;
+
     /// <summary>
     ///   保存FactoryObject列表,LibFile -> FactoryObject
     /// </summary>
@@ -29,29 +33,55 @@ type
         TBaseFactoryObject);
     procedure DoRegisterPlugins(pvPlugins: TStrings; pvFactoryObject:
         TBaseFactoryObject);
+
+    procedure checkCreateINIFile;
+
+    function checkInitializeFactoryObject(pvFactoryObject:TBaseFactoryObject;
+        pvRaiseException:Boolean): Boolean;
   protected
-    //直接加载模块文件
-    procedure ExecuteLoadLibrary; stdcall;
+    /// <summary>
+    ///   直接从DLL中加载插件，在没有配置文件的情况下执行
+    /// </summary>
+    procedure executeLoadLibrary; stdcall;
 
     /// <summary>
     ///   根据提供的Lib文件得到TLibFactoryObject对象，如果不列表中不存在则新增一个对象
     /// </summary>
     function checkCreateLibObject(pvFileName:string): TLibFactoryObject;
 
+    /// <summary>
+    ///   处理Lib到Cache临时目录
+    /// </summary>
+    procedure checkProcessLib2Cache(pvLib:TLibFactoryObject);
   private
+    /// <summary>
+    ///   DLL临时缓存目录
+    /// </summary>
     FLibCachePath:String;
+
+    /// <summary>
+    ///   使用插件缓存目录
+    /// </summary>
+    FuseCache:Boolean;
+
+    /// <summary>
+    ///   应用程序根目录
+    /// </summary>
     FRootPath:String;
 
     /// <summary>
-    ///   从单个配置文件中配置插件
+    ///   从单个配置文件中配置插件, 返回成功处理的Bean配置数量
     /// </summary>
-    procedure executeLoadFromConfigFile(pvFileName: String);
+    function executeLoadFromConfigFile(pvFileName: String): Integer;
 
     /// <summary>
-    ///   从多个配置文件中读取配置插件
+    ///   从多个配置文件中读取配置插件, 返回成功处理的Bean配置数量
     /// </summary>
-    procedure executeLoadFromConfigFiles(pvFiles: TStrings);
+    function executeLoadFromConfigFiles(pvFiles: TStrings): Integer;
 
+    /// <summary>
+    ///   准备工作，读取配置文件
+    /// </summary>
     procedure checkReady;
 
     /// <summary>
@@ -62,15 +92,20 @@ type
 
 
     /// <summary>
-    ///   从配置文件中加载
+    ///   从配置文件中加载, 返回成功处理的Bean配置数量
     /// </summary>
-    procedure checkInitializeFromConfigFiles;
+    function checkInitializeFromConfigFiles(pvConfigFiles: string): Integer;
 
 
     /// <summary>
     ///   初始化工厂对象
     /// </summary>
     procedure checkInitializeFactoryObjects;
+
+    /// <summary>
+    ///   处理插件DLLcopy到缓存目录
+    /// </summary>
+    procedure checkProcessLibsCache;
 
   public
     constructor Create;
@@ -86,7 +121,7 @@ type
     /// <summary>
     ///   执行初始化
     /// </summary>
-    procedure checkInitialize(pvLoadLib:Boolean); stdcall;
+    procedure checkInitialize; stdcall;
 
     /// <summary>
     ///   获取根据BeanID获取一个对象
@@ -135,7 +170,7 @@ function registerFactoryObject(const pvBeanFactory:IBeanFactory; const
 implementation
 
 uses
-  FileLogger, superobject, uSOTools;
+  FileLogger, superobject, uSOTools, uFileTools;
 
 var
   __instance:TApplicationContext;
@@ -144,28 +179,6 @@ var
 exports
    appPluginContext, appContextCleanup, registerFactoryObject, applicationKeyMap;
 
-function GetFileNameList(aList: TStrings; const aSearchPath: string): integer;
-var
-  dirinfo: TSearchRec;
-  dir, lCurrentDir: string;
-begin
-  result := 0;
-  lCurrentDir := GetCurrentDir;
-  SetCurrentDir(ExtractFileDir(ParamStr(0)));
-  try
-    dir := ExtractFilePath(ExpandFileName(aSearchPath));
-    if (dir <> '') then
-      dir := IncludeTrailingPathDelimiter(dir);
-
-    if (SysUtils.FindFirst(aSearchPath, faArchive, dirinfo) = 0) then repeat
-        aList.Add(dir + dirinfo.Name);
-        Inc(result);
-      until (FindNext(dirinfo) <> 0);
-    SysUtils.FindClose(dirinfo);
-  finally
-    SetCurrentDir(lCurrentDir);
-  end;
-end;
 
 function appPluginContext: IApplicationContext;
 begin
@@ -204,28 +217,81 @@ end;
 
 
 
-procedure TApplicationContext.checkInitialize(pvLoadLib:Boolean);
+procedure TApplicationContext.checkInitialize;
+var
+  lvConfigFiles:String;
 begin
   if FFactoryObjectList.Count = 0 then
   begin
-    //ExecuteLoadLibrary;
     checkReady;
-    checkInitializeFromConfigFiles();
-
-    if pvLoadLib then
+    lvConfigFiles := FINIFile.ReadString('main', 'beanConfigFiles', '');
+    if lvConfigFiles <> '' then
     begin
-      //加载DLL文件
-      checkInitializeFactoryObjects;
+      if FTraceLoadFile then
+         TFileLogger.instance.logMessage('从配置文件中加载bean配置', 'load_trace');
+      if checkInitializeFromConfigFiles(lvConfigFiles) > 0 then
+      begin
+        if FuseCache then
+        begin
+          if FTraceLoadFile then
+            TFileLogger.instance.logMessage('将DLL文件copy到缓存目录[' + self.FLibCachePath + ']', 'load_trace');
+          //将插件copy到缓存目录
+          checkProcessLibsCache;
+        end;
+
+        if FINIFile.ReadBool('main', 'loadOnStartup', True) then
+        begin
+          //加载DLL文件
+          checkInitializeFactoryObjects;
+        end;
+      end else
+      begin
+        if FTraceLoadFile then
+          TFileLogger.instance.logMessage('没有加载任何配置文件', 'load_trace');
+      end;
+    end else
+    begin
+      if FTraceLoadFile then
+        TFileLogger.instance.logMessage('直接加载DLL文件', 'load_trace');
+      executeLoadLibrary;
     end;
+
   end;
 end;
 
 procedure TApplicationContext.checkReady;
+var
+  lvTempPath:String;
+  l:Integer;
 begin
   FRootPath := ExtractFilePath(ParamStr(0));
-  FLibCachePath := FRootPath + 'plug-ins-cache\';
-  ForceDirectories(FLibCachePath);
 
+  FuseCache := FINIFile.ReadBool('main', 'plug-ins-cache', true);
+
+  lvTempPath := FINIFile.ReadString('main', 'plug-ins-cache-path', 'plug-ins-cache\');
+
+  FTraceLoadFile := FINIFile.ReadBool('main','traceLoadLib', FTraceLoadFile);
+
+  FLibCachePath := TFileTools.GetAbsolutePath(FRootPath, lvTempPath);
+  l := Length(FLibCachePath);
+  if l = 0 then
+  begin
+    FLibCachePath := FRootPath + 'plug-ins-cache\';
+  end else
+  begin
+    FLibCachePath := TFileTools.PathWithBackslash(FLibCachePath);
+  end;
+
+  try
+    ForceDirectories(FLibCachePath);
+  except
+    on E:Exception do
+    begin
+      TFileLogger.instance.logMessage(
+                    Format('创建插件缓存目录[%s]出现异常', [FLibCachePath]) + e.Message,
+                    'pluginLoaderErr');
+    end;
+  end;
 end;
 
 function TApplicationContext.checkRegisterBean(pvBeanID: string;
@@ -293,39 +359,50 @@ begin
   inherited Create;
   FFactoryObjectList := TStringList.Create();
   FBeanMapList := TStringList.Create;
+  checkCreateINIFile;
 end;
 
 destructor TApplicationContext.Destroy;
 begin
+  FINIFile.Free;
   checkFinalize;
   FBeanMapList.Free;
   FFactoryObjectList.Free;
   inherited Destroy;
 end;
 
+procedure TApplicationContext.checkCreateINIFile;
+var
+  lvFile:String;
+begin
+  lvFile := ChangeFileExt(ParamStr(0), '.config.ini');
+  if not FileExists(lvFile) then
+     lvFile := FRootPath + 'app.config.ini';
+
+  if not FileExists(lvFile) then
+  begin
+    FTraceLoadFile := true;
+  end;
+
+  FINIFile := TIniFile.Create(lvFile);
+end;
+
 function TApplicationContext.checkCreateLibObject(pvFileName:string):
     TLibFactoryObject;
 var
-  lvFileName, lvCacheFile:String;
+  lvNameSpace:String;
   i:Integer;
 begin
   Result := nil;
-  lvFileName :=ExtractFileName(pvFileName);
-  if Length(lvFileName) = 0 then Exit;
+  lvNameSpace :=ExtractFileName(pvFileName);
+  if Length(lvNameSpace) = 0 then Exit;
 
-  i := FFactoryObjectList.IndexOf(lvFileName);
+  i := FFactoryObjectList.IndexOf(lvNameSpace);
   if i = -1 then
   begin
-    lvCacheFile := FLibCachePath + lvFileName;
-    if FileExists(lvCacheFile) then
-      DeleteFile(PChar(lvCacheFile));
-
-    CopyFile(PChar(pvFileName), PChar(lvCacheFile),False);
-
-
     Result := TLibFactoryObject.Create;
-    Result.LibFileName := lvCacheFile;
-    FFactoryObjectList.AddObject(lvFileName, Result);
+    Result.LibFileName := pvFileName;
+    FFactoryObjectList.AddObject(lvNameSpace, Result);
   end else
   begin
     Result := TLibFactoryObject(FFactoryObjectList.Objects[i]);
@@ -333,15 +410,41 @@ begin
 
 end;
 
+function TApplicationContext.checkInitializeFactoryObject(
+    pvFactoryObject:TBaseFactoryObject; pvRaiseException:Boolean): Boolean;
+begin
+  try
+    if pvFactoryObject.beanFactory = nil then
+    begin
+      if FTraceLoadFile then
+      begin
+        TFileLogger.instance.logMessage('准备初始化插件文件[' + String(pvFactoryObject.namespace) + ']', 'loadDLL_trace');
+      end;
+      pvFactoryObject.checkInitialize;
+    end;
+    Result := true;
+  except
+    on E:Exception do
+    begin
+      Result := false;
+      TFileLogger.instance.logMessage(
+                    Format('加载插件文件[%s]出现异常:', [pvFactoryObject.namespace]) + e.Message,
+                    'loadDLL_trace');
+      if pvRaiseException then
+        raise;
+    end;
+  end;
+end;
+
 function TApplicationContext.getBean(pvBeanID: PAnsiChar): IInterface;
 var
   j:Integer;
   lvLibObject:TBaseFactoryObject;
-  lvBeanID:AnsiString;
+  lvBeanID:String;
 begin
   Result := nil;
-  lvBeanID := pvBeanID;
-  j := FBeanMapList.IndexOf(String(lvBeanID));
+  lvBeanID := string(AnsiString(pvBeanID));
+  j := FBeanMapList.IndexOf(lvBeanID);
   if j <> -1 then
   begin
     lvLibObject := TBaseFactoryObject(FBeanMapList.Objects[j]);
@@ -411,34 +514,45 @@ begin
 
 end;
 
-procedure TApplicationContext.checkInitializeFromConfigFiles;
+function TApplicationContext.checkInitializeFromConfigFiles(pvConfigFiles:
+    string): Integer;
 var
-  lvStrings: TStrings;
+  lvFilesList, lvStrings: TStrings;
+  i: Integer;
+  lvStr, lvFileName, lvPath:String;
 begin
+  Result := 0;
   lvStrings := TStringList.Create;
+  lvFilesList := TStringList.Create;
   try
-    GetFileNameList(lvStrings, FRootPath + '*.plug-ins');
-    executeLoadFromConfigFiles(lvStrings);
+    lvFilesList.Text := StringReplace(pvConfigFiles, ',', sLineBreak, [rfReplaceAll]);
+    for i := 0 to lvFilesList.Count - 1 do
+    begin
+      lvStr := lvFilesList[i];
 
-    lvStrings.Clear;
-    GetFileNameList(lvStrings, FRootPath + 'beanConfig\*.plug-ins');
-    executeLoadFromConfigFiles(lvStrings);
+      lvFileName := ExtractFileName(lvStr);
+      lvPath := ExtractFilePath(lvStr);
+      lvPath := TFileTools.GetAbsolutePath(FRootPath, lvPath);
+      lvFileName := lvPath + lvFileName;
 
-    lvStrings.Clear;
-    GetFileNameList(lvStrings, FRootPath + 'plug-ins\*.plug-ins');
-    executeLoadFromConfigFiles(lvStrings);
+      TFileTools.getFileNameList(lvStrings, lvFileName);
+      Result := Result + executeLoadFromConfigFiles(lvStrings);
+    end;
+
   finally
     lvStrings.Free;
   end;
 end;
 
-procedure TApplicationContext.executeLoadFromConfigFile(pvFileName: String);
+function TApplicationContext.executeLoadFromConfigFile(pvFileName: String):
+    Integer;
 var
   lvConfig, lvPluginList, lvItem:ISuperObject;
   I: Integer;
   lvLibFile, lvID:String;
   lvLibObj:TBaseFactoryObject;
 begin
+  Result := 0;
   lvConfig := TSOTools.JsnParseFromFile(pvFileName);
   if lvConfig = nil then Exit;
   if lvConfig.IsType(stArray) then lvPluginList := lvConfig
@@ -467,6 +581,7 @@ begin
       end else
       begin
         try
+
           lvID := lvItem.S['id'];
 
           if lvID = '' then
@@ -480,6 +595,8 @@ begin
             //将配置放到对应的节点管理中
             lvLibObj.addBeanConfig(lvItem);
           end;
+
+          Inc(result);
         except
           on E:Exception do
           begin
@@ -493,19 +610,21 @@ begin
   end;
 end;
 
-procedure TApplicationContext.executeLoadFromConfigFiles(pvFiles: TStrings);
+function TApplicationContext.executeLoadFromConfigFiles(pvFiles: TStrings):
+    Integer;
 var
   i:Integer;
   lvFile:String;
 begin
+  Result := 0;
   for i := 0 to pvFiles.Count - 1 do
   begin
     lvFile := pvFiles[i];
-    executeLoadFromConfigFile(lvFile);
+    Result := Result +  executeLoadFromConfigFile(lvFile);
   end;
 end;
 
-procedure TApplicationContext.ExecuteLoadLibrary;
+procedure TApplicationContext.executeLoadLibrary;
 var
   lvStrings: TStrings;
   i: Integer;
@@ -517,7 +636,7 @@ var
 begin
   lvStrings := TStringList.Create;
   try
-    GetFileNameList(lvStrings, ExtractFilePath(ParamStr(0)) + 'plug-ins\*.dll');
+    TFileTools.getFileNameList(lvStrings, ExtractFilePath(ParamStr(0)) + 'plug-ins\*.dll');
     for i := 0 to lvStrings.Count - 1 do
     begin
       lvFile := lvStrings[i];
@@ -525,8 +644,11 @@ begin
       lvIsOK := false;
       try
         lvLib.LibFileName := lvFile;
-        if lvLib.checkLoadLibrary then
+        checkProcessLib2Cache(lvLib);
+
+        if checkInitializeFactoryObject(lvLib, False) then
         begin
+
           try
             ZeroMemory(@lvBeanIDs[1], 4096);
             lvLib.beanFactory.getBeanList(@lvBeanIDs[1], 4096);
@@ -542,6 +664,7 @@ begin
             end;
           end;
         end;
+
       finally
         if not lvIsOK then
         begin
@@ -594,6 +717,44 @@ begin
   Result := __instance;
 end;
 
+procedure TApplicationContext.checkProcessLib2Cache(pvLib:TLibFactoryObject);
+var
+  lvCacheFile, lvFileName, lvSourceFile:String;
+begin
+  if FuseCache then
+  begin
+    lvSourceFile := pvLib.libFileName;
+    lvFileName := ExtractFileName(lvSourceFile);
+    lvCacheFile := FLibCachePath + lvFileName;
+    if SameText(lvCacheFile, lvSourceFile) then exit;
+
+    pvLib.libFileName := lvCacheFile;
+
+    if FileExists(lvCacheFile) then
+    begin
+      DeleteFile(PChar(lvCacheFile));
+    end;
+
+    CopyFile(PChar(lvSourceFile), PChar(lvCacheFile), False);
+  end;
+end;
+
+procedure TApplicationContext.checkProcessLibsCache;
+var
+  i:Integer;
+  lvLibObject:TBaseFactoryObject;
+begin
+  ///全部执行一次Finalize;
+  for i := 0 to FFactoryObjectList.Count -1 do
+  begin
+    lvLibObject := TBaseFactoryObject(FFactoryObjectList.Objects[i]);
+    if lvLibObject is TLibFactoryObject then
+    begin
+      checkProcessLib2Cache(TLibFactoryObject(lvLibObject));
+    end;
+  end;
+end;
+
 function TApplicationContext.registerBeanFactory(const pvFactory: IBeanFactory;
   const pvNameSapce: PAnsiChar): Integer;
 var
@@ -607,7 +768,7 @@ begin
     ZeroMemory(@lvBeanIDs[1], 4096);
     lvObj.beanFactory.getBeanList(@lvBeanIDs[1], 4096);
     DoRegisterPluginIDS(String(lvBeanIDs), lvObj);
-    FFactoryObjectList.AddObject(pvNameSapce, lvObj);
+    FFactoryObjectList.AddObject(String(AnsiString(pvNameSapce)), lvObj);
     Result := 0;
   except
     Result := -1;
