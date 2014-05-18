@@ -65,6 +65,7 @@
         <DCC_IncludePath>..\..\..\..\..\Source\frameCommon\Interface;..\..\..\..\..\Source\frameCommon\Service;..\..\..\..\..\Source\frameCommon\Tools;..\..\..\..\..\Source\frameCommon\Utils;..\..\..\..\..\Source\DUtils;$(DCC_IncludePath)</DCC_IncludePath>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Cfg_2_Win32)'!=''">
+        <UsePackages>true</UsePackages>
         <DCC_UnitSearchPath>..\..\..\..\..\Source\frameCommon\core;$(DCC_UnitSearchPath)</DCC_UnitSearchPath>
         <VerInfo_Locale>1033</VerInfo_Locale>
         <BRCC_IncludePath>..\..\..\..\..\Source\frameCommon\core;$(BRCC_IncludePath)</BRCC_IncludePath>
@@ -132,6 +133,9 @@
         <DCCReference Include="..\..\mainForm\ufrmMain.pas">
             <Form>frmMain</Form>
         </DCCReference>
+        <DCCReference Include="..\..\mainForm\PluginTabControl.pas"/>
+        <DCCReference Include="..\..\mainForm\uPluginObject.pas"/>
+        <DCCReference Include="..\..\mainForm\uMainFormTools.pas"/>
         <BuildConfiguration Include="Debug">
             <Key>Cfg_2</Key>
             <CfgParent>Base</CfgParent>

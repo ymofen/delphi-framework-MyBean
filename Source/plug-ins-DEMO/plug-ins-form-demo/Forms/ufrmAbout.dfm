@@ -22,7 +22,5 @@ object frmAbout: TfrmAbout
     Lines.Strings = (
       #26412#31383#20307#26377'plugin_form_demo.dll'#25552#20379#30340#25554#20214'(aboutForm)')
     TabOrder = 0
-    ExplicitLeft = -8
-    ExplicitTop = -8
   end
 end

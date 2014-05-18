@@ -1,12 +1,12 @@
 ﻿<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
     <PropertyGroup>
         <ProjectGuid>{7511D967-1E93-4162-BF0A-FC5D1360903F}</ProjectGuid>
-        <MainSource>plugin_form_demo.dpr</MainSource>
+        <MainSource>mCore.dpr</MainSource>
         <Base>True</Base>
         <Config Condition="'$(Config)'==''">Debug</Config>
         <TargetedPlatforms>17</TargetedPlatforms>
         <AppType>Library</AppType>
-        <FrameworkType>VCL</FrameworkType>
+        <FrameworkType>None</FrameworkType>
         <ProjectVersion>15.1</ProjectVersion>
         <Platform Condition="'$(Platform)'==''">Win32</Platform>
     </PropertyGroup>
@@ -37,7 +37,7 @@
     <PropertyGroup Condition="'$(Base)'!=''">
         <DCC_E>false</DCC_E>
         <DCC_S>false</DCC_S>
-        <DCC_Namespace>System;Xml;Data;Datasnap;Web;Soap;Vcl;Vcl.Imaging;Vcl.Touch;Vcl.Samples;Vcl.Shell;$(DCC_Namespace)</DCC_Namespace>
+        <DCC_Namespace>System;Xml;Data;Datasnap;Web;Soap;$(DCC_Namespace)</DCC_Namespace>
         <DCC_K>false</DCC_K>
         <DCC_ImageBase>00400000</DCC_ImageBase>
         <GenDll>true</GenDll>
@@ -65,13 +65,10 @@
         <DCC_Optimize>false</DCC_Optimize>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Cfg_2_Win32)'!=''">
-        <UsePackages>true</UsePackages>
-        <Debugger_HostApplication>..\..\..\..\..\BIN\myBeanConsole.exe</Debugger_HostApplication>
-        <BRCC_IncludePath>..\..\..\..\..\Source\frameCommon\core;$(BRCC_IncludePath)</BRCC_IncludePath>
-        <DCC_UsePackage>vcl;rtl;$(DCC_UsePackage)</DCC_UsePackage>
         <VerInfo_IncludeVerInfo>true</VerInfo_IncludeVerInfo>
+        <DCC_Namespace>vcl;$(DCC_Namespace)</DCC_Namespace>
         <Manifest_File>None</Manifest_File>
-        <DCC_UnitSearchPath>..\..\..\..\..\Source\frameCommon\core;..\..\..\..\..\Source\frameCommon\Interface;..\..\..\..\..\Source\frameCommon\Service;..\..\..\..\..\Source\frameCommon\Tools;..\..\..\..\..\Source\frameCommon\Utils;..\..\..\..\..\Source\DUtils;$(DCC_UnitSearchPath)</DCC_UnitSearchPath>
+        <DCC_UnitSearchPath>..\..\..\..\..\Source\frameCommon\Interface;..\..\..\..\..\Source\frameCommon\Service;..\..\..\..\..\Source\frameCommon\Tools;..\..\..\..\..\Source\frameCommon\Utils;..\..\..\..\..\Source\DUtils;$(DCC_UnitSearchPath)</DCC_UnitSearchPath>
         <VerInfo_Locale>1033</VerInfo_Locale>
         <DCC_ExeOutput>..\..\..\..\..\BIN\plug-ins</DCC_ExeOutput>
         <VerInfo_Keys>CompanyName=;FileDescription=;FileVersion=1.0.0.0;InternalName=;LegalCopyright=;LegalTrademarks=;OriginalFilename=;ProductName=;ProductVersion=1.0.0.0;Comments=</VerInfo_Keys>
@@ -80,15 +77,6 @@
         <DelphiCompile Include="$(MainSource)">
             <MainSource>MainSource</MainSource>
         </DelphiCompile>
-        <DCCReference Include="..\..\Forms\ufrmAbout.pas">
-            <Form>frmAbout</Form>
-            <FormType>dfm</FormType>
-        </DCCReference>
-        <DCCReference Include="..\..\Forms\ufrmPluginForm.pas">
-            <Form>frmPluginForm</Form>
-            <FormType>dfm</FormType>
-        </DCCReference>
-        <DCCReference Include="..\..\Service\uBasePluginForm.pas"/>
         <BuildConfiguration Include="Debug">
             <Key>Cfg_2</Key>
             <CfgParent>Base</CfgParent>
@@ -107,7 +95,7 @@
         <BorlandProject>
             <Delphi.Personality>
                 <Source>
-                    <Source Name="MainSource">plugin_form_demo.dpr</Source>
+                    <Source Name="MainSource">mCore.dpr</Source>
                 </Source>
                 <VersionInfo>
                     <VersionInfo Name="IncludeVerInfo">False</VersionInfo>

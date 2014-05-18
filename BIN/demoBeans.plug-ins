@@ -1,0 +1,13 @@
+{
+   list:
+   [
+      {
+         "id":"aboutForm",
+         "lib":"plug-ins\\plugin_form_demo.dll",       //ÎÄ¼şÃû
+      },
+      {
+         "id":"demoPluginForm",
+         "lib":"plug-ins\\plugin_form_demo.dll",
+      },
+   ]
+}

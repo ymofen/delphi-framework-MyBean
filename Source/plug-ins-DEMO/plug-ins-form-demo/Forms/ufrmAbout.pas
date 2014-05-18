@@ -22,6 +22,9 @@ var
 
 implementation
 
+uses
+  uBeanFactory;
+
 {$R *.dfm}
 
 { TfrmAbout }
@@ -32,8 +35,12 @@ begin
 end;
 
 function TfrmAbout.showAsModal: Integer;
+var
+  s:TMultiReadExclusiveWriteSynchronizer;
 begin
   Result :=ShowModal;
 end;
+
+
 
 end.

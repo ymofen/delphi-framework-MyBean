@@ -23,8 +23,7 @@ uses
 class function TmBeanMainFormTools.getMainForm: IMainForm;
 begin
   Result := nil;
-  if TmBeanFrameVars.frameCoreObject <>nil then
-    Result := (TmBeanFrameVars.frameCoreObject.getObject('main') as IMainForm);
+  Result := (TmBeanFrameVars.getObject('main') as IMainForm);
 end;
 
 class procedure TmBeanMainFormTools.removeFromMainForm(const pvInstanceID:
@@ -44,7 +43,7 @@ end;
 
 class procedure TmBeanMainFormTools.setMainForm(const pvMainForm: IMainForm);
 begin
-  TmBeanFrameVars.frameCoreObject.setObject('main', pvMainForm);
+  TmBeanFrameVars.setObject('main', pvMainForm);
 end;
 
 end.

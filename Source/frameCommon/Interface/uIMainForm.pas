@@ -9,10 +9,6 @@ type
 
     function Remove(const pvInstanceID: PAnsiChar): boolean; stdcall;
 
-    procedure openModuleAsMDI(pvModuleFuncIndex:Integer); stdcall;
-    
-    procedure openModule(pvModuleFuncIndex:Integer); stdcall;
-
     procedure showPluginAsMDI(const pvPlugin:IInterface);stdcall;
 
   end;

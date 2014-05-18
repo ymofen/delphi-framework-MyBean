@@ -1,4 +1,4 @@
-library plugin_form_demo;
+library mCore;
 
 { Important note about DLL memory management: ShareMem must be the
   first unit in your library's USES clause AND your project's (select
@@ -13,14 +13,10 @@ library plugin_form_demo;
 uses
   SysUtils,
   Classes,
-  uBeanFactory,
-  ufrmAbout in '..\..\Forms\ufrmAbout.pas' {frmAbout},
-  ufrmPluginForm in '..\..\Forms\ufrmPluginForm.pas' {frmPluginForm},
-  uBasePluginForm in '..\..\Service\uBasePluginForm.pas';
+  uBeanFactory;
 
 {$R *.res}
 
 begin
-  beanFactory.RegisterBean('aboutForm', TfrmAbout);
-  beanFactory.RegisterBean('demoPluginForm', TfrmPluginForm);
+  beanFactory.RegisterBean('frameCore', TFrameCoreObject, True);
 end.
