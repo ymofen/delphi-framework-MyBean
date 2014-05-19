@@ -4,11 +4,12 @@ interface
 
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics,
-  Controls, Forms, Dialogs, uBasePluginForm, Vcl.StdCtrls;
+  Controls, Forms, Dialogs, uBasePluginForm, Vcl.StdCtrls, Vcl.ExtCtrls;
 
 type
   TfrmPluginForm = class(TBasePluginForm)
     mmo1: TMemo;
+    pnlOperator: TPanel;
     btnCreateAsModal: TButton;
     procedure btnCreateAsModalClick(Sender: TObject);
   private

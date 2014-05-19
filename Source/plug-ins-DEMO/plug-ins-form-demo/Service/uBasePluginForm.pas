@@ -7,8 +7,10 @@ uses
   SysUtils, uKeyInterface, uIFreeObject, mBeanMainFormTools, uICaption;
 
 type
-  TBasePluginForm = class(TForm, IPluginForm,
+  TBasePluginForm = class(TForm,
+    IPluginForm,
     IFreeObject,
+
     ICaptionManager)
   private
     FInstanceID: string;
