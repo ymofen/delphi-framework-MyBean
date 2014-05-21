@@ -192,7 +192,7 @@ type
     /// </summary>
     function configBeanSingleton(pvBeanID: PAnsiChar; pvSingleton:Boolean): Integer; stdcall;
 
-  protected
+  public
 
     property OnInitializeProc: TOnInitializeProc read FOnInitializeProc write
         FOnInitializeProc;
@@ -202,8 +202,6 @@ type
 
     property OnCreateInstanceProcEX: TOnCreateInstanceProcEX read
         FOnCreateInstanceProcEX write FOnCreateInstanceProcEX;
-
-
 
   end;
 

@@ -71,6 +71,7 @@ end;
 procedure TLibFactoryObject.doInitialize;
 begin
   doCreatePluginFactory;
+  FbeanFactory.checkInitalize;
 end;
 
 procedure TLibFactoryObject.checkInitialize;
