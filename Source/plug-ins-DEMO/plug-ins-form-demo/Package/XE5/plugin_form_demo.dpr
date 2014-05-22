@@ -16,7 +16,8 @@ uses
   uBeanFactory,
   ufrmAbout in '..\..\Forms\ufrmAbout.pas' {frmAbout},
   ufrmPluginForm in '..\..\Forms\ufrmPluginForm.pas' {frmPluginForm},
-  uBasePluginForm in '..\..\Service\uBasePluginForm.pas';
+  uBasePluginForm in '..\..\Service\uBasePluginForm.pas',
+  uIBeanConfigSetter in '..\..\..\..\frame-core\interface\uIBeanConfigSetter.pas';
 
 {$R *.res}
 
