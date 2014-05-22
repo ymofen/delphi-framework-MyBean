@@ -28,6 +28,20 @@ type
     function getErrorDesc(pvErrorDesc: PAnsiChar; pvLength: Integer): Integer;  stdcall;
   end;
 
+  //uIBeanConfigSetter.IBeanConfigSetter
+  IBeanConfigSetter = interface(IInterface)
+    ['{C7DABCDB-9908-4C43-B353-647EDB7F3DCE}']
+
+
+    /// <summary>
+    ///   设置配置中的Config
+    /// </summary>
+    /// <param name="pvBeanConfig">
+    ///   配置文件中JSon格式的字符串
+    /// </param>
+    procedure setBeanConfig(pvBeanConfig: PAnsiChar); stdcall;
+  end;
+
   TPluginINfo = class(TObject)
   private
     FInstance: IInterface;
@@ -100,6 +114,13 @@ type
     /// </summary>
     function getPluginID(pvBeanID:PAnsiChar):String;
 
+
+
+    /// <summary>
+    ///   在创建的时候传入设置配置
+    /// </summary>
+    function checkBeanConfigSetter(const pvInterface: IInterface; const pvBeanID:
+        PAnsiChar): Boolean;
 
     ///
     function checkGetBeanAccordingBeanConfig(pvBeanID: PAnsiChar; pvPluginINfo:
@@ -262,6 +283,7 @@ begin
         try
           lvBeanINfo.FbeanID := string(AnsiString(pvBeanID));
           lvBeanINfo.FInstance := createInstance(pvPluginINfo);
+          checkBeanConfigSetter(lvBeanINfo.FInstance, pvBeanID);
         except
           lvBeanINfo.Free;
           raise;
@@ -279,6 +301,7 @@ begin
   end else
   begin
     Result := createInstance(pvPluginINfo);
+    checkBeanConfigSetter(Result, pvBeanID);
   end;
 end;
 
@@ -492,6 +515,29 @@ begin
   inherited Destroy;
 end;
 
+function TBeanFactory.checkBeanConfigSetter(const pvInterface: IInterface;
+    const pvBeanID: PAnsiChar): Boolean;
+var
+  lvSetter:IBeanConfigSetter;
+  lvConfig:ISuperObject;
+  lvConfigStr:string;
+begin
+  if pvInterface = nil then exit;
+  if pvInterface.QueryInterface(IBeanConfigSetter, lvSetter) = S_OK then
+  begin
+    lvConfig := findBeanConfig(pvBeanID);
+    if lvConfig <> nil then
+    begin
+      lvConfigStr := lvConfig.AsJSon(True, False);
+      lvSetter.setBeanConfig(PAnsiChar(AnsiString(lvConfigStr)));
+      Result := true;
+      lvConfigStr := '';
+    end;
+  end;
+
+
+end;
+
 function TBeanFactory.findBeanConfig(pvBeanID: PAnsiChar): ISuperObject;
 var
   lvMapKey:String;
@@ -533,6 +579,7 @@ begin
         end else
         begin
           Result := createInstance(lvPluginINfo);
+          checkBeanConfigSetter(Result, pvBeanID);
           lvPluginINfo.FInstance := Result;
         end;
       finally

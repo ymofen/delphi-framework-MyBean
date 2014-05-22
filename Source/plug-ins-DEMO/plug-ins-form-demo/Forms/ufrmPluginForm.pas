@@ -11,11 +11,13 @@ type
     mmo1: TMemo;
     pnlOperator: TPanel;
     btnCreateAsModal: TButton;
+    pnlConfig: TPanel;
+    mmoConfig: TMemo;
     procedure btnCreateAsModalClick(Sender: TObject);
   private
     { Private declarations }
   public
-    { Public declarations }
+    procedure setBeanConfig(pvBeanConfig: PAnsiChar); override; stdcall;
   end;
 
 var
@@ -36,6 +38,12 @@ begin
   finally
     freeObject;
   end;
+end;
+
+procedure TfrmPluginForm.setBeanConfig(pvBeanConfig: PAnsiChar);
+begin
+  inherited;
+  Self.mmoConfig.Lines.Text := pvBeanConfig;
 end;
 
 end.

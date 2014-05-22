@@ -8,6 +8,11 @@
       {
          "id":"demoPluginForm",
          "lib":"plug-ins\\plugin_form_demo.dll",
-      },
+         "params":
+          {
+              "attachData":"可以在配置文件中配置一些其他参数",
+              "attachData02":"可以带入到插件中去",
+          }
+      }
    ]
 }
