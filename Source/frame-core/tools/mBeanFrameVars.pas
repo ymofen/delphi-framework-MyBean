@@ -3,31 +3,64 @@ unit mBeanFrameVars;
 interface
 
 uses
-  uAppPluginContext, uIAppliationContext, SysUtils;
+  uAppPluginContext, uIAppliationContext, SysUtils, uIBeanFactory, uIFreeObject;
 
 type
   TmBeanFrameVars = class(TObject)
   public
+    /// <summary>
+    ///   获取applicationContext接口
+    /// </summary>
     class function applicationContext: IApplicationContext;
-    class function getBean(pvBeanID: string; pvRaiseIfNil: Boolean = true):
-        IInterface;
 
+    /// <summary>
+    ///   根据beanID获取对应的插件接口,
+    ///      如果beanID对应的配置为单实例模式，相应的对象只会创建一次
+    /// </summary>
+    class function getBean(pvBeanID: string; pvRaiseIfNil: Boolean = true): IInterface;
+
+    /// <summary>
+    ///   释放插件
+    /// </summary>
+    class procedure freeBeanInterface(const pvInterface:IInterface);
+
+    /// <summary>
+    ///   存放全局的对象
+    /// </summary>
     class procedure setObject(const pvID: AnsiString; const pvObject: IInterface);
 
+    /// <summary>
+    ///   设置得到全局的接口对象
+    /// </summary>
     class function getObject(const pvID:AnsiString):IInterface;
-    
+
+    /// <summary>
+    ///   移除全局的接口对象
+    /// </summary>
     class procedure removeObject(pvID:AnsiString);
   end;
 
 implementation
 
 uses
-  uErrorINfoTools, uIBeanFactory;
+  uErrorINfoTools;
 
 
 class function TmBeanFrameVars.applicationContext: IApplicationContext;
 begin
   Result := appPluginContext;
+end;
+
+class procedure TmBeanFrameVars.freeBeanInterface(
+  const pvInterface: IInterface);
+var
+  lvFree:IFreeObject;
+begin
+  if pvInterface.QueryInterface(IFreeObject, lvFree) = S_OK then
+  begin
+    lvFree.FreeObject;
+    lvFree := nil;
+  end;
 end;
 
 class function TmBeanFrameVars.getBean(pvBeanID: string; pvRaiseIfNil: Boolean
@@ -67,3 +100,4 @@ begin
 end;
 
 end.
+

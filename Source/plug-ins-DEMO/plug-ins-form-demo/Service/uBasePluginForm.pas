@@ -4,22 +4,31 @@ interface
 
 uses
   Forms, uIPluginForm,  Classes, superobject, uIMainForm, ComObj,
-  SysUtils, uKeyInterface, uIFreeObject, mBeanMainFormTools, uICaption;
+  SysUtils, uKeyInterface, uIFreeObject, mBeanMainFormTools, uICaption, uIBeanConfigSetter;
 
 type
   TBasePluginForm = class(TForm,
     IPluginForm,
     IFreeObject,
-
-    ICaptionManager)
+    ICaptionManager,
+    IBeanConfigSetter)
   private
     FInstanceID: string;
   protected
     __pass:AnsiString;
+    FBeanConfigStr:string;
     procedure DoClose(var Action: TCloseAction); override;
   protected
     function getCaption: PAnsiChar; stdcall;
     procedure setCaption(pvCaption: PAnsiChar); stdcall;
+  protected
+    /// <summary>
+    ///   设置配置中的Config
+    /// </summary>
+    /// <param name="pvBeanConfig">
+    ///   配置文件中JSon格式的字符串
+    /// </param>
+    procedure setBeanConfig(pvBeanConfig: PAnsiChar); virtual; stdcall;
   protected
 
     //获取实例Handle
@@ -35,6 +44,8 @@ type
 
     //关闭和释放窗体
     procedure closeForm; stdcall;
+
+
   protected
     procedure FreeObject; stdcall;
   public
@@ -90,6 +101,11 @@ end;
 procedure TBasePluginForm.FreeObject;
 begin
   Self.Free;
+end;
+
+procedure TBasePluginForm.setBeanConfig(pvBeanConfig: PAnsiChar);
+begin
+  FBeanConfigStr :=String(AnsiString(pvBeanConfig));
 end;
 
 procedure TBasePluginForm.setCaption(pvCaption: PAnsiChar);

@@ -35,7 +35,7 @@ begin
     lvMainForm := getMainForm;
     if lvMainForm <> nil then
     begin
-      lvMainForm.Remove(PAnsiChar(pvInstanceID));
+      lvMainForm.removePlugin(PAnsiChar(pvInstanceID));
     end;
   except
   end;

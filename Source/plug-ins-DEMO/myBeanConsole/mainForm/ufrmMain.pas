@@ -21,10 +21,9 @@ type
     procedure actCreateDemoFormExecute(Sender: TObject);
   private
     FPluginTabControl: TPluginTabControl;
-    procedure closeQuery(const pvForm: IInterface; vCanClose: Boolean); stdcall;
-    procedure freeChildForms;
-
-    function Remove(const pvInstanceID: PAnsiChar): boolean; stdcall;
+    procedure closePluginQuery(const pvForm: IInterface; vCanClose: Boolean);
+        stdcall;
+    function removePlugin(const pvInstanceID: PAnsiChar): boolean; stdcall;
 
     procedure showPluginAsMDI(const pvPlugin:IInterface);stdcall;
   public
@@ -81,23 +80,16 @@ begin
   self.showPluginAsMDI(lvPlugin);
 end;
 
-procedure TfrmMain.closeQuery(const pvForm: IInterface; vCanClose: Boolean);
+procedure TfrmMain.closePluginQuery(const pvForm: IInterface; vCanClose:
+    Boolean);
 begin
 
 end;
 
-procedure TfrmMain.freeChildForms;
+function TfrmMain.removePlugin(const pvInstanceID: PAnsiChar): boolean;
 begin
-  try
-    while self.MDIChildCount > 0 do self.MDIChildren[0].Free;
-  except
-  end;
-end;
-
-function TfrmMain.Remove(const pvInstanceID: PAnsiChar): boolean;
-begin
-  FPluginTabControl.remove(pvInstanceID);
-
+  FPluginTabControl.remove(String(AnsiString(pvInstanceID)));
+  Result := true;
 end;
 
 procedure TfrmMain.showPluginAsMDI(const pvPlugin: IInterface);

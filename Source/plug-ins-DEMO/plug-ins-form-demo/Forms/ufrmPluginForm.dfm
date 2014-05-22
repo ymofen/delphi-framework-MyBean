@@ -2,8 +2,8 @@ object frmPluginForm: TfrmPluginForm
   Left = 0
   Top = 0
   Caption = 'frmPluginForm'
-  ClientHeight = 388
-  ClientWidth = 722
+  ClientHeight = 525
+  ClientWidth = 904
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -16,8 +16,8 @@ object frmPluginForm: TfrmPluginForm
   object mmo1: TMemo
     Left = 0
     Top = 0
-    Width = 537
-    Height = 388
+    Width = 719
+    Height = 352
     Align = alClient
     Lines.Strings = (
       #25105#26159#19968#20010#24456#26222#36890#30340#31383#20307#65292#23454#29616#20102'IPluginForm'#65292#23601#26159#19968#20010#25554#20214#31383#20307', '#21487#20197#30001#20027#31383#20307#21152#36733
@@ -51,21 +51,18 @@ object frmPluginForm: TfrmPluginForm
       ''
       '')
     TabOrder = 0
-    ExplicitLeft = 8
-    ExplicitTop = 8
-    ExplicitWidth = 449
-    ExplicitHeight = 289
+    ExplicitWidth = 620
+    ExplicitHeight = 169
   end
   object pnlOperator: TPanel
-    Left = 537
+    Left = 719
     Top = 0
     Width = 185
-    Height = 388
+    Height = 352
     Align = alRight
     TabOrder = 1
-    ExplicitLeft = 504
-    ExplicitTop = 88
-    ExplicitHeight = 41
+    ExplicitLeft = 537
+    ExplicitHeight = 388
     object btnCreateAsModal: TButton
       Left = 27
       Top = 16
@@ -74,6 +71,26 @@ object frmPluginForm: TfrmPluginForm
       Caption = 'CreateAsModal'
       TabOrder = 0
       OnClick = btnCreateAsModalClick
+    end
+  end
+  object pnlConfig: TPanel
+    Left = 0
+    Top = 352
+    Width = 904
+    Height = 173
+    Align = alBottom
+    Caption = 'pnlConfig'
+    TabOrder = 2
+    object mmoConfig: TMemo
+      Left = 1
+      Top = 1
+      Width = 902
+      Height = 171
+      Align = alClient
+      TabOrder = 0
+      ExplicitLeft = 2
+      ExplicitTop = 6
+      ExplicitHeight = 105
     end
   end
 end

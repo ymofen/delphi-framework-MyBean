@@ -1,0 +1,29 @@
+source
+  源码路径
+
+source\DUtils
+  Delphi可用的工具单元
+
+source\frame-core
+  <框架核心级别>MyBean框架核心单元<接口,工具类>
+
+source\plug-ins-core
+  <框架核心级别>核心插件
+
+source\frame-common
+  <开发用户级别>MyBean插件用到的接口工具类
+
+source\plug-ins-DEMO
+  <开发用户级别>MyBean演示插件目录
+
+
+BIN\
+  插件的输出路径
+
+*请注意
+  <框架核心级别>——留用于框架开发人员修改，为了方便框架升级，请不要进行修改   
+  <开发用户级别>——用于开发插件使用，可以自己进行扩展
+
+
+
+
