@@ -1,17 +1,20 @@
 myBean_HOME = E:\项目中心\delphi-framework-MyBean
 
 配置Delphi搜索路径
-$(myBean_HOME)\Source\frame-core;$(myBean_HOME)\Source\DUtils;
+$(myBean_HOME)\Source\DUtils;$(myBean_HOME)\Source\frame-core\utils;$(myBean_HOME)\Source\frame-core\tools;$(myBean_HOME)\Source\frame-core\service;$(myBean_HOME)\Source\frame-core\interface;
 
 
-souce\plug-xx\project\package\delphixxx\xxx.dpr
+
+
+插件目录存放样式
+source\plug-xx\project\package\delphixxx\xxx.dpr
 
 Outputs\
   ..\..\..\..\..\BIN
   ..\..\..\..\..\BIN\plug-ins
 
+工程的搜索路径
 Search path:
-  ..\..\..\..\..\Source\frameCommon\core;..\..\..\..\..\Source\frameCommon\Interface;..\..\..\..\..\Source\frameCommon\Service;..\..\..\..\..\Source\frameCommon\Tools;..\..\..\..\..\Source\frameCommon\Utils;..\..\..\..\..\Source\DUtils;
+..\..\..\..\..\Source\frame-common\interface;..\..\..\..\..\Source\frame-common\service;..\..\..\..\..\Source\frame-common\tools;..\..\..\..\..\Source\frame-common\utils;
 
-    
-  $(myBean_HOME)\Source\frame-core;$(myBean_HOME)\Source\frameCommon\Utils;$(myBean_HOME)\Source\frameCommon\Interface;$(myBean_HOME)\Source\frameCommon\Service;$(myBean_HOME)\Source\frameCommon\Tools
+$(myBean_HOME)\Source\DUtils;$(myBean_HOME)\Source\frame-core\utils;$(myBean_HOME)\Source\frame-core\tools;$(myBean_HOME)\Source\frame-core\service;$(myBean_HOME)\Source\frame-core\interface;..\..\..\..\..\Source\frame-common\interface;..\..\..\..\..\Source\frame-common\service;..\..\..\..\..\Source\frame-common\tools;..\..\..\..\..\Source\frame-common\utils;
