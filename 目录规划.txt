@@ -1,0 +1,11 @@
+source
+  源码路径
+
+source\DUtils
+  Delphi可用的工具单元
+
+source\frame-core
+  MyBean框架核心单元<接口,工具类>
+
+source\frame-common
+  MyBean插件用到的接口工具类

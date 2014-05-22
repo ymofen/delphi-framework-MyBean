@@ -66,7 +66,7 @@
     </PropertyGroup>
     <PropertyGroup Condition="'$(Cfg_2_Win32)'!=''">
         <UsePackages>true</UsePackages>
-        <DCC_UnitSearchPath>..\..\..\..\..\Source\frameCommon\core;$(DCC_UnitSearchPath)</DCC_UnitSearchPath>
+        <DCC_UnitSearchPath>$(myBean_HOME)\Source\frame-core;$(myBean_HOME)\Source\DUtils;$(DCC_UnitSearchPath)</DCC_UnitSearchPath>
         <VerInfo_Locale>1033</VerInfo_Locale>
         <BRCC_IncludePath>..\..\..\..\..\Source\frameCommon\core;$(BRCC_IncludePath)</BRCC_IncludePath>
         <DCC_UsePackage>vcl;rtl;$(DCC_UsePackage)</DCC_UsePackage>
@@ -115,6 +115,7 @@
                 <Excluded_Packages>
                     <Excluded_Packages Name="$(BDSBIN)\dcloffice2k190.bpl">Microsoft Office 2000 Sample Automation Server Wrapper Components</Excluded_Packages>
                     <Excluded_Packages Name="$(BDSBIN)\dclofficexp190.bpl">Microsoft Office XP Sample Automation Server Wrapper Components</Excluded_Packages>
+                    <Excluded_Packages Name="C:\Users\Public\Documents\RAD Studio\12.0\Bpl\rtlDevExpress.bpl">File C:\Users\Public\Documents\RAD Studio\12.0\Bpl\rtlDevExpress.bpl not found</Excluded_Packages>
                 </Excluded_Packages>
             </Delphi.Personality>
             <Platforms>

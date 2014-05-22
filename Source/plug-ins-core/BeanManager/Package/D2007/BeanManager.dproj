@@ -22,10 +22,10 @@
     <DCC_DcuOutput>..\Outputs</DCC_DcuOutput>
     <DCC_ObjOutput>..\Outputs</DCC_ObjOutput>
     <DCC_HppOutput>..\Outputs</DCC_HppOutput>
-    <DCC_UnitSearchPath>..\..\..\..\..\Source\frameCommon\Interface;..\..\..\..\..\Source\frameCommon\Service;..\..\..\..\..\Source\frameCommon\Tools;..\..\..\..\..\Source\frameCommon\Utils;..\..\..\..\..\Source\DUtils;</DCC_UnitSearchPath>
-    <DCC_ResourcePath>..\..\..\..\..\Source\frameCommon\Interface;..\..\..\..\..\Source\frameCommon\Service;..\..\..\..\..\Source\frameCommon\Tools;..\..\..\..\..\Source\frameCommon\Utils;..\..\..\..\..\Source\DUtils;</DCC_ResourcePath>
-    <DCC_ObjPath>..\..\..\..\..\Source\frameCommon\Interface;..\..\..\..\..\Source\frameCommon\Service;..\..\..\..\..\Source\frameCommon\Tools;..\..\..\..\..\Source\frameCommon\Utils;..\..\..\..\..\Source\DUtils;</DCC_ObjPath>
-    <DCC_IncludePath>..\..\..\..\..\Source\frameCommon\Interface;..\..\..\..\..\Source\frameCommon\Service;..\..\..\..\..\Source\frameCommon\Tools;..\..\..\..\..\Source\frameCommon\Utils;..\..\..\..\..\Source\DUtils;</DCC_IncludePath>
+    <DCC_UnitSearchPath>$(myBean_HOME)\Source\frame-core;$(myBean_HOME)\Source\DUtils;</DCC_UnitSearchPath>
+    <DCC_ResourcePath>$(myBean_HOME)\Source\frame-core;$(myBean_HOME)\Source\DUtils;</DCC_ResourcePath>
+    <DCC_ObjPath>$(myBean_HOME)\Source\frame-core;$(myBean_HOME)\Source\DUtils;</DCC_ObjPath>
+    <DCC_IncludePath>$(myBean_HOME)\Source\frame-core;$(myBean_HOME)\Source\DUtils;</DCC_IncludePath>
   </PropertyGroup>
   <ProjectExtensions>
     <Borland.Personality>Delphi.Personality</Borland.Personality>
