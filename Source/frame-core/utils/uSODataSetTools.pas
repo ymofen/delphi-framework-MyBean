@@ -31,12 +31,20 @@ type
     /// <summary>
     ///   打包当前记录到一个新的JSon包
     /// </summary>
-    class function Record2SuperObjectPack(pvDataSet: TDataSet): ISuperObject;
+    class function record2SuperObjectPack(pvDataSet: TDataSet): ISuperObject;
 
     /// <summary>
     ///   将数据集的所有记录写入到一个superobject 数组中区
     /// </summary>
-    class function DataSet2SuperObjectPack(pvDataSet:TDataSet): ISuperObject;
+    class function dataSet2SuperObjectPack(pvDataSet:TDataSet): ISuperObject;
+
+    /// <summary>
+    ///   将JSon中的所有记录写入到一个数据集里面
+    ///     pvDataSet必须是有字段的数据集
+    ///     superObjectPack必须是一个数组 [{},{}]
+    /// </summary>
+    class procedure superObjectPack2DataSet(pvDataSet: TDataSet; pvSuperObjectPack:
+        ISuperObject);
 
     /// <summary>
     ///   将JSon记录写入到当前记录
@@ -50,7 +58,7 @@ implementation
 uses
   uSOConvertTools;
 
-class function TSODataSetTools.DataSet2SuperObjectPack(pvDataSet:TDataSet):
+class function TSODataSetTools.dataSet2SuperObjectPack(pvDataSet:TDataSet):
     ISuperObject;
 begin
   Result := SO('[]');
@@ -60,7 +68,7 @@ begin
     try
       while not pvDataSet.Eof do
       begin
-        Result.AsArray.Add(Record2SuperObjectPack(pvDataSet));
+        Result.AsArray.Add(record2SuperObjectPack(pvDataSet));
         pvDataSet.Next;
       end;
     finally
@@ -80,6 +88,22 @@ begin
   for i := 1 to Length(pvString) do
     h := h*129 + ord(pvString[i]) + $9e370001;
   Result := h;
+end;
+
+class procedure TSODataSetTools.superObjectPack2DataSet(pvDataSet: TDataSet;
+  pvSuperObjectPack: ISuperObject);
+var
+  i: Integer;
+begin
+  if pvSuperObjectPack = nil then exit;
+  if pvSuperObjectPack.DataType <>stArray then exit;
+    
+  for i := 0 to pvSuperObjectPack.AsArray.Length - 1 do
+  begin
+    pvDataSet.Append;
+    superObjectPack2Record(pvDataSet, pvSuperObjectPack.AsArray.O[i]);
+    pvDataSet.Post;    
+  end;
 end;
 
 class procedure TSODataSetTools.superObjectPack2Record(pvDataSet: TDataSet;
@@ -143,7 +167,7 @@ begin
   end;
 end;
 
-class function TSODataSetTools.Record2SuperObjectPack(pvDataSet: TDataSet):
+class function TSODataSetTools.record2SuperObjectPack(pvDataSet: TDataSet):
     ISuperObject;
 var
   lvField:TField;

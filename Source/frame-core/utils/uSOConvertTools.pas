@@ -2,6 +2,10 @@ unit uSOConvertTools;
 
 interface
 
+{$if CompilerVersion>= 23}
+  {$define HAVE_UINT_TYPE}
+{$ifend}
+
 uses
   superobject, Variants, SysUtils;
 
@@ -97,7 +101,10 @@ begin
     Result := nil;
   end else if lvType in [varInteger, varSmallint,
      varInt64, varDouble, varSingle,
-     varWord, varByte, varShortInt, varLongWord, varUInt64
+     varWord, varByte, varShortInt, varLongWord
+     {$if defined(NEED_FORMATSETTINGS)}FormatSettings varUInt64{$ifend}
+
+
      ] then
   begin
     if pvValue = 1 then
