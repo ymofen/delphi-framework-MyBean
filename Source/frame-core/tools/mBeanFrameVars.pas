@@ -34,6 +34,12 @@ type
     /// </summary>
     class function getObject(const pvID:AnsiString):IInterface;
 
+
+    /// <summary>
+    ///   判断插件是否存在
+    /// </summary>
+    class function existsObject(pvID:String): Boolean;
+
     /// <summary>
     ///   移除全局的接口对象
     /// </summary>
@@ -49,6 +55,11 @@ uses
 class function TmBeanFrameVars.applicationContext: IApplicationContext;
 begin
   Result := appPluginContext;
+end;
+
+class function TmBeanFrameVars.existsObject(pvID: String): Boolean;
+begin
+  Result := applicationKeyMap.existsObject(PAnsiChar(AnsiString(pvID)));
 end;
 
 class procedure TmBeanFrameVars.freeBeanInterface(
@@ -92,6 +103,7 @@ class procedure TmBeanFrameVars.removeObject(pvID: AnsiString);
 begin
   applicationKeyMap.removeObject(PAnsiChar(pvID));
 end;
+
 
 class procedure TmBeanFrameVars.setObject(const pvID: AnsiString; const
     pvObject: IInterface);

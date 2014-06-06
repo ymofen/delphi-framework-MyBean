@@ -4,7 +4,7 @@ interface
 
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics,
-  Controls, Forms, Dialogs, Menus, Actions, ActnList,
+  Controls, Forms, Dialogs, Menus, ActnList,
   Tabs, ExtCtrls, uIMainForm, PluginTabControl;
 
 type
