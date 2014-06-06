@@ -310,7 +310,7 @@ begin
     begin
       lvLibObject := TBaseFactoryObject(FBeanMapList.Objects[j]);
       TFileLogger.instance.logMessage(Format('在注册插件[%s]时发现重复,已经在[%s]进行了注册',
-         [lvID,lvLibObject.namespace]));
+         [lvID,lvLibObject.namespace]), 'load_trace');
     end else
     begin
       FBeanMapList.AddObject(lvID, pvFactoryObject);
@@ -501,6 +501,8 @@ begin
   begin
     lvFactoryObject := TBaseFactoryObject(FFactoryObjectList.Objects[i]);
     try
+      if FTraceLoadFile then
+        TFileLogger.instance.logMessage('准备初始化bean工厂:' + lvFactoryObject.namespace, 'load_trace');
       lvFactoryObject.checkInitialize;
     except
       on E:Exception do
@@ -535,6 +537,8 @@ begin
       lvPath := TFileTools.GetAbsolutePath(FRootPath, lvPath);
       lvFileName := lvPath + lvFileName;
 
+
+      lvStrings.Clear;
       TFileTools.getFileNameList(lvStrings, lvFileName);
       Result := Result + executeLoadFromConfigFiles(lvStrings);
     end;
@@ -694,7 +698,14 @@ begin
     if j <> -1 then
     begin
       lvLibObject := TBaseFactoryObject(FBeanMapList.Objects[j]);
-      lvLibObject.checkInitialize;
+      if lvLibObject.beanFactory = nil then
+      begin
+        if FTraceLoadFile then
+          TFileLogger.instance.logMessage('初始化bean工厂_BEGIN:' + lvLibObject.namespace, 'load_trace');
+        lvLibObject.checkInitialize;
+        if FTraceLoadFile then
+          TFileLogger.instance.logMessage('初始化bean工厂_END:' + lvLibObject.namespace, 'load_trace');
+      end;
       Result := lvLibObject.beanFactory;
     end else
     begin
@@ -707,7 +718,7 @@ begin
     begin
       TFileLogger.instance.logMessage(
                     Format('获取插件工厂[%s]出现异常', [lvBeanID]) + e.Message,
-                    'pluginLoaderErr');
+                    'load_trace');
     end;
   end;
 end;
