@@ -15,6 +15,6 @@ Outputs\
 
 工程的搜索路径
 Search path:
-..\..\..\..\..\Source\frame-common\interface;..\..\..\..\..\Source\frame-common\service;..\..\..\..\..\Source\frame-common\tools;..\..\..\..\..\Source\frame-common\utils;
+..\..\..\..\frame-common\interface;..\..\..\..\frame-common\service;..\..\..\..\frame-common\tools;..\..\..\..\frame-common\utils;
 
-$(myBean_HOME)\Source\DUtils;$(myBean_HOME)\Source\frame-core\utils;$(myBean_HOME)\Source\frame-core\tools;$(myBean_HOME)\Source\frame-core\service;$(myBean_HOME)\Source\frame-core\interface;..\..\..\..\..\Source\frame-common\interface;..\..\..\..\..\Source\frame-common\service;..\..\..\..\..\Source\frame-common\tools;..\..\..\..\..\Source\frame-common\utils;
+$(myBean_HOME)\Source\DUtils;$(myBean_HOME)\Source\frame-core\utils;$(myBean_HOME)\Source\frame-core\tools;$(myBean_HOME)\Source\frame-core\service;$(myBean_HOME)\Source\frame-core\interface;..\..\..\..\frame-common\interface;..\..\..\..\frame-common\service;..\..\..\..\frame-common\tools;..\..\..\..\frame-common\utils;
