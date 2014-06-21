@@ -13,6 +13,10 @@
               "attachData":"可以在配置文件中配置一些其他参数",
               "attachData02":"可以带入到插件中去",
           }
+      },
+      {
+         "id":"reporterDemoForm",
+         "lib":"plug-ins\\reporterDEMO.dll",
       }
    ]
 }
