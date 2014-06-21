@@ -12,6 +12,18 @@
               {
                 "id":"FR4",   //实现了IReporter接口的插件ID
                 "remark":"FastReporter4.0报表",
+              },
+              {
+                "id":"FR3",   //实现了IReporter接口的插件ID
+                "remark":"FastReporter3.0报表",
+              },
+              {
+                "id":"RM",   //实现了IReporter接口的插件ID
+                "remark":"ReportMachine6.5报表",
+              }, 
+              {
+                "id":"barTender",   //实现了IReporter接口的插件ID
+                "remark":"标签打印",
               }
           ]          
       },

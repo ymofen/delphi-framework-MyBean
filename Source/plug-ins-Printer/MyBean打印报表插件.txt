@@ -1,0 +1,31 @@
+*特性
+  不需要每个窗体放置各种报表控件
+  不需要每台开发电脑安装报表控件(编译Reporter插件需要安装)
+  可以同时扩展多种报表(FR, RM, RB, grid++....)
+  报表文件可以放在本地文件，数据库，FTP，等...
+  用户可以设置自己的默认打印报表.
+  可以导出导入报表文件
+
+1.由reporterConsole插件管理插件
+  在该插件中配置支持的Reporter
+          //支持的报表类型列表
+         "reporterList":
+          [
+              {
+                "id":"FR4",   //实现了IReporter接口的插件ID
+                "remark":"FastReporter4.0报表",
+              },
+              {
+                "id":"FR3",   //实现了IReporter接口的插件ID
+                "remark":"FastReporter3.0报表",
+              },
+              {
+                "id":"barTender",   //实现了IReporter接口的插件ID
+                "remark":"标签打印",
+              }
+              //.....
+          ]
+2.实现IReporter的MyBean插件都可以进行支持，可以自己定义各种报表插件
+
+3.实现IFileAccess接口可以将报表文件存放在不同的地方，满足不同的需要
+  
