@@ -6,6 +6,8 @@
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <DCC_DCCCompiler>DCC32</DCC_DCCCompiler>
     <DCC_DependencyCheckOutputName>..\..\..\..\..\BIN\myBeanConsole.exe</DCC_DependencyCheckOutputName>
+    <DCC_EnabledPackages>true</DCC_EnabledPackages>
+    <DCC_UsePackage>vcl;rtl</DCC_UsePackage>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <Version>7.0</Version>
@@ -42,7 +44,6 @@
     <DCCReference Include="..\..\mainForm\uPluginObject.pas" />
   </ItemGroup>
 </Project>
-
 <!-- EurekaLog First Line
 [Exception Log]
 EurekaLog Version=7001

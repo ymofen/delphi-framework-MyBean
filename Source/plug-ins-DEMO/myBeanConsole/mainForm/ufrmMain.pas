@@ -5,7 +5,7 @@ interface
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics,
   Controls, Forms, Dialogs, Menus, ActnList,
-  Tabs, ExtCtrls, uIMainForm, PluginTabControl;
+  Tabs, ExtCtrls, uIMainForm, PluginTabControl, StdCtrls, IniFiles;
 
 type
   TfrmMain = class(TForm, IMainForm)
@@ -17,8 +17,18 @@ type
     pnlTabs: TPanel;
     actCreateDemoForm: TAction;
     DEMO1: TMenuItem;
+    actCreateReporterDEMO: TAction;
+    DEMO2: TMenuItem;
+    mniCreateReporterDEMO: TMenuItem;
+    edtPluginID: TEdit;
+    btnCreateAsMDI: TButton;
+    actCreatePluginAsMDI: TAction;
     procedure actAboutExecute(Sender: TObject);
     procedure actCreateDemoFormExecute(Sender: TObject);
+    procedure actCreatePluginAsMDIExecute(Sender: TObject);
+    procedure actCreateReporterDEMOExecute(Sender: TObject);
+    procedure FormClose(Sender: TObject; var Action: TCloseAction);
+    procedure FormShow(Sender: TObject);
   private
     FPluginTabControl: TPluginTabControl;
     procedure closePluginQuery(const pvForm: IInterface; vCanClose: Boolean);
@@ -80,10 +90,55 @@ begin
   self.showPluginAsMDI(lvPlugin);
 end;
 
+procedure TfrmMain.actCreatePluginAsMDIExecute(Sender: TObject);
+var
+  lvPlugin:IInterface;
+begin
+  lvPlugin := TmBeanFrameVars.getBean(edtPluginID.Text);
+  self.showPluginAsMDI(lvPlugin);
+end;
+
+procedure TfrmMain.actCreateReporterDEMOExecute(Sender: TObject);
+var
+  lvPlugin:IInterface;
+begin
+  lvPlugin := TmBeanFrameVars.getBean('reporterDemoForm');
+  self.showPluginAsMDI(lvPlugin);
+end;
+
 procedure TfrmMain.closePluginQuery(const pvForm: IInterface; vCanClose:
     Boolean);
 begin
 
+end;
+
+procedure TfrmMain.FormClose(Sender: TObject; var Action: TCloseAction);
+var
+  lvINiFile:TIniFile;
+begin
+  lvINiFile := TIniFile.Create(ChangeFileExt(ParamStr(0), '.history.ini'));
+  try
+    lvINiFile.WriteString('main', 'lastPluginID', edtPluginID.Text);
+  finally
+    lvINiFile.Free;
+  end;
+end;
+
+procedure TfrmMain.FormShow(Sender: TObject);
+var
+  lvINiFile:TIniFile;
+begin
+  lvINiFile := TIniFile.Create(ChangeFileExt(ParamStr(0), '.history.ini'));
+  try
+    edtPluginID.Text := lvINiFile.ReadString('main', 'lastPluginID', '');
+  finally
+    lvINiFile.Free;
+  end;
+
+  if edtPluginID.Text <> '' then
+  begin
+    actCreatePluginAsMDI.Execute;
+  end;
 end;
 
 function TfrmMain.removePlugin(const pvInstanceID: PAnsiChar): boolean;

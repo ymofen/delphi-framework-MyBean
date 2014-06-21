@@ -1,0 +1,90 @@
+﻿<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <ProjectGuid>{0e33002f-7324-4e57-ae03-62e020c720a9}</ProjectGuid>
+    <MainSource>FastReporter.dpr</MainSource>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <DCC_DCCCompiler>DCC32</DCC_DCCCompiler>
+    <DCC_DependencyCheckOutputName>FastReporter.dll</DCC_DependencyCheckOutputName>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <Version>7.0</Version>
+    <DCC_DebugInformation>False</DCC_DebugInformation>
+    <DCC_LocalDebugSymbols>False</DCC_LocalDebugSymbols>
+    <DCC_SymbolReferenceInfo>0</DCC_SymbolReferenceInfo>
+    <DCC_Define>RELEASE</DCC_Define>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <Version>7.0</Version>
+    <DCC_Define>DEBUG</DCC_Define>
+  </PropertyGroup>
+  <ProjectExtensions>
+    <Borland.Personality>Delphi.Personality</Borland.Personality>
+    <Borland.ProjectType>VCLApplication</Borland.ProjectType>
+    <BorlandProject>
+<BorlandProject xmlns=""> <Delphi.Personality>   <Parameters>
+      <Parameters Name="UseLauncher">False</Parameters>
+      <Parameters Name="LoadAllSymbols">True</Parameters>
+      <Parameters Name="LoadUnspecifiedSymbols">False</Parameters>
+    </Parameters>
+    <VersionInfo>
+      <VersionInfo Name="IncludeVerInfo">False</VersionInfo>
+      <VersionInfo Name="AutoIncBuild">False</VersionInfo>
+      <VersionInfo Name="MajorVer">1</VersionInfo>
+      <VersionInfo Name="MinorVer">0</VersionInfo>
+      <VersionInfo Name="Release">0</VersionInfo>
+      <VersionInfo Name="Build">0</VersionInfo>
+      <VersionInfo Name="Debug">False</VersionInfo>
+      <VersionInfo Name="PreRelease">False</VersionInfo>
+      <VersionInfo Name="Special">False</VersionInfo>
+      <VersionInfo Name="Private">False</VersionInfo>
+      <VersionInfo Name="DLL">False</VersionInfo>
+      <VersionInfo Name="Locale">2052</VersionInfo>
+      <VersionInfo Name="CodePage">936</VersionInfo>
+    </VersionInfo>
+    <VersionInfoKeys>
+      <VersionInfoKeys Name="CompanyName"></VersionInfoKeys>
+      <VersionInfoKeys Name="FileDescription"></VersionInfoKeys>
+      <VersionInfoKeys Name="FileVersion">1.0.0.0</VersionInfoKeys>
+      <VersionInfoKeys Name="InternalName"></VersionInfoKeys>
+      <VersionInfoKeys Name="LegalCopyright"></VersionInfoKeys>
+      <VersionInfoKeys Name="LegalTrademarks"></VersionInfoKeys>
+      <VersionInfoKeys Name="OriginalFilename"></VersionInfoKeys>
+      <VersionInfoKeys Name="ProductName"></VersionInfoKeys>
+      <VersionInfoKeys Name="ProductVersion">1.0.0.0</VersionInfoKeys>
+      <VersionInfoKeys Name="Comments"></VersionInfoKeys>
+    </VersionInfoKeys>
+    <Source>
+      <Source Name="MainSource">FastReporter.dpr</Source>
+    </Source>
+  </Delphi.Personality> </BorlandProject></BorlandProject>
+  </ProjectExtensions>
+  <ItemGroup />
+  <ItemGroup>
+    <DelphiCompile Include="FastReporter.dpr">
+      <MainSource>MainSource</MainSource>
+    </DelphiCompile>
+    <DCCReference Include="..\..\Service\StdInterface.pas" />
+    <DCCReference Include="..\..\Service\uDBIntf.pas" />
+    <DCCReference Include="..\..\Service\uIBarTenderData.pas" />
+    <DCCReference Include="..\..\Service\uIControlLayout.pas" />
+    <DCCReference Include="..\..\Service\uIFileAccess.pas" />
+    <DCCReference Include="..\..\Service\uIReporter.pas" />
+    <DCCReference Include="..\..\Service\uIUIReporter.pas" />
+    <DCCReference Include="..\..\Utils\superobject.pas" />
+    <DCCReference Include="..\..\Utils\uCore.pas" />
+    <DCCReference Include="..\..\Utils\uCRCTools.pas" />
+    <DCCReference Include="..\..\Utils\uFileTools.pas" />
+    <DCCReference Include="..\..\Utils\uIIntfList.pas" />
+    <DCCReference Include="uFastReporter.pas" />
+    <DCCReference Include="uFMPreView.pas">
+      <Form>FMPreView</Form>
+      <DesignClass>TFrame</DesignClass>
+    </DCCReference>
+    <DCCReference Include="ufrmFastReport.pas">
+      <Form>frmFastReport</Form>
+    </DCCReference>
+    <DCCReference Include="uPreviewObjectWrapper.pas" />
+  </ItemGroup>
+  <Import Project="$(MSBuildBinPath)\Borland.Delphi.Targets" />
+</Project>
