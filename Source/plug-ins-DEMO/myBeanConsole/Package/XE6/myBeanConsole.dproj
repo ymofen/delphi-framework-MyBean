@@ -3,7 +3,7 @@
         <ProjectGuid>{95418AEE-96A4-46F2-A702-E48C18BCE13B}</ProjectGuid>
         <ProjectVersion>15.1</ProjectVersion>
         <FrameworkType>VCL</FrameworkType>
-        <MainSource>MyConsoleTester.dpr</MainSource>
+        <MainSource>myBeanConsole.dpr</MainSource>
         <Base>True</Base>
         <Config Condition="'$(Config)'==''">Debug</Config>
         <Platform Condition="'$(Platform)'==''">Win32</Platform>
@@ -162,7 +162,7 @@
                     <VersionInfoKeys Name="theme"/>
                 </VersionInfoKeys>
                 <Source>
-                    <Source Name="MainSource">MyConsoleTester.dpr</Source>
+                    <Source Name="MainSource">myBeanConsole.dpr</Source>
                 </Source>
                 <Excluded_Packages>
                     <Excluded_Packages Name="$(BDSBIN)\dcloffice2k190.bpl">Microsoft Office 2000 Sample Automation Server Wrapper Components</Excluded_Packages>

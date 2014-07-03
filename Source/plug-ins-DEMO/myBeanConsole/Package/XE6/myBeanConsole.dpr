@@ -1,4 +1,4 @@
-program MyConsoleTester;
+program myBeanConsole;
 
 uses
   FastMM4,
