@@ -170,7 +170,6 @@ end;
 function TPluginTabControl.FindPlugin(const pvInstanceID: string): Integer;
 var
   i: Integer;
-  lvIsDetail:Boolean;
 begin
   Result := -1;
   for i := 0 to Self.Tabs.Count - 1 do
@@ -201,8 +200,6 @@ begin
 end;
 
 function TPluginTabControl.GetActivePlugin: IInterface;
-var
-  lvPluginObject: TPluginObject;
 begin
   Result := nil;
   if Self.TabIndex = -1 then exit;
@@ -228,8 +225,6 @@ procedure TPluginTabControl.RefreshCaption(const pvPlugin: IInterface);
 var
   lvIndex: Integer;
   lvInstanceID:String;
-  s: string;
-  s2: string;
 begin
   lvInstanceID := TMainFormTools.getInstanceID(pvPlugin);
   lvIndex := CheckFind(lvInstanceID, False);
@@ -295,14 +290,11 @@ end;
 
 function TPluginTabControl.unBindPlugin(pvIndex: Integer; const pvPluginObject:
     TPluginObject): Boolean;
-var
-  lvIndex: Integer;
-  lvObj: TPluginObject;
 begin
   self.OnChange := nil;
   try
     Result := false;
-    setCaptionMananger(lvObj.Plugin, nil);
+    setCaptionMananger(pvPluginObject.Plugin, nil);
     //охи╬ЁЩ
     //Self.Tabs[lvIndex] := nil;
     self.Tabs.Objects[pvIndex] := nil;

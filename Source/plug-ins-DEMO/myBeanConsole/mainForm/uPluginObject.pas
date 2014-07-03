@@ -62,14 +62,14 @@ end;
 
 function TPluginObject.getCaption: PAnsiChar;
 begin
-  
+  Result := '';
 end;
 
 procedure TPluginObject.setCaption(pvCaption: PAnsiChar);
 begin
   if Assigned(FOnSetCaption) then
   begin
-    FOnSetCaption(Self, pvCaption);
+    FOnSetCaption(Self, String(AnsiString(pvCaption)));
   end;                             
 
 end;
