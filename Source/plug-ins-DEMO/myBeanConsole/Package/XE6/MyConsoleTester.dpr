@@ -1,27 +1,27 @@
-program myBeanConsole;
+program MyConsoleTester;
 
 uses
   FastMM4,
   FastMM4Messages,
-  Forms,
+  Vcl.Forms,
   uAppPluginContext,
-  ufrmMain in '..\..\mainForm\ufrmMain.pas' {frmMain},
   PluginTabControl in '..\..\mainForm\PluginTabControl.pas',
-  uPluginObject in '..\..\mainForm\uPluginObject.pas',
+  ufrmMain in '..\..\mainForm\ufrmMain.pas' {frmMain},
   uMainFormTools in '..\..\mainForm\uMainFormTools.pas',
+  uPluginObject in '..\..\mainForm\uPluginObject.pas',
   Vcl.Themes,
   Vcl.Styles;
 
-{R *.res}
+{$R *.res}
 
 begin
   Application.Initialize;
   applicationContextIntialize();
   try
     Application.MainFormOnTaskbar := True;
-    TStyleManager.TrySetStyle('Amakrits');
-  Application.CreateForm(TfrmMain, frmMain);
-  Application.Run;
+    TStyleManager.TrySetStyle('Cyan Dusk');
+    Application.CreateForm(TfrmMain, frmMain);
+    Application.Run;
   finally
     //必须提前释放，等清理了DLL资源再进行释放, 如果主窗体中含有DLL中的资源，可能会引发AV异常
     frmMain.Free;

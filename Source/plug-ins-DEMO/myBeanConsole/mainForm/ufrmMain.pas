@@ -5,7 +5,8 @@ interface
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics,
   Controls, Forms, Dialogs, Menus, ActnList,
-  Tabs, ExtCtrls, uIMainForm, PluginTabControl, StdCtrls, IniFiles;
+  Tabs, ExtCtrls, uIMainForm, PluginTabControl, StdCtrls, IniFiles,
+  System.Actions;
 
 type
   TfrmMain = class(TForm, IMainForm)
