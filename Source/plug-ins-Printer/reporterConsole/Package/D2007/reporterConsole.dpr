@@ -26,7 +26,14 @@ uses
   uDBTools in '..\..\Tools\uDBTools.pas',
   SOWrapper in '..\..\Tools\SOWrapper.pas',
   ObjRecycle in '..\..\Tools\ObjRecycle.pas',
-  uSNTools in '..\..\Tools\uSNTools.pas';
+  uSNTools in '..\..\Tools\uSNTools.pas',
+  uFileTools in '..\..\Tools\uFileTools.pas',
+  uKeyStreamCoder in '..\..\Tools\uKeyStreamCoder.pas',
+  uKeyStreamFileCoder in '..\..\Tools\uKeyStreamFileCoder.pas',
+  uKeyStreamTools in '..\..\Tools\uKeyStreamTools.pas',
+  uMsgTools in '..\..\Tools\uMsgTools.pas',
+  uStreamCoder in '..\..\Tools\uStreamCoder.pas',
+  uJSonTools in '..\..\Tools\uJSonTools.pas';
 
 {$R *.res}
 

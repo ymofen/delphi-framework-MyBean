@@ -6,9 +6,9 @@ uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
   Dialogs, DBClient, ActnList, ImgList,
   uFieldCreator, ufrmReportEditor, ComObj, uSNTools, 
-  uIFileAccess, OSUtils, uJSonTools, uFileTools, superobject, uIReporter,
+  uIFileAccess, uJSonTools, uFileTools, superobject, uIReporter,
   uIIntfList, Grids, DBGrids, DB, StdCtrls, Buttons, ExtCtrls, KeyStream,
-  uKeyStreamTools, uKeyStreamCoder, uMsgTools, Menus,
+  uKeyStreamTools, uKeyStreamCoder, Menus,
   uIErrorINfo,
   uErrorINfoTools,
   mBeanFrameVars,
@@ -264,7 +264,7 @@ var
 implementation
 
 uses
-  uCdsTools, uDBTools, uSOTools;
+  uCdsTools, uDBTools, uSOTools, uMsgTools;
 
 {$R *.dfm}
 

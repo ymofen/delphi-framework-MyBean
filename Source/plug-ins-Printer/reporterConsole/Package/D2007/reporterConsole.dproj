@@ -45,7 +45,14 @@
     <DCCReference Include="..\..\Tools\superobject.pas" />
     <DCCReference Include="..\..\Tools\uCdsTools.pas" />
     <DCCReference Include="..\..\Tools\uDBTools.pas" />
+    <DCCReference Include="..\..\Tools\uFileTools.pas" />
+    <DCCReference Include="..\..\Tools\uJSonTools.pas" />
+    <DCCReference Include="..\..\Tools\uKeyStreamCoder.pas" />
+    <DCCReference Include="..\..\Tools\uKeyStreamFileCoder.pas" />
+    <DCCReference Include="..\..\Tools\uKeyStreamTools.pas" />
+    <DCCReference Include="..\..\Tools\uMsgTools.pas" />
     <DCCReference Include="..\..\Tools\uSNTools.pas" />
+    <DCCReference Include="..\..\Tools\uStreamCoder.pas" />
     <DCCReference Include="..\..\ufrmReportEditor.pas">
       <Form>frmReportEditor</Form>
     </DCCReference>
