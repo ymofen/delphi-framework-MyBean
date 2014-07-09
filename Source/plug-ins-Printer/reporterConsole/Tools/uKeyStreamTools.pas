@@ -3,18 +3,24 @@ unit uKeyStreamTools;
 interface
 
 uses
-  KeyStream, Classes, IdGlobal;
+  KeyStream, Classes, SysUtils;
 
 type
   TKeyStreamTools =class(TObject)
   public
+    class function ansiString2Utf8Bytes(v:AnsiString): TBytes;
+    class function Utf8Bytes2AnsiString(pvData:TBytes): AnsiString;
+    
     class procedure AddString(const pvKeyStream: TKeyStream; pvKey, pvData: string);
     class procedure AddFile(const pvKeyStream: TKeyStream; pvKey, pvFileName: string);
+
+
     class function DecodeStringFromStream(pvStream:TStream): string;
     class function ExtractString(const pvKeyStream: TKeyStream; pvKey: string): string;
     class function encodeString2Stream(pvString:string): TMemoryStream;
     class procedure ExtractStream(const pvKeyStream: TKeyStream; pvKey: string;
         pvDATAStream:TStream);
+
   end;
 
 implementation
@@ -44,24 +50,33 @@ begin
   pvKeyStream.Add(pvKey, lvStream, True);
 end;
 
+class function TKeyStreamTools.ansiString2Utf8Bytes(v:AnsiString): TBytes;
+var
+  lvTemp:AnsiString;
+begin
+  lvTemp := AnsiToUtf8(v);
+  SetLength(Result, Length(lvTemp));
+  Move(lvTemp[1], Result[0],  Length(lvTemp));
+end;
+
 class function TKeyStreamTools.DecodeStringFromStream(pvStream:TStream): string;
 var
-  lvByte:TIdBytes;
+  lvByte:TBytes;
 begin
   pvStream.Position := 0;
   SetLength(lvByte, pvStream.Size);
   pvStream.Read(lvByte[0], pvStream.Size);
-  Result := BytesToString(lvByte, TIdTextEncoding.UTF8, TIdTextEncoding.Default);
+  Result := Utf8Bytes2AnsiString(lvByte);
 end;
 
 class function TKeyStreamTools.encodeString2Stream(pvString:string):
     TMemoryStream;
 var
-  lvBytes:TIdBytes;
+  lvBytes:TBytes;
 begin
   Result := TMemoryStream.Create;
   try
-    lvBytes := ToBytes(pvString, TIdTextEncoding.UTF8);
+    lvBytes := ansiString2Utf8Bytes(pvString);
     Result.WriteBuffer(lvBytes[0], Length(lvBytes));
   except
     Result.Free;
@@ -95,6 +110,15 @@ begin
   begin
     Result := '';
   end;
+end;
+
+class function TKeyStreamTools.Utf8Bytes2AnsiString(pvData:TBytes): AnsiString;
+var
+  lvTemp:AnsiString;
+begin
+  SetLength(lvTemp, Length(pvData));
+  Move(pvData[0], lvTemp[1],  Length(pvData));
+  Result := Utf8ToAnsi(lvTemp);
 end;
 
 end.

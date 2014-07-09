@@ -40,6 +40,7 @@
     </DelphiCompile>
     <DCCReference Include="..\..\interface\uIFileAccess.pas" />
     <DCCReference Include="..\..\interface\uIReporter.pas" />
+    <DCCReference Include="..\..\Tools\KeyStream.pas" />
     <DCCReference Include="..\..\Tools\ObjRecycle.pas" />
     <DCCReference Include="..\..\Tools\SOWrapper.pas" />
     <DCCReference Include="..\..\Tools\superobject.pas" />

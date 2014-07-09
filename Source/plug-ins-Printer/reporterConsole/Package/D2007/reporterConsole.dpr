@@ -33,7 +33,8 @@ uses
   uKeyStreamTools in '..\..\Tools\uKeyStreamTools.pas',
   uMsgTools in '..\..\Tools\uMsgTools.pas',
   uStreamCoder in '..\..\Tools\uStreamCoder.pas',
-  uJSonTools in '..\..\Tools\uJSonTools.pas';
+  uJSonTools in '..\..\Tools\uJSonTools.pas',
+  KeyStream in '..\..\Tools\KeyStream.pas';
 
 {$R *.res}
 
