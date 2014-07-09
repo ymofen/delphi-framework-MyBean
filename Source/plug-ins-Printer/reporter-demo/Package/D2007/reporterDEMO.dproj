@@ -38,6 +38,7 @@
     </DelphiCompile>
     <DCCReference Include="..\..\..\reporterConsole\interface\uIDataSet.pas" />
     <DCCReference Include="..\..\..\reporterConsole\interface\uIFileAccess.pas" />
+    <DCCReference Include="..\..\..\reporterConsole\interface\uIReporter.pas" />
     <DCCReference Include="..\..\..\reporterConsole\interface\uLocalFileAccess.pas" />
     <DCCReference Include="..\..\Forms\ufrmPluginForm.pas">
       <Form>frmPluginForm</Form>

@@ -6,7 +6,7 @@ unit uLocalFileAccess;
 interface
 
 uses
-  uIFileAccess, SysUtils, uFileTools, uStringTools, Windows;
+  uIFileAccess, SysUtils, uFileTools, Windows;
 
 type
   TLocalFileAccess = class(TInterfacedObject, IFileAccess)

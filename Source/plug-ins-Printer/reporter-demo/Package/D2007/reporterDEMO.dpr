@@ -19,7 +19,8 @@ uses
   uIFileAccess in '..\..\..\reporterConsole\interface\uIFileAccess.pas',
   uLocalFileAccess in '..\..\..\reporterConsole\interface\uLocalFileAccess.pas',
   uIDataSet in '..\..\..\reporterConsole\interface\uIDataSet.pas',
-  uDataSetWrapper in '..\..\Utils\uDataSetWrapper.pas';
+  uDataSetWrapper in '..\..\Utils\uDataSetWrapper.pas',
+  uIReporter in '..\..\..\reporterConsole\interface\uIReporter.pas';
 
 {$R *.res}
 

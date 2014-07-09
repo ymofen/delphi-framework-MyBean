@@ -20,8 +20,6 @@ type
       pvSortDescFields: string = '');
     class function CdsIsChanged(const pvCds: TCustomClientDataSet;
         pvIfInsertAndEditPost: Boolean = true): Boolean;
-    class function GetDeltaXMLData(const pvCds: TCustomClientDataSet): String;
-
     class procedure RefreshCurrentRecord(const pvCds: TCustomClientDataSet;
         pvRecordData:OleVariant);
 
@@ -143,22 +141,6 @@ begin
     pvCDS.EnableControls;
   end;
 
-end;
-
-class function TCdsTools.GetDeltaXMLData(const pvCds: TCustomClientDataSet):
-    String;
-var
-  FDeltaDS          : IDSBase;
-  DataPacket        : TDataPacket;
-  VarPacket         : OleVariant;
-begin
-  pvCds.CheckBrowseMode;
-  TCustomClientDataSetCrack(pvCds).Check(
-    TCustomClientDataSetCrack(pvCds).DSBase.GetDelta(FDeltaDS));
-  FDeltaDS.SetProp(dspropXML_STREAMMODE, xmlON);
-  TCustomClientDataSetCrack(pvCds).Check(FDeltaDS.StreamDS(DataPacket));
-  DataPacketToVariant(DataPacket, VarPacket);
-  Result := VariantArrayToString(VarPacket);
 end;
 
 class procedure TCdsTools.RefreshCurrentRecord(const pvCds:
