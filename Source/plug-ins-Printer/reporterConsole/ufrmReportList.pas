@@ -8,11 +8,11 @@ uses
   uFieldCreator, ufrmReportEditor, ComObj, uSNTools, 
   uIFileAccess, uJSonTools, uFileTools, superobject, uIReporter,
   uIIntfList, Grids, DBGrids, DB, StdCtrls, Buttons, ExtCtrls, KeyStream,
-  uKeyStreamTools, uKeyStreamCoder, Menus,
+  uKeyStreamTools, uKeyStreamCoder, uMsgTools, Menus,
   uIErrorINfo,
   uErrorINfoTools,
   mBeanFrameVars,
-  uBeanFactory, FileLogger, uReporterDefaultOperator;
+  uBeanFactory, FileLogger, uReporterDefaultOperator, System.Actions;
 
 type
   TfrmReportList = class(TForm
@@ -87,7 +87,7 @@ type
     
     FJSonConfig:ISuperObject;
 
-    FReportID:String;
+    FReportID:AnsiString;
 
     //
     FTypeConfig:ISuperObject;
@@ -264,7 +264,7 @@ var
 implementation
 
 uses
-  uCdsTools, uDBTools, uSOTools, uMsgTools;
+  uCdsTools, uDBTools, uSOTools;
 
 {$R *.dfm}
 
@@ -299,7 +299,7 @@ end;
 
 procedure TfrmReportList.actDeleteExecute(Sender: TObject);
 var
-  lvFileID, lvKey:String;
+  lvFileID, lvKey:AnsiString;
 begin
   lvKey := cdsMain.FieldByName('FKey').AsString;
   if lvKey = '' then raise Exception.Create('没有选取任何报表!');
@@ -387,8 +387,8 @@ procedure TfrmReportList.actPreViewExecute(Sender: TObject);
 var
   lvReporter:IReporter;
 var
-  lvTempFile:String;
-  lvFileID:String;
+  lvTempFile:AnsiString;
+  lvFileID:AnsiString;
   lvData:ISuperObject;
 begin
   if cdsMain.FieldByName('FKey').AsString = '' then raise Exception.Create('没有选取任何报表!');
@@ -549,8 +549,8 @@ var
 var
   lvReporter:IReporter;
 var
-  lvTempFile:String;
-  lvFileID:String;
+  lvTempFile:AnsiString;
+  lvFileID:AnsiString;
   lvData:ISuperObject;
 begin
   checkPrepare;
@@ -707,8 +707,8 @@ procedure TfrmReportList.designCurrentReporter(pvCDS: TClientDataSet);
 var
   lvReporter:IReporter;
 var
-  lvTempFile:String;
-  lvFileID:String;
+  lvTempFile:AnsiString;
+  lvFileID:AnsiString;
   lvData:ISuperObject;
 begin
   if FFileAccess = nil then raise Exception.Create('缺少文件操作接口!');
@@ -993,12 +993,12 @@ var
   lvKeyStream:TKeyStream;
   lvRec:ISuperObject;
 
-  lvReportID:String;
+  lvReportID:AnsiString;
 
-  lvTempFile:String;
-  lvFileID:String;
+  lvTempFile:AnsiString;
+  lvFileID:AnsiString;
   lvData:ISuperObject;
-  lvInfo:String;
+  lvInfo:AnsiString;
 
   lvInnerCDS, lvCDS:TClientDataSet;
 
@@ -1095,8 +1095,8 @@ procedure TfrmReportList.InnerExport(pvReportID: string; pvDataSet: TDataSet;
 var
   lvKeyStream: TKeyStream;
   lvRec: ISuperObject;
-  lvTempFile: String;
-  lvFileID: String;
+  lvTempFile: AnsiString;
+  lvFileID: AnsiString;
 begin
   lvRec := SO();
   TJSonTools.CopyRecord2JSon(pvDataSet, lvRec, True);
@@ -1285,7 +1285,7 @@ procedure TfrmReportList.reloadList(pvCDS: TClientDataSet = nil; pvReportID:
     String = '');
 var
   lvData:ISuperObject;
-  lvTempFile, lvReportID:String;
+  lvTempFile, lvReportID:AnsiString;
   lvCDS:TClientDataSet;
 begin
   lvCDS := pvCDS;
@@ -1315,7 +1315,7 @@ end;
 
 function TfrmReportList.saveFileRes(pvID: PAnsiChar): PAnsiChar;
 var
-  lvFileID, lvID, lvTempFile:String;
+  lvFileID, lvID, lvTempFile:AnsiString;
 begin
   Result := '';
   checkPrepare;
@@ -1342,7 +1342,7 @@ end;
 procedure TfrmReportList.saveList(pvCDS: TClientDataSet = nil; pvReportID:
     String = '');
 var
-  lvTempFile, lvReportID:String;
+  lvTempFile, lvReportID:AnsiString;
   lvCDS:TClientDataSet;
 begin
   lvCDS := pvCDS;

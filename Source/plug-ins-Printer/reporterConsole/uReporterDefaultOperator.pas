@@ -13,11 +13,10 @@ type
   TReporterDefaultOperator = class(TInterfacedObject, IReporterDefaultOperator)
   private
     FFileAccess: IFileAccess;
-    FUserID: String;
-    __pass:String;
+    FUserID: AnsiString;
+    __pass:AnsiString;
   public
-    constructor Create(const AUserID: String;
-      AFileAccess: IFileAccess);
+    constructor Create(const AUserID: AnsiString; AFileAccess: IFileAccess);
 
     destructor Destroy; override;
     
@@ -30,8 +29,8 @@ type
 
 implementation
 
-constructor TReporterDefaultOperator.Create(const AUserID: String; AFileAccess:
-    IFileAccess);
+constructor TReporterDefaultOperator.Create(const AUserID: AnsiString;
+    AFileAccess: IFileAccess);
 begin
   inherited Create;
   FUserID := AUserID;
@@ -49,7 +48,7 @@ end;
 function TReporterDefaultOperator.getDefault(pvCatalogID: PAnsiChar): PAnsiChar;
 var
   lvJSon:ISuperObject;
-  lvRFile, lvLocalFile:String;
+  lvRFile, lvLocalFile:AnsiString;
 begin
   __pass := '';
   Result := '';
@@ -73,7 +72,7 @@ end;
 procedure TReporterDefaultOperator.setDefault(pvCatalogID, pvID: PAnsiChar);
 var
   lvJSon:ISuperObject;
-  lvRFile, lvLocalFile:String;
+  lvRFile, lvLocalFile:AnsiString;
 begin
   lvLocalFile := TFileTools.createTempFileName('rep_', 'jsn');
   lvRFile := 'repDefault_' + FUserID + '.jsn';
