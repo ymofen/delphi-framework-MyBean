@@ -1,9 +1,12 @@
 unit uMapObject;
 ////
+///  find()函数 初始化Result
+///    2014年7月30日 09:37:33
 //// 添加Delete函数
 ///    2014年1月20日 14:07:30
 //// 添加remove函数
 ////   2014年1月17日 17:21:26
+///
 
 
 interface
@@ -27,6 +30,7 @@ type
     function findIndex(const key:String): Integer;
     function Getcount: Integer;
     function GetValues(Index: Integer): Pointer;
+    function getKeys(Index: Integer): TKeyStr;
   public
     procedure clear;
     constructor Create;
@@ -45,6 +49,9 @@ type
     property count: Integer read Getcount;
     
     property Values[Index: Integer]: Pointer read GetValues; default;
+
+    property Keys[Index: Integer]: TKeyStr read getKeys;
+
 
           
 
@@ -108,6 +115,7 @@ function TMapObject.find(const key:string): Pointer;
 var
   lvBlock:PEntryBlock;
 begin
+  Result := nil;
   lvBlock := findBlock(TKeyStr(key));
   if lvBlock <> nil then
   begin
@@ -153,6 +161,18 @@ end;
 function TMapObject.Getcount: Integer;
 begin
   Result := FList.Count;
+end;
+
+function TMapObject.getKeys(Index: Integer): TKeyStr;
+var
+  lvBlock:PEntryBlock;
+begin
+  Result := '';
+  lvBlock := PEntryBlock(FList[Index]);
+  if lvBlock <> nil then
+  begin
+    Result := lvBlock.key;
+  end;                   
 end;
 
 function TMapObject.GetValues(Index: Integer): Pointer;
