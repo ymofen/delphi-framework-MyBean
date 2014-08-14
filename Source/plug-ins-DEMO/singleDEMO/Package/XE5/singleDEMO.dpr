@@ -1,17 +1,13 @@
 program singleDEMO;
 
 uses
-  FastMM4,
-  FastMM4Messages,
   Forms,
   uBeanFactory,
+  uAppPluginContext,
   ufrmMain in '..\..\ufrmMain.pas' {frmMain},
   ufrmTester in '..\..\Child\ufrmTester.pas' {frmTester},
   uIUIForm in '..\..\Interface\uIUIForm.pas',
-  ufrmSingleton in '..\..\Child\ufrmSingleton.pas' {frmSingleton},
-  uAppPluginContext in '..\..\..\..\frameCommon\core\uAppPluginContext.pas',
-  uIErrorINfo in '..\..\..\..\frameCommon\core\uIErrorINfo.pas',
-  uErrorINfoTools in '..\..\..\..\frameCommon\core\uErrorINfoTools.pas';
+  ufrmSingleton in '..\..\Child\ufrmSingleton.pas' {frmSingleton};
 
 {R *.res}
 
@@ -22,8 +18,7 @@ begin
     registerFactoryObject(beanFactory, 'default');
     Application.MainFormOnTaskbar := True;
     Application.CreateForm(TfrmMain, frmMain);
-  Application.CreateForm(TfrmSingleton, frmSingleton);
-  Application.Run;
+    Application.Run;
   finally
     applicationContextFinalize;
   end;
