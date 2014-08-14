@@ -1,7 +1,7 @@
 myBean_HOME=E:\项目中心\delphi-framework-MyBean
 
 配置Delphi搜索路径
-$(myBean_HOME)\Source\DUtils;$(myBean_HOME)\Source\frame-core\utils;$(myBean_HOME)\Source\frame-core\tools;$(myBean_HOME)\Source\frame-core\service;$(myBean_HOME)\Source\frame-core\interface;
+$(myBean_HOME)\Source\frame-core;$(myBean_HOME)\Source\frame-common
 
 
 
