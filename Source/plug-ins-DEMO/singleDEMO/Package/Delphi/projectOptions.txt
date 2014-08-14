@@ -1,0 +1,5 @@
+Outputs\
+  ..\..\..\..\..\BIN
+
+Search path:
+..\..\..\..\frame-common\interface;..\..\..\..\frame-common\service;..\..\..\..\frame-common\tools;..\..\..\..\frame-common\utils;
