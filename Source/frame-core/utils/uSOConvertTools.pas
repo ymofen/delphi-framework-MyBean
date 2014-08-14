@@ -1,3 +1,7 @@
+(*
+  2014年7月21日 15:36:28
+   添加superObject2Variant函数
+*)
 unit uSOConvertTools;
 
 interface
@@ -12,6 +16,12 @@ uses
 type
   TSOConvertTools = class(TObject)
   public
+
+    /// <summary>
+    ///   将json对象，转换成Variant值
+    /// </summary>
+    class function superObject2Var(const pvData: ISuperObject): Variant;
+
     /// <summary>
     ///   JSon值对象转换成SQL字符
     /// </summary>
@@ -34,6 +44,27 @@ type
 
 
 implementation
+
+class function TSOConvertTools.superObject2Var(const pvData: ISuperObject):
+    Variant;
+begin
+  if pvData = nil then
+  begin
+    Result := null;
+  end else
+  begin
+    case pvData.DataType of
+      stInt: Result := pvData.AsInteger;
+      stDouble: Result := pvData.AsDouble;
+      stBoolean: Result := pvData.AsBoolean;
+      stNull: Result := null;
+      stCurrency: Result := pvData.AsCurrency;
+      stObject: Result := pvData.AsJSon(False);
+    else
+      Result := pvData.AsString;
+    end;
+  end;
+end;
 
 class function TSOConvertTools.superObject2SQLString(pvData:ISuperObject):
     String;
