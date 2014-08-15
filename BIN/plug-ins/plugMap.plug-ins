@@ -1,0 +1,13 @@
+{
+   list:
+   [
+      {
+         "id":"objMap",
+         "lib":"plug-ins\\plugMap.dll",       //文件名
+      },
+      {
+         "id":"objMapTester",
+         "lib":"plug-ins\\plugMap.dll",       //文件名
+      },
+   ]
+}
