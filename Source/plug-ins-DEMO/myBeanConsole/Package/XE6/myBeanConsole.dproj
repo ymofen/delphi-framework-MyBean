@@ -1,7 +1,7 @@
 ﻿<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
     <PropertyGroup>
         <ProjectGuid>{95418AEE-96A4-46F2-A702-E48C18BCE13B}</ProjectGuid>
-        <ProjectVersion>15.1</ProjectVersion>
+        <ProjectVersion>15.4</ProjectVersion>
         <FrameworkType>VCL</FrameworkType>
         <MainSource>myBeanConsole.dpr</MainSource>
         <Base>True</Base>
@@ -40,8 +40,9 @@
         <Base>true</Base>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Base)'!=''">
+        <SanitizedProjectName>myBeanConsole</SanitizedProjectName>
         <DCC_Namespace>System;Xml;Data;Datasnap;Web;Soap;Vcl;Vcl.Imaging;Vcl.Touch;Vcl.Samples;Vcl.Shell;$(DCC_Namespace)</DCC_Namespace>
-        <VCL_Custom_Styles>&quot;Cyan Dusk|VCLSTYLE|$(PUBLIC)\Documents\RAD Studio\12.0\Styles\CyanDusk.vsf&quot;</VCL_Custom_Styles>
+        <VCL_Custom_Styles>&quot;Cyan Dusk|VCLSTYLE|$(PUBLIC)\Documents\Embarcadero\Studio\14.0\Styles\CyanDusk.vsf&quot;</VCL_Custom_Styles>
         <Icon_MainIcon>$(BDS)\bin\delphi_PROJECTICON.ico</Icon_MainIcon>
         <DCC_DcuOutput>.\$(Platform)\$(Config)</DCC_DcuOutput>
         <DCC_ExeOutput>.\$(Platform)\$(Config)</DCC_ExeOutput>
@@ -73,7 +74,7 @@
     <PropertyGroup Condition="'$(Cfg_1_Win32)'!=''">
         <DCC_ExeOutput>..\..\..\..\..\BIN</DCC_ExeOutput>
         <UsePackages>true</UsePackages>
-        <DCC_UnitSearchPath>$(myBean_HOME)\Source\DUtils;$(myBean_HOME)\Source\frame-core\utils;$(myBean_HOME)\Source\frame-core\tools;$(myBean_HOME)\Source\frame-core\service;$(myBean_HOME)\Source\frame-core\interface;..\..\..\..\frame-common\interface;..\..\..\..\frame-common\service;..\..\..\..\frame-common\tools;..\..\..\..\frame-common\utils;$(DCC_UnitSearchPath)</DCC_UnitSearchPath>
+        <DCC_UnitSearchPath>$(myBean_HOME)\Source\frame-core;$(myBean_HOME)\Source\frame-common;$(DCC_UnitSearchPath)</DCC_UnitSearchPath>
         <VerInfo_IncludeVerInfo>true</VerInfo_IncludeVerInfo>
         <VerInfo_Locale>1033</VerInfo_Locale>
         <DCC_RemoteDebug>false</DCC_RemoteDebug>
@@ -165,9 +166,9 @@
                     <Source Name="MainSource">myBeanConsole.dpr</Source>
                 </Source>
                 <Excluded_Packages>
-                    <Excluded_Packages Name="$(BDSBIN)\dcloffice2k190.bpl">Microsoft Office 2000 Sample Automation Server Wrapper Components</Excluded_Packages>
-                    <Excluded_Packages Name="$(BDSBIN)\dclofficexp190.bpl">Microsoft Office XP Sample Automation Server Wrapper Components</Excluded_Packages>
-                    <Excluded_Packages Name="C:\Users\Public\Documents\RAD Studio\12.0\Bpl\rtlDevExpress.bpl">File C:\Users\Public\Documents\RAD Studio\12.0\Bpl\rtlDevExpress.bpl not found</Excluded_Packages>
+                    <Excluded_Packages Name="C:\Users\Public\Documents\Embarcadero\Studio\14.0\Bpl\diocp3vcl.bpl">(untitled)</Excluded_Packages>
+                    <Excluded_Packages Name="$(BDSBIN)\dcloffice2k200.bpl">Microsoft Office 2000 Sample Automation Server Wrapper Components</Excluded_Packages>
+                    <Excluded_Packages Name="$(BDSBIN)\dclofficexp200.bpl">Microsoft Office XP Sample Automation Server Wrapper Components</Excluded_Packages>
                 </Excluded_Packages>
             </Delphi.Personality>
             <Deployment/>

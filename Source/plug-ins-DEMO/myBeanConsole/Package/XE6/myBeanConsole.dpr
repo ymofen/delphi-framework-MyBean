@@ -19,7 +19,7 @@ begin
   applicationContextIntialize();
   try
     Application.MainFormOnTaskbar := True;
-    TStyleManager.TrySetStyle('Cyan Dusk');
+    //TStyleManager.TrySetStyle('Cyan Dusk');
     Application.CreateForm(TfrmMain, frmMain);
     Application.Run;
   finally
