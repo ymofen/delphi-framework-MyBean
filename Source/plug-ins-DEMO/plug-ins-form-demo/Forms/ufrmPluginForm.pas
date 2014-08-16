@@ -4,7 +4,7 @@ interface
 
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics,
-  Controls, Forms, Dialogs, uBasePluginForm, Vcl.StdCtrls, Vcl.ExtCtrls;
+  Controls, Forms, Dialogs, uBasePluginForm, StdCtrls, ExtCtrls;
 
 type
   TfrmPluginForm = class(TBasePluginForm)
