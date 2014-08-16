@@ -23,6 +23,8 @@ type
     dsMain: TDataSource;
     Label1: TLabel;
     procedure btnDesignClick(Sender: TObject);
+    procedure btnPreViewClick(Sender: TObject);
+    procedure btnPrintClick(Sender: TObject);
   private
     FFileAccess: IFileAccess;
     FDataIntf: IInterfaceList;
@@ -108,7 +110,7 @@ begin
     lvConsole.ShowConsole;
 
     TErrorINfoTools.checkRaiseErrorINfo(lvConsole);
-    
+
   finally
     lvConsole.FreeConsole;
   end;
@@ -128,6 +130,80 @@ begin
 //  finally
 //    FreeConsole;
 //  end;
+
+end;
+
+procedure TfrmPluginForm.btnPreViewClick(Sender: TObject);
+var
+  lvID:String;
+  lvConsole:IReportConsole;
+
+  lvConfigStr:string;
+
+begin
+  lvConfigStr := '{operator:{name:"' + cbbUser.Text + '"}}';
+  lvConsole := TmBeanFrameVars.getBean('reporterConsole') as IReportConsole;
+  try
+    //报表文件的存储, 可以替换成DB,或者FTP等文件操作接口
+    lvConsole.setFileAccess(FFileAccess);
+
+    //报表分类的ID,用于报表列表的存储和获取
+    lvConsole.setReportID('1002579');
+
+    //配置信息
+    lvConsole.setConfig(PAnsiChar(AnsiString(lvConfigStr)));
+
+    //打印数据提供接口
+    lvConsole.setDataList(FDataIntf);
+
+    //准备数据
+    lvConsole.Prepare;
+
+    //显示预览
+    lvConsole.PreView('');
+
+    TErrorINfoTools.checkRaiseErrorINfo(lvConsole);
+
+  finally
+    lvConsole.FreeConsole;
+  end;
+
+end;
+
+procedure TfrmPluginForm.btnPrintClick(Sender: TObject);
+var
+  lvID:String;
+  lvConsole:IReportConsole;
+
+  lvConfigStr:string;
+
+begin
+  lvConfigStr := '{operator:{name:"' + cbbUser.Text + '"}}';
+  lvConsole := TmBeanFrameVars.getBean('reporterConsole') as IReportConsole;
+  try
+    //报表文件的存储, 可以替换成DB,或者FTP等文件操作接口
+    lvConsole.setFileAccess(FFileAccess);
+
+    //报表分类的ID,用于报表列表的存储和获取
+    lvConsole.setReportID('1002579');
+
+    //配置信息
+    lvConsole.setConfig(PAnsiChar(AnsiString(lvConfigStr)));
+
+    //打印数据提供接口
+    lvConsole.setDataList(FDataIntf);
+
+    //准备数据
+    lvConsole.Prepare;
+
+    //打印
+    lvConsole.Print('');
+
+    TErrorINfoTools.checkRaiseErrorINfo(lvConsole);
+
+  finally
+    lvConsole.FreeConsole;
+  end;
 
 end;
 

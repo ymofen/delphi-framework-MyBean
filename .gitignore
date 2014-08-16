@@ -10,3 +10,6 @@ __history
 *.exe
 /MyEmail/BIN/CLIENT/MailTemp
 /MyEmail/BIN/CLIENT/mailData
+*.dproj
+*.skincfg
+*.res

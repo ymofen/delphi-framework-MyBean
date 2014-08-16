@@ -20,7 +20,6 @@ object frmPluginForm: TfrmPluginForm
     Height = 49
     Align = alTop
     TabOrder = 0
-    ExplicitTop = -6
     object Label1: TLabel
       Left = 368
       Top = 13
@@ -35,6 +34,7 @@ object frmPluginForm: TfrmPluginForm
       Height = 25
       Caption = 'btnPreView'
       TabOrder = 0
+      OnClick = btnPreViewClick
     end
     object btnDesign: TButton
       Left = 8
@@ -52,6 +52,7 @@ object frmPluginForm: TfrmPluginForm
       Height = 25
       Caption = 'btnPrint'
       TabOrder = 2
+      OnClick = btnPrintClick
     end
     object cbbUser: TComboBox
       Left = 440

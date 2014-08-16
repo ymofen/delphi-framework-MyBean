@@ -29,7 +29,6 @@ object frmFastReport: TfrmFastReport
     UseFileCache = True
     ShowProgress = True
     OverwritePrompt = False
-    DataOnly = False
     Left = 104
     Top = 40
   end
@@ -37,8 +36,7 @@ object frmFastReport: TfrmFastReport
     UseFileCache = True
     ShowProgress = True
     OverwritePrompt = False
-    DataOnly = False
-    PictureType = gpPNG
+    ExportEMF = True
     Wysiwyg = True
     Creator = 'FastReport http://www.fast-report.com'
     SuppressPageHeadersFooters = False
@@ -51,12 +49,10 @@ object frmFastReport: TfrmFastReport
     UseFileCache = True
     ShowProgress = True
     OverwritePrompt = False
-    DataOnly = False
     PrintOptimized = False
     Outline = False
     Background = False
     HTMLTags = True
-    Quality = 95
     Author = 'FastReport'
     Subject = 'FastReport PDF export'
     Creator = 'FastReport (http://www.fast-report.com)'
@@ -74,7 +70,6 @@ object frmFastReport: TfrmFastReport
     UseFileCache = True
     ShowProgress = True
     OverwritePrompt = False
-    DataOnly = False
     ExportEMF = True
     AsText = False
     Background = True
@@ -90,7 +85,7 @@ object frmFastReport: TfrmFastReport
     Top = 8
   end
   object rtpReport: TfrxReport
-    Version = '4.14'
+    Version = '4.9.32'
     DotMatrixReport = False
     IniFile = '\Software\Fast Reports'
     PreviewOptions.AllowEdit = False
@@ -158,7 +153,6 @@ object frmFastReport: TfrmFastReport
     UseFileCache = True
     ShowProgress = True
     OverwritePrompt = False
-    DataOnly = False
     EscModel = 0
     GraphicFrames = False
     SaveToFile = False
