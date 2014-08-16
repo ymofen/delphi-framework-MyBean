@@ -22,10 +22,10 @@
     <Version>7.0</Version>
     <DCC_ExeOutput>..\..\..\..\..\BIN\plug-ins</DCC_ExeOutput>
     <DCC_Define>DEBUG</DCC_Define>
-    <DCC_UnitSearchPath>$(myBean_HOME)\Source\DUtils;$(myBean_HOME)\Source\frame-core\utils;$(myBean_HOME)\Source\frame-core\tools;$(myBean_HOME)\Source\frame-core\service;$(myBean_HOME)\Source\frame-core\interface;..\..\..\..\..\Source\frame-common\interface;..\..\..\..\..\Source\frame-common\service;..\..\..\..\..\Source\frame-common\tools;..\..\..\..\..\Source\frame-common\utils</DCC_UnitSearchPath>
-    <DCC_ResourcePath>$(myBean_HOME)\Source\DUtils;$(myBean_HOME)\Source\frame-core\utils;$(myBean_HOME)\Source\frame-core\tools;$(myBean_HOME)\Source\frame-core\service;$(myBean_HOME)\Source\frame-core\interface;..\..\..\..\..\Source\frame-common\interface;..\..\..\..\..\Source\frame-common\service;..\..\..\..\..\Source\frame-common\tools;..\..\..\..\..\Source\frame-common\utils</DCC_ResourcePath>
-    <DCC_ObjPath>$(myBean_HOME)\Source\DUtils;$(myBean_HOME)\Source\frame-core\utils;$(myBean_HOME)\Source\frame-core\tools;$(myBean_HOME)\Source\frame-core\service;$(myBean_HOME)\Source\frame-core\interface;..\..\..\..\..\Source\frame-common\interface;..\..\..\..\..\Source\frame-common\service;..\..\..\..\..\Source\frame-common\tools;..\..\..\..\..\Source\frame-common\utils</DCC_ObjPath>
-    <DCC_IncludePath>$(myBean_HOME)\Source\DUtils;$(myBean_HOME)\Source\frame-core\utils;$(myBean_HOME)\Source\frame-core\tools;$(myBean_HOME)\Source\frame-core\service;$(myBean_HOME)\Source\frame-core\interface;..\..\..\..\..\Source\frame-common\interface;..\..\..\..\..\Source\frame-common\service;..\..\..\..\..\Source\frame-common\tools;..\..\..\..\..\Source\frame-common\utils</DCC_IncludePath>
+    <DCC_UnitSearchPath>$(myBean_HOME)\Source\frame-core</DCC_UnitSearchPath>
+    <DCC_ResourcePath>$(myBean_HOME)\Source\frame-core</DCC_ResourcePath>
+    <DCC_ObjPath>$(myBean_HOME)\Source\frame-core</DCC_ObjPath>
+    <DCC_IncludePath>$(myBean_HOME)\Source\frame-core</DCC_IncludePath>
   </PropertyGroup>
   <ProjectExtensions>
     <Borland.Personality>Delphi.Personality</Borland.Personality>

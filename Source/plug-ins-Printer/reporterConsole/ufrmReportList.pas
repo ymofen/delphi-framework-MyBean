@@ -12,7 +12,7 @@ uses
   uIErrorINfo,
   uErrorINfoTools,
   mBeanFrameVars,
-  uBeanFactory, FileLogger, uReporterDefaultOperator, System.Actions;
+  uBeanFactory, FileLogger, uReporterDefaultOperator;
 
 type
   TfrmReportList = class(TForm
