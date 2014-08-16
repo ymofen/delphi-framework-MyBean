@@ -1,0 +1,7 @@
+Outputs\
+  ..\..\..\..\..\BIN\
+
+Search path:
+$(myBean_HOME)\Source\frame-core;
+
+runtime Package:不用带包
