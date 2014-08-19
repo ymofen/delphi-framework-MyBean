@@ -4,7 +4,9 @@ interface
 
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics,
-  Controls, Forms, Dialogs, uBasePluginForm, StdCtrls, ExtCtrls;
+  Controls, Forms, Dialogs, uBasePluginForm,
+  mBeanMainFormTools,
+  StdCtrls, ExtCtrls;
 
 type
   TfrmPluginForm = class(TBasePluginForm)
@@ -13,6 +15,8 @@ type
     btnCreateAsModal: TButton;
     pnlConfig: TPanel;
     mmoConfig: TMemo;
+    btnCreateAsMDI: TButton;
+    procedure btnCreateAsMDIClick(Sender: TObject);
     procedure btnCreateAsModalClick(Sender: TObject);
   private
     { Private declarations }
@@ -29,6 +33,12 @@ uses
   mBeanFrameVars, uIPluginForm;
 
 {$R *.dfm}
+
+procedure TfrmPluginForm.btnCreateAsMDIClick(Sender: TObject);
+begin
+  TmBeanMainFormTools.getMainForm.showPluginAsMDI(TmBeanFrameVars.getBean('demoPluginForm'));
+
+end;
 
 procedure TfrmPluginForm.btnCreateAsModalClick(Sender: TObject);
 begin

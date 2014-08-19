@@ -51,8 +51,6 @@ object frmPluginForm: TfrmPluginForm
       ''
       '')
     TabOrder = 0
-    ExplicitWidth = 620
-    ExplicitHeight = 169
   end
   object pnlOperator: TPanel
     Left = 719
@@ -61,8 +59,6 @@ object frmPluginForm: TfrmPluginForm
     Height = 352
     Align = alRight
     TabOrder = 1
-    ExplicitLeft = 537
-    ExplicitHeight = 388
     object btnCreateAsModal: TButton
       Left = 27
       Top = 16
@@ -71,6 +67,15 @@ object frmPluginForm: TfrmPluginForm
       Caption = 'CreateAsModal'
       TabOrder = 0
       OnClick = btnCreateAsModalClick
+    end
+    object btnCreateAsMDI: TButton
+      Left = 32
+      Top = 80
+      Width = 113
+      Height = 25
+      Caption = 'btnCreateAsMDI'
+      TabOrder = 1
+      OnClick = btnCreateAsMDIClick
     end
   end
   object pnlConfig: TPanel
@@ -88,9 +93,6 @@ object frmPluginForm: TfrmPluginForm
       Height = 171
       Align = alClient
       TabOrder = 0
-      ExplicitLeft = 2
-      ExplicitTop = 6
-      ExplicitHeight = 105
     end
   end
 end
