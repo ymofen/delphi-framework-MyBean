@@ -71,6 +71,7 @@ type
 
     /// <summary>
     ///   从单个配置文件中配置插件, 返回成功处理的Bean配置数量
+    ///      会整理配置中Bean对应libFile库对象(TLibFactoryObject)
     /// </summary>
     function executeLoadFromConfigFile(pvFileName: String): Integer;
 
@@ -241,7 +242,7 @@ begin
 
         if FINIFile.ReadBool('main', 'loadOnStartup', True) then
         begin
-          //加载DLL文件
+          //加载DLL文件， 把DLL载入
           checkInitializeFactoryObjects;
         end;
       end else
