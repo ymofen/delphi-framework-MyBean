@@ -26,7 +26,7 @@ implementation
 
 destructor TMapObjectImpl.Destroy;
 begin
-  freeAll();
+  FMap.clear;
   FMap.Free;
   inherited Destroy;
 end;

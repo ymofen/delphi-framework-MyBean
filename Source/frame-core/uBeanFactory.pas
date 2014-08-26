@@ -85,6 +85,7 @@ type
      IBeanFactory,
      IErrorINfo)
   private
+    FVclOwners:TComponent;
 
 
     /// <summary>
@@ -215,6 +216,7 @@ type
 
   public
 
+    property VclOwners: TComponent read FVclOwners;
     property OnInitializeProc: TOnInitializeProc read FOnInitializeProc write
         FOnInitializeProc;
 
@@ -255,6 +257,7 @@ end;
 
 procedure TBeanFactory.checkFinalize;
 begin
+  FVclOwners.DestroyComponents;
   clear;
 end;
 
@@ -417,6 +420,8 @@ end;
 constructor TBeanFactory.Create;
 begin
   inherited Create;
+  FVclOwners := TComponent.Create(nil);
+
   FConfig := SO();
   FPlugins := TStringList.Create;
   FBeanList := TStringList.Create;
@@ -482,7 +487,7 @@ begin
     end;
   end else if lvClass.InheritsFrom(TComponent) then
   begin
-    lvResultObject := TComponentClass(lvClass).Create(nil);
+    lvResultObject := TComponentClass(lvClass).Create(FVclOwners);
     try
       lvResultObject.GetInterface(IInterface, Result);
       if Result = nil then raise Exception.CreateFmt('[%s]未实现IInterface接口,不能进行创建bean', [pvObject.FPluginClass.ClassName]);      
@@ -507,6 +512,8 @@ end;
 
 destructor TBeanFactory.Destroy;
 begin
+  FVclOwners.Free;
+
   clear;
   FreeAndNil(FCS);
   FConfig := nil;
@@ -721,30 +728,35 @@ procedure TPluginINfo.checkFreeInstance;
 var
   lvFree:IFreeObject;
 begin
-  if FInstance <> nil then
-  begin
-    if FInstance.QueryInterface(IFreeObject, lvFree)=S_OK then
-    begin
-      FInstance := nil;
-      lvFree.FreeObject;
-      lvFree := nil;
-    end;
-  end;
+//  if FInstance <> nil then
+//  begin
+//    if FInstance.QueryInterface(IFreeObject, lvFree)=S_OK then
+//    begin
+//      FInstance := nil;
+//      lvFree.FreeObject;
+//      lvFree := nil;
+//    end;
+//    FInstance := nil;
+//  end;
+
+  FInstance := nil;
 end;
 
 procedure TBeanINfo.checkFreeInstance;
 var
   lvFree:IFreeObject;
 begin
-  if FInstance <> nil then
-  begin
-    if FInstance.QueryInterface(IFreeObject, lvFree)=S_OK then
-    begin
-      FInstance := nil;
-      lvFree.FreeObject;
-      lvFree := nil;
-    end;
-  end;
+//  if FInstance <> nil then
+//  begin
+//    if FInstance.QueryInterface(IFreeObject, lvFree)=S_OK then
+//    begin
+//      FInstance := nil;
+//      lvFree.FreeObject;
+//      lvFree := nil;
+//    end;
+//  end;
+
+  FInstance := nil;
 
 
 end;
