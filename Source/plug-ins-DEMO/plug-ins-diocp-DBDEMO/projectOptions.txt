@@ -1,0 +1,12 @@
+Outputs\
+  ..\..\..\..\..\BIN\plug-ins
+
+Search path:
+$(myBean_HOME)\Source\frame-core;$(myBean_HOME)\Source\frame-common
+
+runtime Package
+rtl;vcl;
+
+
+run console
+..\..\..\..\..\BIN\myBeanConsole.exe
