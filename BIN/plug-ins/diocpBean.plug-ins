@@ -1,0 +1,15 @@
+{
+   list:
+   [
+      {
+         "id":"diocpDBDemo",   
+         "lib":"plug-ins\\plugin_form_diocp_DBDEMO.dll",       //文件名
+      },
+      {
+         "id":"diocpRemoteSvr",   
+         "remark":"实现接口: IRemoteServer, IRemoteServerConnector",
+         "singleton":true,    //单件模式
+         "lib":"plug-ins\\diocp_bean.dll",       //文件名
+      }
+   ]
+}
