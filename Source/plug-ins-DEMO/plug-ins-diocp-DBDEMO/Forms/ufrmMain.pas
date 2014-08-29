@@ -51,12 +51,6 @@ begin
   FRemoteSvr := TmBeanFrameVars.getBean('diocpRemoteSvr') as IRemoteServer;
 end;
 
-destructor TfrmMain.Destroy;
-begin
-  FRemoteSvr := nil;
-  inherited Destroy;
-end;
-
 procedure TfrmMain.btnConnectClick(Sender: TObject);
 begin
   (FRemoteSvr as IRemoteServerConnector).setHost(PAnsiChar(AnsiString(edtHost.Text)));
@@ -80,5 +74,12 @@ begin
       [self.cdsMain.RecordCount, GetTickCount - l]);
   end;
 end;
+
+destructor TfrmMain.Destroy;
+begin
+  FRemoteSvr := nil;
+  inherited Destroy;
+end;
+
 
 end.
