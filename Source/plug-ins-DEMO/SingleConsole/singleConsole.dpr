@@ -1,12 +1,11 @@
 program singleConsole;
 
 uses
+  FastMM4,
+  FastMM4Messages,
   Forms,
   ufrmMain in 'ufrmMain.pas' {Form2},
-  mybean.console.loader.dll in '..\..\frame-core\mybean.console.loader.dll.pas',
-  mybean.console.loader in '..\..\frame-core\mybean.console.loader.pas',
-  mybean.console in '..\..\frame-core\mybean.console.pas',
-  mybean.core.intf in '..\..\frame-core\mybean.core.intf.pas',
+  mybean.console,
   uIPluginForm in '..\..\frame-common\uIPluginForm.pas';
 
 {$R *.res}
