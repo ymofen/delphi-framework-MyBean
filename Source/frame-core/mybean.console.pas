@@ -926,6 +926,8 @@ initialization
   mybean.core.intf.appPluginContext := __instanceAppContext;
   mybean.core.intf.applicationKeyMap := __instanceKeyMap;
 
+  appPluginContext.checkInitialize;
+
 finalization
   executeKeyMapCleanup;
   __instanceKeyMapKeyMapIntf := nil;
