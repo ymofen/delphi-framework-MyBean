@@ -4,7 +4,7 @@ interface
 
 uses
   uIBeanFactory, Classes, SysUtils, SyncObjs, Windows, Forms,
-
+  mybean.core.intf,
   superobject;
 
 type
@@ -229,6 +229,9 @@ type
   end;
 
 function getBeanFactory: IBeanFactory; stdcall;
+procedure initializeBeanFactory(appContext: IApplicationContext; appKeyMap: IKeyMap); stdcall;
+
+
 function beanFactory: TBeanFactory;
 
 implementation
@@ -241,7 +244,7 @@ var
   __Instance:IBeanFactory;
 
 exports
-  getBeanFactory;
+  getBeanFactory, initializeBeanFactory;
 
 function getBeanFactory: IBeanFactory; stdcall;
 begin
@@ -251,6 +254,13 @@ end;
 function beanFactory: TBeanFactory;
 begin
   Result := __instanceObject;
+end;
+
+procedure initializeBeanFactory(appContext: IApplicationContext; appKeyMap:
+    IKeyMap);
+begin
+  mybean.core.intf.appPluginContext := appContext;
+  mybean.core.intf.applicationKeyMap := appKeyMap;
 end;
 
 

@@ -57,27 +57,27 @@ uses
   FileLogger, SysUtils;
 
 var
-  __instance:TKeyMapImpl;
-  __instanceIntf:IInterface;
+  __instanceKeyMap:TKeyMapImpl;
+  __instanceKeyMapKeyMapIntf:IInterface;
 
 
 function applicationKeyMap: IKeyMap;
 begin
-  Result := __instance;
+  Result := __instanceKeyMap;
 end;
 
 procedure executeKeyMapCleanup;
 begin
-  if __instanceIntf = nil then exit;
+  if __instanceKeyMapKeyMapIntf = nil then exit;
   try
     try
-      __instance.cleanupObjects;
+      __instanceKeyMap.cleanupObjects;
     except
     end;
-    if __instance.RefCount > 1 then
+    if __instanceKeyMap.RefCount > 1 then
     begin
       TFileLogger.instance.logErrMessage(Format('keyMap存在[%d]未释放的情况',
-        [__instance.RefCount-1]));
+        [__instanceKeyMap.RefCount-1]));
     end;
   except
   end;
@@ -144,13 +144,13 @@ begin
 end;
 
 initialization
-  __instance := TKeyMapImpl.Create;
-  __instanceIntf := __instance;
+  __instanceKeyMap := TKeyMapImpl.Create;
+  __instanceKeyMapKeyMapIntf := __instanceKeyMap;
 
 
 finalization
   executeKeyMapCleanup;
-  __instanceIntf := nil;
+  __instanceKeyMapKeyMapIntf := nil;
 
 
 end.

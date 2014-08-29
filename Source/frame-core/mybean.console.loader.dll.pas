@@ -15,6 +15,7 @@ type
     FLibHandle:THandle;
     FlibFileName: String;
   private
+    procedure doInitalizeBeanFactory;
 
     procedure doCreatePluginFactory;
 
@@ -66,8 +67,23 @@ begin
   if FLibHandle <> 0 then FreeLibrary(FLibHandle);
 end;
 
+procedure TLibFactoryObject.doInitalizeBeanFactory;
+var
+  lvFunc:procedure(appContext: IApplicationContext; appKeyMap: IKeyMap); stdcall;
+begin
+  @lvFunc := GetProcAddress(FLibHandle, PChar('initializeBeanFactory'));
+  if (@lvFunc = nil) then
+  begin
+    raise Exception.CreateFmt(
+      '非法的Plugin模块文件(%s),找不到入口函数(initializeBeanFactory)',
+      [self.FlibFileName]);
+  end;
+  lvFunc(appPluginContext, applicationKeyMap);
+end;
+
 procedure TLibFactoryObject.doInitialize;
 begin
+  doInitalizeBeanFactory;
   doCreatePluginFactory;
   FbeanFactory.checkInitalize;
 end;

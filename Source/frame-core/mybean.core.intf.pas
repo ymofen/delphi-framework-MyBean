@@ -1,7 +1,6 @@
 unit mybean.core.intf;
 
-interface
-
+interface 
 
 type
   /// <summary>
@@ -123,6 +122,71 @@ type
     function registerBeanFactory(const pvFactory: IBeanFactory; const pvNameSapce:PAnsiChar):Integer;stdcall;
   end;
 
+
+  IErrorINfo = interface(IInterface)
+    ['{A15C511B-AD0A-43F9-AA3B-CAAE00DC372D}']
+    /// <summary>
+    ///   获取错误代码，没有错误返回 0
+    /// </summary>
+    function getErrorCode: Integer; stdcall;
+
+    /// <summary>
+    ///   获取错误信息数据，返回读取到的错误信息长度，
+    ///     如果传入的pvErrorDesc为nil指针，返回错误信息的长度
+    /// </summary>
+    function getErrorDesc(pvErrorDesc: PAnsiChar; pvLength: Integer): Integer;  stdcall;
+  end;
+
+  IFreeObject = interface
+    ['{863109BC-513B-440C-A455-2AD4F5EDF508}']
+    procedure FreeObject; stdcall;
+  end;
+
+  IKeyMap = interface(IInterface)
+    ['{3CF4907D-C1FF-4E93-9E32-06AAD82310B4}']
+
+    /// <summary>
+    ///   判断是否存在接口
+    /// </summary>
+    function existsObject(const pvKey:PAnsiChar):Boolean; stdcall;
+
+    /// <summary>
+    ///   根据key值获取接口
+    /// </summary>
+    function getObject(const pvKey:PAnsiChar):IInterface; stdcall;
+
+    /// <summary>
+    ///  赋值接口
+    /// </summary>
+    procedure setObject(const pvKey:PAnsiChar; const pvIntf: IInterface); stdcall;
+
+    /// <summary>
+    ///   移除接口
+    /// </summary>
+    procedure removeObject(const pvKey:PAnsiChar); stdcall;
+
+    /// <summary>
+    ///   清理对象
+    /// </summary>
+    procedure cleanupObjects; stdcall;
+
+  end;
+
+
+var
+  appPluginContext:IApplicationContext;
+  applicationKeyMap:IKeyMap;
+
 implementation
+
+
+
+initialization
+  appPluginContext := nil;
+  applicationKeyMap := nil;
+
+finalization
+  appPluginContext := nil;
+  applicationKeyMap := nil;
 
 end.

@@ -2,14 +2,13 @@ unit mybean.console;
 
 interface
 
-uses
-
+uses  
   Classes, SysUtils, Windows,
   mybean.core.intf,
   mybean.console.utils,
   mybean.console.loader,
   mybean.console.loader.dll,
-  uKeyInterface,uIKeyMap, IniFiles;
+  uKeyInterface, IniFiles;
 
 type
   TApplicationContext = class(TInterfacedObject
@@ -144,11 +143,48 @@ type
     function registerBeanFactory(const pvFactory: IBeanFactory; const pvNameSapce:PAnsiChar):Integer;stdcall;
 
   public
-
-
     class function instance: TApplicationContext;
 
   end;
+
+
+  TKeyMapImpl = class(TInterfacedObject, IKeyMap)
+  private
+    FKeyIntface:TKeyInterface;
+  protected
+    function _AddRef: Integer; stdcall;
+    function _Release: Integer; stdcall;
+
+  protected
+    /// <summary>
+    ///   判断是否存在接口
+    /// </summary>
+    function existsObject(const pvKey:PAnsiChar):Boolean; stdcall;
+
+    /// <summary>
+    ///   根据key值获取接口
+    /// </summary>
+    function getObject(const pvKey:PAnsiChar):IInterface; stdcall;
+
+    /// <summary>
+    ///  赋值接口
+    /// </summary>
+    procedure setObject(const pvKey:PAnsiChar; const pvIntf: IInterface); stdcall;
+
+    /// <summary>
+    ///   移除接口
+    /// </summary>
+    procedure removeObject(const pvKey:PAnsiChar); stdcall;
+
+    /// <summary>
+    ///   清理对象
+    /// </summary>
+    procedure cleanupObjects; stdcall;
+  public
+    procedure AfterConstruction; override;
+    destructor Destroy; override;
+  end;
+
 
 /// <summary>
 ///   获取全局的appliationContext
@@ -167,6 +203,13 @@ function registerFactoryObject(const pvBeanFactory:IBeanFactory; const
     pvNameSapce:PAnsiChar): Integer; stdcall;
 
 
+procedure executeKeyMapCleanup;
+
+/// <summary>
+///   获取全局的KeyMap接口
+/// </summary>
+function applicationKeyMap: IKeyMap; stdcall;
+
 
 
 
@@ -175,12 +218,15 @@ implementation
 uses
   FileLogger, superobject, uSOTools, uFileTools;
 
-var
-  __instance:TApplicationContext;
-  __instanceIntf:IInterface;
 
-exports
-   appPluginContext, appContextCleanup, registerFactoryObject, applicationKeyMap;
+
+var
+  __instanceAppContext:TApplicationContext;
+  __instanceAppContextAppContextIntf:IInterface;
+  
+  __instanceKeyMap:TKeyMapImpl;
+  __instanceKeyMapKeyMapIntf:IInterface;
+
 
 
 function appPluginContext: IApplicationContext;
@@ -193,17 +239,41 @@ begin
   //清理KeyMap对象
   executeKeyMapCleanup;
 
-  if __instanceIntf = nil then exit;
+  if __instanceAppContextAppContextIntf = nil then exit;
   try
     try
-      __instance.checkFinalize;
+      __instanceAppContext.checkFinalize;
     except
     end;
-    if __instance.RefCount > 1 then
+    if __instanceAppContext.RefCount > 1 then
     begin
-      TFileLogger.instance.logErrMessage(Format('appPluginContext存在[%d]未释放的情况', [__instance.RefCount-1]));
+      TFileLogger.instance.logErrMessage(Format('appPluginContext存在[%d]未释放的情况', [__instanceAppContext.RefCount-1]));
     end;
-    __instanceIntf := nil;
+    __instanceAppContextAppContextIntf := nil;
+  except
+  end;
+end;
+
+
+
+function applicationKeyMap: IKeyMap;
+begin
+  Result := __instanceKeyMap;
+end;
+
+procedure executeKeyMapCleanup;
+begin
+  if __instanceKeyMapKeyMapIntf = nil then exit;
+  try
+    try
+      __instanceKeyMap.cleanupObjects;
+    except
+    end;
+    if __instanceKeyMap.RefCount > 1 then
+    begin
+      TFileLogger.instance.logErrMessage(Format('keyMap存在[%d]未释放的情况',
+        [__instanceKeyMap.RefCount-1]));
+    end;
   except
   end;
 end;
@@ -644,6 +714,7 @@ begin
   lvStrings := TStringList.Create;
   try
     TFileTools.getFileNameList(lvStrings, ExtractFilePath(ParamStr(0)) + 'plug-ins\*.dll');
+    TFileTools.getFileNameList(lvStrings, ExtractFilePath(ParamStr(0)) + '*.dll');
     for i := 0 to lvStrings.Count - 1 do
     begin
       lvFile := lvStrings[i];
@@ -728,7 +799,7 @@ end;
 
 class function TApplicationContext.instance: TApplicationContext;
 begin
-  Result := __instance;
+  Result := __instanceAppContext;
 end;
 
 procedure TApplicationContext.checkProcessLib2Cache(pvLib:TLibFactoryObject);
@@ -789,13 +860,79 @@ begin
   end;
 end;
 
-initialization
-  __instance := TApplicationContext.Create;
-  __instanceIntf := __instance;
+procedure TKeyMapImpl.AfterConstruction;
+begin
+  inherited;
+  FKeyIntface := TKeyInterface.Create;
+end;
 
+procedure TKeyMapImpl.cleanupObjects;
+begin
+  FKeyIntface.clear;
+end;
+
+destructor TKeyMapImpl.Destroy;
+begin
+  cleanupObjects;
+  FKeyIntface.Free;
+  FKeyIntface := nil;
+  inherited Destroy;
+end;
+
+function TKeyMapImpl.existsObject(const pvKey: PAnsiChar): Boolean;
+begin
+  Result := FKeyIntface.exists(string(AnsiString(pvKey)));
+end;
+
+function TKeyMapImpl.getObject(const pvKey: PAnsiChar): IInterface;
+begin
+  Result := FKeyIntface.find(string(AnsiString(pvKey)));
+end;
+
+procedure TKeyMapImpl.removeObject(const pvKey: PAnsiChar);
+begin
+  try
+    FKeyIntface.remove(string(AnsiString(pvKey)));
+  except
+  end;
+end;
+
+procedure TKeyMapImpl.setObject(const pvKey: PAnsiChar;
+  const pvIntf: IInterface);
+begin
+  try
+    FKeyIntface.put(string(AnsiString(pvKey)), pvIntf);
+  except
+  end;
+end;
+
+function TKeyMapImpl._AddRef: Integer;
+begin
+  Result := inherited _AddRef;
+end;
+
+function TKeyMapImpl._Release: Integer;
+begin
+  Result := inherited _Release;
+end;
+
+initialization
+  __instanceKeyMap := TKeyMapImpl.Create;
+  __instanceKeyMapKeyMapIntf := __instanceKeyMap;
+
+  __instanceAppContext := TApplicationContext.Create;
+  __instanceAppContextAppContextIntf := __instanceAppContext;
+
+  mybean.core.intf.appPluginContext := __instanceAppContext;
+  mybean.core.intf.applicationKeyMap := __instanceKeyMap;
 
 finalization
+  executeKeyMapCleanup;
+  __instanceKeyMapKeyMapIntf := nil;
+  
+  mybean.core.intf.appPluginContext := nil;
   appContextCleanup;
+
 
 
 end.

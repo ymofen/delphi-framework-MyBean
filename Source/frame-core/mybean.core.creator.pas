@@ -1,17 +1,9 @@
-unit mBeanFrameVars;
-
-{$I 'MyBean.inc'}
+unit mybean.core.creator;
 
 interface
 
 uses
-  SysUtils
-  {$IFDEF MANAGER_IS_DLL}
-  , uIBeanFactory, uIFreeObject
-  , uAppPluginContext, uIAppliationContext
-  {$ELSE}
-  , mybean.core.intf
-  {$ENDIF};
+  mybean.core.intf, SysUtils;
 
 type
   TmBeanFrameVars = class(TObject)
@@ -20,6 +12,8 @@ type
     ///   获取applicationContext接口
     /// </summary>
     class function applicationContext: IApplicationContext;
+    
+    class procedure checkRaiseErrorINfo(const pvIntf: IInterface);
 
     /// <summary>
     ///   根据beanID获取对应的插件接口,
@@ -56,13 +50,50 @@ type
 
 implementation
 
-uses
-  uErrorINfoTools;
 
 
 class function TmBeanFrameVars.applicationContext: IApplicationContext;
 begin
   Result := appPluginContext;
+end;
+
+class procedure TmBeanFrameVars.checkRaiseErrorINfo(const pvIntf: IInterface);
+var
+  lvErr:IErrorINfo;
+  lvErrCode:Integer;
+  lvErrDesc:AnsiString;
+  j:Integer;
+begin
+  if pvIntf = nil then exit;
+  if pvIntf.QueryInterface(IErrorINfo, lvErr) = S_OK then
+  begin
+    lvErrCode := lvErr.getErrorCode;
+    if lvErrCode <> 0  then
+    begin
+      j:=lvErr.getErrorDesc(nil, 0);
+
+      if j = 0 then
+      begin
+        lvErrDesc := '未知的错误信息';
+      end else
+      begin
+        if j > 2048 then j := 2048;
+        SetLength(lvErrDesc, j + 1);
+        j := lvErr.getErrorDesc(PAnsiChar(lvErrDesc), j);
+        lvErrDesc[j+1] := #0;
+      end;
+
+      if lvErrCode = -1 then
+      begin
+        raise Exception.Create(string(lvErrDesc));
+      end else
+      begin
+        raise Exception.CreateFmt('错误信息:%s' + sLineBreak + '错误代码:%d', [lvErrDesc, lvErrCode]);
+      end;
+    end;
+  end;
+
+
 end;
 
 class function TmBeanFrameVars.existsObject(pvID: String): Boolean;
