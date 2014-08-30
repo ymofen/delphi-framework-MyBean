@@ -18,7 +18,6 @@ interface
 uses  
   Classes, SysUtils, Windows,
   mybean.core.intf,
-  mybean.console.utils,
   mybean.console.loader,
   mybean.console.loader.dll,
   uKeyInterface, IniFiles;
