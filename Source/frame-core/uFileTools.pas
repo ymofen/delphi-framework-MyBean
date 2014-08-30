@@ -75,7 +75,6 @@ implementation
 class function TFileTools.createTempFileName(strPrefix: string; pvExt: String =
     ''; strPath: string = ''): string;
 var
-  size: integer;
   szTempFile: array[0..MAX_PATH] of Char;
   strTempPath: string;
 begin
@@ -179,6 +178,7 @@ end;
 class function TFileTools.FileOpen(pvFile: string): Boolean;
 begin
   ShellExecute(0, 'open', PChar(pvFile), '', '', SW_NORMAL);
+  Result := true;
 end;
 
 class function TFileTools.FileRename(pvSrcFile:String; pvNewFileName:string):
