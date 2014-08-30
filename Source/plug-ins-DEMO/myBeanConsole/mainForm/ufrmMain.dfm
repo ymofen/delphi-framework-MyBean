@@ -2,8 +2,8 @@ object frmMain: TfrmMain
   Left = 0
   Top = 0
   Caption = 'frmMain'
-  ClientHeight = 382
-  ClientWidth = 684
+  ClientHeight = 458
+  ClientWidth = 841
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -20,18 +20,20 @@ object frmMain: TfrmMain
   object pnlExp: TPanel
     Left = 0
     Top = 0
-    Width = 684
+    Width = 841
     Height = 25
     Align = alTop
     TabOrder = 0
+    ExplicitWidth = 684
     object pnlTabs: TPanel
-      Left = 376
+      Left = 533
       Top = 1
       Width = 307
       Height = 23
       Align = alRight
       BevelOuter = bvNone
       TabOrder = 0
+      ExplicitLeft = 376
     end
     object edtPluginID: TEdit
       Left = 7

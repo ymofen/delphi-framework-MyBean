@@ -1,3 +1,8 @@
+(*
+   核心框架接口文件
+      IApplicationContext: 主控台必须要实现的接口
+      IBeanFactory: 插件宿主必须要实现的接口
+*)
 unit mybean.core.intf;
 
 interface 

@@ -6,7 +6,7 @@ uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics,
   Controls, Forms, Dialogs, StdCtrls,
   Grids, DBGrids, uBasePluginForm,
-  mBeanFrameVars,
+  mybean.tools.beanFactory,
   uIRemoteServer, DB, DBClient;
 
 type
@@ -48,7 +48,7 @@ implementation
 constructor TfrmMain.Create(AOwner: TComponent);
 begin
   inherited;
-  FRemoteSvr := TmBeanFrameVars.getBean('diocpRemoteSvr') as IRemoteServer;
+  FRemoteSvr := TMyBeanFactoryTools.getBean('diocpRemoteSvr') as IRemoteServer;
 end;
 
 procedure TfrmMain.btnConnectClick(Sender: TObject);

@@ -4,7 +4,8 @@ interface
 
 uses
   Forms, uIPluginForm,  Classes, superobject, uIMainForm, ComObj,
-  SysUtils, uKeyInterface, uIFreeObject, mBeanMainFormTools, uICaption, uIBeanConfigSetter;
+  SysUtils, uKeyInterface, uIFreeObject, mBeanMainFormTools, uICaption,
+  uIBeanConfigSetter;
 
 type
   TBasePluginForm = class(TForm,

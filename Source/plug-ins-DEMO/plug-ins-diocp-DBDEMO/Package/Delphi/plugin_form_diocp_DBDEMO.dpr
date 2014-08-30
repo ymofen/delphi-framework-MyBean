@@ -13,7 +13,7 @@ library plugin_form_diocp_DBDEMO;
 uses
   SysUtils,
   Classes,
-  uBeanFactory,
+  mybean.core.beanFactory, 
   uBasePluginForm in '..\..\Service\uBasePluginForm.pas',
   ufrmMain in '..\..\Forms\ufrmMain.pas',
   uIRemoteServer in '..\..\interface\uIRemoteServer.pas';

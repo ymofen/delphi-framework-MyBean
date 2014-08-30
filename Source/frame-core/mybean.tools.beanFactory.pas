@@ -1,4 +1,4 @@
-unit mybean.core.creator;
+unit mybean.tools.beanFactory;
 
 interface
 
@@ -6,7 +6,7 @@ uses
   mybean.core.intf, SysUtils;
 
 type
-  TmBeanFrameVars = class(TObject)
+  TMyBeanFactoryTools = class(TObject)
   public
     /// <summary>
     ///   获取applicationContext接口
@@ -52,12 +52,12 @@ implementation
 
 
 
-class function TmBeanFrameVars.applicationContext: IApplicationContext;
+class function TMyBeanFactoryTools.applicationContext: IApplicationContext;
 begin
   Result := appPluginContext;
 end;
 
-class procedure TmBeanFrameVars.checkRaiseErrorINfo(const pvIntf: IInterface);
+class procedure TMyBeanFactoryTools.checkRaiseErrorINfo(const pvIntf: IInterface);
 var
   lvErr:IErrorINfo;
   lvErrCode:Integer;
@@ -96,12 +96,12 @@ begin
 
 end;
 
-class function TmBeanFrameVars.existsObject(pvID: String): Boolean;
+class function TMyBeanFactoryTools.existsObject(pvID: String): Boolean;
 begin
   Result := applicationKeyMap.existsObject(PAnsiChar(AnsiString(pvID)));
 end;
 
-class procedure TmBeanFrameVars.freeBeanInterface(
+class procedure TMyBeanFactoryTools.freeBeanInterface(
   const pvInterface: IInterface);
 var
   lvFree:IFreeObject;
@@ -113,7 +113,7 @@ begin
   end;
 end;
 
-class function TmBeanFrameVars.getBean(pvBeanID: string; pvRaiseIfNil: Boolean
+class function TMyBeanFactoryTools.getBean(pvBeanID: string; pvRaiseIfNil: Boolean
     = true): IInterface;
 var
   lvFactory:IBeanFactory;
@@ -133,18 +133,18 @@ begin
   end;
 end;
 
-class function TmBeanFrameVars.getObject(const pvID: AnsiString): IInterface;
+class function TMyBeanFactoryTools.getObject(const pvID: AnsiString): IInterface;
 begin
   Result := applicationKeyMap.getObject(PAnsiChar(pvID));
 end;
 
-class procedure TmBeanFrameVars.removeObject(pvID: AnsiString);
+class procedure TMyBeanFactoryTools.removeObject(pvID: AnsiString);
 begin
   applicationKeyMap.removeObject(PAnsiChar(pvID));
 end;
 
 
-class procedure TmBeanFrameVars.setObject(const pvID: AnsiString; const
+class procedure TMyBeanFactoryTools.setObject(const pvID: AnsiString; const
     pvObject: IInterface);
 begin
   applicationKeyMap.setObject(PAnsiChar(pvID), pvObject);

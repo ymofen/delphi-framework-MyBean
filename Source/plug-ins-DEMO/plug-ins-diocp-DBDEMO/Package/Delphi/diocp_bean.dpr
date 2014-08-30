@@ -39,5 +39,5 @@ uses
 {$R *.res}
 
 begin
-  beanFactory.RegisterBean('diocpRemoteSvr', TRemoteServerDIOCPImpl);
+  beanFactory.RegisterBean('diocpRemoteSvr', TRemoteServerDIOCPImpl).Singleton := true;
 end.

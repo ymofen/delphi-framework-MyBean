@@ -4,12 +4,16 @@ interface
 
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  Dialogs, StdCtrls, mBeanFrameVars, uIPluginForm;
+  Dialogs, StdCtrls, mybean.tools.beanFactory, uIPluginForm;
 
 type
-  TForm2 = class(TForm)
-    Button1: TButton;
-    procedure Button1Click(Sender: TObject);
+  TfrmMain = class(TForm)
+    btnShowModal: TButton;
+    edtBeanID: TEdit;
+    Label1: TLabel;
+    btnShow: TButton;
+    procedure btnShowClick(Sender: TObject);
+    procedure btnShowModalClick(Sender: TObject);
   private
     { Private declarations }
   public
@@ -17,15 +21,20 @@ type
   end;
 
 var
-  Form2: TForm2;
+  frmMain: TfrmMain;
 
 implementation
 
 {$R *.dfm}
 
-procedure TForm2.Button1Click(Sender: TObject);
+procedure TfrmMain.btnShowClick(Sender: TObject);
 begin
-  (TmBeanFrameVars.getBean('diocpDBDemo') as IPluginForm).showAsModal;
+  (TMyBeanFactoryTools.getBean(edtBeanID.Text) as IPluginForm).showAsNormal;
+end;
+
+procedure TfrmMain.btnShowModalClick(Sender: TObject);
+begin
+  (TMyBeanFactoryTools.getBean(edtBeanID.Text) as IPluginForm).showAsModal;
 end;
 
 end.

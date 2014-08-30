@@ -1,9 +1,9 @@
-object Form2: TForm2
+object frmMain: TfrmMain
   Left = 0
   Top = 0
-  Caption = 'Form2'
-  ClientHeight = 243
-  ClientWidth = 472
+  Caption = 'frmMain'
+  ClientHeight = 207
+  ClientWidth = 509
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -13,13 +13,37 @@ object Form2: TForm2
   OldCreateOrder = False
   PixelsPerInch = 96
   TextHeight = 13
-  object Button1: TButton
-    Left = 240
-    Top = 80
-    Width = 75
+  object Label1: TLabel
+    Left = 8
+    Top = 7
+    Width = 203
+    Height = 13
+    Caption = #27880#20876#30340#31383#20307#25554#20214'<'#23454#29616#20102'IPluginForm>ID'
+  end
+  object btnShowModal: TButton
+    Left = 256
+    Top = 24
+    Width = 113
     Height = 25
-    Caption = 'Button1'
+    Caption = 'ShowModal'
     TabOrder = 0
-    OnClick = Button1Click
+    OnClick = btnShowModalClick
+  end
+  object edtBeanID: TEdit
+    Left = 8
+    Top = 26
+    Width = 242
+    Height = 21
+    TabOrder = 1
+    Text = 'diocpDBDemo'
+  end
+  object btnShow: TButton
+    Left = 256
+    Top = 55
+    Width = 113
+    Height = 25
+    Caption = 'Show'
+    TabOrder = 2
+    OnClick = btnShowClick
   end
 end

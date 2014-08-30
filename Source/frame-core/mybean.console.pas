@@ -339,30 +339,33 @@ var
 begin
   FRootPath := ExtractFilePath(ParamStr(0));
 
-  FuseCache := FINIFile.ReadBool('main', 'plug-ins-cache', true);
+  FuseCache := FINIFile.ReadBool('main', 'plug-ins-cache', False);
 
   lvTempPath := FINIFile.ReadString('main', 'plug-ins-cache-path', 'plug-ins-cache\');
 
   FTraceLoadFile := FINIFile.ReadBool('main','traceLoadLib', FTraceLoadFile);
 
-  FLibCachePath := TFileTools.GetAbsolutePath(FRootPath, lvTempPath);
-  l := Length(FLibCachePath);
-  if l = 0 then
+  if FuseCache then
   begin
-    FLibCachePath := FRootPath + 'plug-ins-cache\';
-  end else
-  begin
-    FLibCachePath := TFileTools.PathWithBackslash(FLibCachePath);
-  end;
-
-  try
-    ForceDirectories(FLibCachePath);
-  except
-    on E:Exception do
+    FLibCachePath := TFileTools.GetAbsolutePath(FRootPath, lvTempPath);
+    l := Length(FLibCachePath);
+    if l = 0 then
     begin
-      TFileLogger.instance.logMessage(
-                    Format('创建插件缓存目录[%s]出现异常', [FLibCachePath]) + e.Message,
-                    'pluginLoaderErr');
+      FLibCachePath := FRootPath + 'plug-ins-cache\';
+    end else
+    begin
+      FLibCachePath := TFileTools.PathWithBackslash(FLibCachePath);
+    end;
+
+    try
+      ForceDirectories(FLibCachePath);
+    except
+      on E:Exception do
+      begin
+        TFileLogger.instance.logMessage(
+                      Format('创建插件缓存目录[%s]出现异常', [FLibCachePath]) + e.Message,
+                      'pluginLoaderErr');
+      end;
     end;
   end;
 end;
