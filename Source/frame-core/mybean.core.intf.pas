@@ -1,4 +1,15 @@
 (*
+ *	 Unit owner: D10.天地弦
+ *	   blog: http://www.cnblogs.com/dksoft
+ *
+ *   v0.1.0(2014-08-29 13:00)
+ *     修改加载方式(beanMananger.dll-改造)
+ *
+ *	 v0.0.1(2014-05-17)
+ *     + first release
+ *
+ *
+
    核心框架接口文件
       IApplicationContext: 主控台必须要实现的接口
       IBeanFactory: 插件宿主必须要实现的接口
