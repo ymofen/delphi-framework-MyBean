@@ -21,7 +21,7 @@ uses
   uIReporter in '..\..\interface\uIReporter.pas',
   uCdsTools in '..\..\Tools\uCdsTools.pas',
   uIFileAccess in '..\..\interface\uIFileAccess.pas',
-  uBeanFactory,
+  mybean.core.beanFactory,
   superobject in '..\..\Tools\superobject.pas',
   uDBTools in '..\..\Tools\uDBTools.pas',
   SOWrapper in '..\..\Tools\SOWrapper.pas',
@@ -34,7 +34,8 @@ uses
   uMsgTools in '..\..\Tools\uMsgTools.pas',
   uStreamCoder in '..\..\Tools\uStreamCoder.pas',
   uJSonTools in '..\..\Tools\uJSonTools.pas',
-  KeyStream in '..\..\Tools\KeyStream.pas';
+  KeyStream in '..\..\Tools\KeyStream.pas',
+  uFieldCreator in '..\..\..\reporter-FastReport\Utils\uFieldCreator.pas';
 
 {$R *.res}
 

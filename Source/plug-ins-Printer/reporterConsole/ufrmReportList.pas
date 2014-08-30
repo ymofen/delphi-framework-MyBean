@@ -5,14 +5,15 @@ interface
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
   Dialogs, DBClient, ActnList, ImgList,
-  uFieldCreator, ufrmReportEditor, ComObj, uSNTools, 
+  ufrmReportEditor, ComObj, uSNTools,
   uIFileAccess, uJSonTools, uFileTools, superobject, uIReporter,
-  uIIntfList, Grids, DBGrids, DB, StdCtrls, Buttons, ExtCtrls, KeyStream,
+  Grids, DBGrids, DB, StdCtrls, Buttons, ExtCtrls, KeyStream,
   uKeyStreamTools, uKeyStreamCoder, uMsgTools, Menus,
   uIErrorINfo,
+  uFieldCreator,
   uErrorINfoTools,
   mBeanFrameVars,
-  uBeanFactory, FileLogger, uReporterDefaultOperator;
+  uBeanFactory, FileLogger, uReporterDefaultOperator, System.Actions;
 
 type
   TfrmReportList = class(TForm
