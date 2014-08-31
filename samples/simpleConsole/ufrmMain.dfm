@@ -1,9 +1,10 @@
 object frmMain: TfrmMain
   Left = 0
   Top = 0
+  BorderIcons = [biSystemMenu]
   Caption = 'frmMain'
-  ClientHeight = 207
-  ClientWidth = 509
+  ClientHeight = 204
+  ClientWidth = 408
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -35,7 +36,6 @@ object frmMain: TfrmMain
     Width = 242
     Height = 21
     TabOrder = 1
-    Text = 'diocpDBDemo'
   end
   object btnShow: TButton
     Left = 256
@@ -45,5 +45,14 @@ object frmMain: TfrmMain
     Caption = 'Show'
     TabOrder = 2
     OnClick = btnShowClick
+  end
+  object Memo1: TMemo
+    Left = 8
+    Top = 88
+    Width = 361
+    Height = 97
+    Lines.Strings = (
+      #23454#29616#30340#25554#20214#38656#35201#23454#29616'IPluginForm'#25509#21475#25165#33021#26377#34987#35813'DEMO'#35843#29992)
+    TabOrder = 3
   end
 end

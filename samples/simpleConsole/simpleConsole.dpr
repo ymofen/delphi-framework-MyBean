@@ -1,4 +1,4 @@
-program singleConsole;
+program simpleConsole;
 
 uses
   FastMM4,

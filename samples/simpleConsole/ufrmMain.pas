@@ -12,6 +12,7 @@ type
     edtBeanID: TEdit;
     Label1: TLabel;
     btnShow: TButton;
+    Memo1: TMemo;
     procedure btnShowClick(Sender: TObject);
     procedure btnShowModalClick(Sender: TObject);
   private
