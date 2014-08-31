@@ -1,5 +1,0 @@
-Outputs\
-  ..\..\..\..\..\BIN
-
-Search path:
-$(myBean_HOME)\Source\frame-core;$(myBean_HOME)\Source\frame-common

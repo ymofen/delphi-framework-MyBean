@@ -13,7 +13,7 @@ library diocp_bean;
 uses
   SysUtils,
   Classes,
-  uBeanFactory,
+  mybean.core.beanFactory,
   uRemoteServerDIOCPImpl in '..\..\Service\uRemoteServerDIOCPImpl.pas',
   uICoderSocket in '..\..\Service\uICoderSocket.pas',
   uRawTcpClientCoderImpl in '..\..\Service\uRawTcpClientCoderImpl.pas',
