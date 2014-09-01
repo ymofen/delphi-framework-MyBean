@@ -3,7 +3,12 @@ unit mybean.core.beanFactory;
 interface
 
 uses
-  Classes, SysUtils, SyncObjs, Windows, Forms,
+  Classes, SysUtils, SyncObjs, Windows,
+{$if CompilerVersion < 23}
+  Forms,
+{$else}
+  Vcl.Forms,
+{$ifend}
   mybean.core.intf,
   superobject;
 
