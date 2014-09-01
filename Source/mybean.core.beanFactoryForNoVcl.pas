@@ -22,7 +22,7 @@ uses
   superobject;
 
 type
-  TPluginINfo = class(TObject)
+  TPluginInfo = class(TObject)
   private
     FInstance: IInterface;
     FID: string;
@@ -38,7 +38,7 @@ type
     property Singleton: Boolean read FSingleton write FSingleton;
   end;
 
-  TBeanINfo = class(TObject)
+  TBeanInfo = class(TObject)
   private
     FbeanID: string;
     FInstance: IInterface;
@@ -56,13 +56,13 @@ type
   end;
 
   TOnInitializeProc = procedure;stdcall;
-  TOnCreateInstanceProc = function(pvObject: TPluginINfo):TObject; stdcall;
-  TOnCreateInstanceProcEX = function(pvObject: TPluginINfo; var vBreak: Boolean): TObject; stdcall;
+  TOnCreateInstanceProc = function(pvObject: TPluginInfo):TObject; stdcall;
+  TOnCreateInstanceProcEX = function(pvObject: TPluginInfo; var vBreak: Boolean): TObject; stdcall;
 
 
   TBeanFactory = class(TInterfacedObject,
      IBeanFactory,
-     IErrorINfo)
+     IErrorInfo)
   private
     FVclOwners:TComponent;
 
@@ -80,7 +80,7 @@ type
     FOnInitializeProc: TOnInitializeProc;
     FPlugins: TStrings;
     FBeanList:TStrings;
-    function createInstance(pvObject: TPluginINfo): IInterface;
+    function createInstance(pvObject: TPluginInfo): IInterface;
     procedure lock;
     procedure unLock;
 
@@ -103,8 +103,8 @@ type
         PAnsiChar): Boolean;
 
     ///
-    function checkGetBeanAccordingBeanConfig(pvBeanID: PAnsiChar; pvPluginINfo:
-        TPluginINfo): IInterface;
+    function checkGetBeanAccordingBeanConfig(pvBeanID: PAnsiChar; pvPluginInfo:
+        TPluginInfo): IInterface;
 
   protected
     procedure resetErrorINfo;
@@ -130,7 +130,7 @@ type
     /// <param name="pvClass"> 类 </param>
     /// <param name="pvSingleton"> 是否单实例  </param>
     function RegisterBean(pvPluginID: String; pvClass: TClass; pvSingleton: Boolean
-        = false): TPluginINfo;
+        = false): TPluginInfo;
     procedure RegisterMainFormBean(pvPluginID:string; pvClass: TClass);
      
     constructor Create; virtual;
@@ -251,10 +251,10 @@ begin
 end;
 
 function TBeanFactory.checkGetBeanAccordingBeanConfig(pvBeanID: PAnsiChar;
-    pvPluginINfo: TPluginINfo): IInterface;
+    pvPluginInfo: TPluginInfo): IInterface;
 var
   i:Integer;
-  lvBeanINfo:TBeanINfo;
+  lvBeanINfo:TBeanInfo;
   lvConfig:ISuperObject;
   lvIsSingleton:Boolean;
 begin
@@ -271,10 +271,10 @@ begin
       i := FBeanList.IndexOf(string(AnsiString(pvBeanID)));
       if i = -1 then
       begin
-        lvBeanINfo := TBeanINfo.Create;
+        lvBeanINfo := TBeanInfo.Create;
         try
           lvBeanINfo.FbeanID := string(AnsiString(pvBeanID));
-          lvBeanINfo.FInstance := createInstance(pvPluginINfo);
+          lvBeanINfo.FInstance := createInstance(pvPluginInfo);
           checkBeanConfigSetter(lvBeanINfo.FInstance, pvBeanID);
         except
           lvBeanINfo.Free;
@@ -284,7 +284,7 @@ begin
         FBeanList.AddObject(string(AnsiString(pvBeanID)), lvBeanINfo);
       end else
       begin
-        lvBeanINfo := TBeanINfo(FBeanList.Objects[i]);
+        lvBeanINfo := TBeanInfo(FBeanList.Objects[i]);
         Result := lvBeanINfo.FInstance;
       end;
     finally
@@ -292,7 +292,7 @@ begin
     end;
   end else
   begin
-    Result := createInstance(pvPluginINfo);
+    Result := createInstance(pvPluginInfo);
     checkBeanConfigSetter(Result, pvBeanID);
   end;
 end;
@@ -417,7 +417,7 @@ begin
   FCS := TCriticalSection.Create();
 end;
 
-function TBeanFactory.createInstance(pvObject: TPluginINfo): IInterface;
+function TBeanFactory.createInstance(pvObject: TPluginInfo): IInterface;
 var
   lvResultObject:TObject;
   lvClass: TClass;
@@ -540,7 +540,7 @@ end;
 function TBeanFactory.getBean(pvBeanID: PAnsiChar): IInterface;
 var
   i:Integer;
-  lvPluginINfo:TPluginINfo;
+  lvPluginINfo:TPluginInfo;
   lvPluginID:String;
 begin
   resetErrorINfo;
@@ -555,7 +555,7 @@ begin
       exit;
     end;
 
-    lvPluginINfo :=TPluginINfo(FPlugins.Objects[i]);
+    lvPluginINfo :=TPluginInfo(FPlugins.Objects[i]);
     if lvPluginINfo.Singleton then
     begin
       lock;
@@ -656,11 +656,11 @@ end;
 
 procedure TBeanFactory.RegisterMainFormBean(pvPluginID:string; pvClass: TClass);
 var
-  lvObject:TPluginINfo;
+  lvObject:TPluginInfo;
 begin
   //已经注册不再进行注册
   if FPlugins.IndexOf(pvPluginID) <> -1 then Exit;
-  lvObject := TPluginINfo.Create;
+  lvObject := TPluginInfo.Create;
   lvObject.FID := pvPluginID;
   lvObject.FPluginClass := pvClass;
   lvObject.FIsMainForm := true;
@@ -680,13 +680,13 @@ begin
 end;
 
 function TBeanFactory.RegisterBean(pvPluginID: String; pvClass: TClass;
-    pvSingleton: Boolean = false): TPluginINfo;
+    pvSingleton: Boolean = false): TPluginInfo;
 var
-  lvObject:TPluginINfo;
+  lvObject:TPluginInfo;
 begin
   Result := nil;
   if FPlugins.IndexOf(pvPluginID) <> -1 then Exit;
-  lvObject := TPluginINfo.Create;
+  lvObject := TPluginInfo.Create;
   lvObject.FID := pvPluginID;
   lvObject.FPluginClass := pvClass;
   lvObject.IsMainForm := false;
@@ -696,7 +696,7 @@ begin
   Result := lvObject;
 end;
 
-destructor TPluginINfo.Destroy;
+destructor TPluginInfo.Destroy;
 begin
   try
     checkFreeInstance;
@@ -705,7 +705,7 @@ begin
   inherited Destroy;
 end;
 
-procedure TPluginINfo.checkFreeInstance;
+procedure TPluginInfo.checkFreeInstance;
 var
   lvFree:IFreeObject;
 begin
@@ -723,7 +723,7 @@ begin
   FInstance := nil;
 end;
 
-procedure TBeanINfo.checkFreeInstance;
+procedure TBeanInfo.checkFreeInstance;
 var
   lvFree:IFreeObject;
 begin
@@ -742,7 +742,7 @@ begin
 
 end;
 
-destructor TBeanINfo.Destroy;
+destructor TBeanInfo.Destroy;
 begin
   try
     checkFreeInstance;
