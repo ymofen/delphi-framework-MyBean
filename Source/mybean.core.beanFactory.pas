@@ -13,39 +13,6 @@ uses
   superobject;
 
 type
-  ///uIFreeObject
-  IFreeObject = interface
-    ['{863109BC-513B-440C-A455-2AD4F5EDF508}']
-    procedure FreeObject; stdcall;
-  end;
-
-  IErrorINfo = interface(IInterface)
-    ['{A15C511B-AD0A-43F9-AA3B-CAAE00DC372D}']
-    /// <summary>
-    ///   获取错误代码，没有错误返回 0
-    /// </summary>
-    function getErrorCode: Integer; stdcall;
-
-    /// <summary>
-    ///   获取错误信息数据，返回读取到的错误信息长度，
-    ///     如果传入的pvErrorDesc为nil指针，返回错误信息的长度
-    /// </summary>
-    function getErrorDesc(pvErrorDesc: PAnsiChar; pvLength: Integer): Integer;  stdcall;
-  end;
-
-  //uIBeanConfigSetter.IBeanConfigSetter
-  IBeanConfigSetter = interface(IInterface)
-    ['{C7DABCDB-9908-4C43-B353-647EDB7F3DCE}']
-
-
-    /// <summary>
-    ///   设置配置中的Config
-    /// </summary>
-    /// <param name="pvBeanConfig">
-    ///   配置文件中JSon格式的字符串
-    /// </param>
-    procedure setBeanConfig(pvBeanConfig: PAnsiChar); stdcall;
-  end;
 
   TPluginINfo = class(TObject)
   private
