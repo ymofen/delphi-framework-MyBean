@@ -59,6 +59,28 @@ type
     function getBeanFactory(pvBeanID:PAnsiChar):IInterface; stdcall;
   end;
 
+  IApplicationContextEx01 = interface(IInterface)
+    ['{10009F97-1949-476D-9CE1-1AF003B47DCB}']
+
+    /// <summary>
+    ///  加载库文件
+    /// </summary>
+    /// <returns>
+    ///    加载成功返回true, 失败返回false, 可以用raiseLastOsError获取异常
+    /// </returns>
+    /// <param name="pvLibFile"> (PAnsiChar) </param>
+    function checkLoadLibraryFile(pvLibFile:PAnsiChar): Boolean; stdcall;
+
+    /// <summary>
+    ///    加载配置文件
+    /// </summary>
+    /// <returns>
+    ///   加载失败返回false<文件可能不存在>
+    /// </returns>
+    /// <param name="pvConfigFile"> (PAnsiChar) </param>
+    function checkLoadBeanConfigFile(pvConfigFile:PAnsiChar): Boolean; stdcall;
+  end;
+
 
   /// <summary>
   ///   插件工厂接口,由插件宿主(DLL, BPL)库文件提供

@@ -26,6 +26,7 @@ uses
 type
   TApplicationContext = class(TInterfacedObject
      , IApplicationContext
+     , IApplicationContextEx01
      , IbeanFactoryRegister
      )
   private
@@ -54,6 +55,24 @@ type
         pvRaiseException:Boolean): Boolean;
   protected
     /// <summary>
+    ///  加载库文件
+    /// </summary>
+    /// <returns>
+    ///    加载成功返回true, 失败返回false, 可以用raiseLastOsError获取异常
+    /// </returns>
+    /// <param name="pvLibFile"> (PAnsiChar) </param>
+    function checkLoadLibraryFile(pvLibFile:PAnsiChar): Boolean; stdcall;
+
+    /// <summary>
+    ///    加载配置文件
+    /// </summary>
+    /// <returns>
+    ///   加载失败返回false<文件可能不存在>
+    /// </returns>
+    /// <param name="pvConfigFile"> (PAnsiChar) </param>
+    function checkLoadBeanConfigFile(pvConfigFile:PAnsiChar): Boolean; stdcall;
+  protected
+    /// <summary>
     ///   直接从DLL中加载插件，在没有配置文件的情况下执行
     /// </summary>
     procedure executeLoadLibrary; stdcall;
@@ -63,20 +82,12 @@ type
     /// </summary>
     function checkCreateLibObject(pvFileName:string): TLibFactoryObject;
 
-    /// <summary>
-    ///   处理Lib到Cache临时目录
-    /// </summary>
-    procedure checkProcessLib2Cache(pvLib:TLibFactoryObject);
   private
     /// <summary>
-    ///   DLL临时缓存目录
+    ///   Copy的目的文件
     /// </summary>
-    FLibCachePath:String;
+    FCopyDestPath: String;
 
-    /// <summary>
-    ///   使用插件缓存目录
-    /// </summary>
-    FuseCache:Boolean;
 
     /// <summary>
     ///   应用程序根目录
@@ -116,11 +127,6 @@ type
     ///   初始化工厂对象
     /// </summary>
     procedure checkInitializeFactoryObjects;
-
-    /// <summary>
-    ///   处理插件DLLcopy到缓存目录
-    /// </summary>
-    procedure checkProcessLibsCache;
 
   public
     constructor Create;
@@ -229,6 +235,8 @@ procedure executeKeyMapCleanup;
 /// </summary>
 function applicationKeyMap: IKeyMap; stdcall;
 
+procedure logDebugInfo;
+
 
 
 
@@ -244,7 +252,7 @@ var
   __instanceAppContextAppContextIntf:IInterface;
   
   __instanceKeyMap:TKeyMapImpl;
-  __instanceKeyMapKeyMapIntf:IInterface;
+  __instanceKeyMapKeyIntf:IInterface;
 
 
 
@@ -282,17 +290,9 @@ end;
 
 procedure executeKeyMapCleanup;
 begin
-  if __instanceKeyMapKeyMapIntf = nil then exit;
+  if __instanceKeyMapKeyIntf = nil then exit;
   try
-    try
-      __instanceKeyMap.cleanupObjects;
-    except
-    end;
-    if __instanceKeyMap.RefCount > 1 then
-    begin
-      TFileLogger.instance.logErrMessage(Format('keyMap存在[%d]未释放的情况',
-        [__instanceKeyMap.RefCount-1]));
-    end;
+    __instanceKeyMap.cleanupObjects;
   except
   end;
 end;
@@ -304,6 +304,29 @@ begin
     Result := TApplicationContext.instance.registerBeanFactory(pvBeanFactory, pvNameSapce);
   except
     Result := -1;
+  end;
+end;
+
+procedure logDebugInfo;
+begin
+  if __instanceKeyMapKeyIntf = nil then exit;
+  try
+    if __instanceKeyMap.RefCount > 1 then
+    begin
+      TFileLogger.instance.logErrMessage(Format('applicationKeyMap存在[%d]未释放的情况',
+        [__instanceKeyMap.RefCount-1]));
+    end;
+  except
+  end;
+
+  if __instanceAppContextAppContextIntf = nil then exit;
+  try
+    if __instanceAppContext.RefCount > 1 then
+    begin
+      TFileLogger.instance.logErrMessage(Format('applicationContext存在[%d]未释放的情况',
+        [__instanceAppContext.RefCount-1]));
+    end;
+  except
   end;
 end;
 
@@ -323,13 +346,6 @@ begin
          TFileLogger.instance.logMessage('从配置文件中加载bean配置', 'load_trace');
       if checkInitializeFromConfigFiles(lvConfigFiles) > 0 then
       begin
-        if FuseCache then
-        begin
-          if FTraceLoadFile then
-            TFileLogger.instance.logMessage('将DLL文件copy到缓存目录[' + self.FLibCachePath + ']', 'load_trace');
-          //将插件copy到缓存目录
-          checkProcessLibsCache;
-        end;
 
         if FINIFile.ReadBool('main', 'loadOnStartup', True) then
         begin
@@ -347,7 +363,6 @@ begin
         TFileLogger.instance.logMessage('直接加载DLL文件', 'load_trace');
       executeLoadLibrary;
     end;
-
   end;
 end;
 
@@ -358,35 +373,33 @@ var
 begin
   FRootPath := ExtractFilePath(ParamStr(0));
 
-  FuseCache := FINIFile.ReadBool('main', 'plug-ins-cache', False);
 
   lvTempPath := FINIFile.ReadString('main', 'plug-ins-cache-path', 'plug-ins-cache\');
 
   FTraceLoadFile := FINIFile.ReadBool('main','traceLoadLib', FTraceLoadFile);
 
-  if FuseCache then
-  begin
-    FLibCachePath := GetAbsolutePath(FRootPath, lvTempPath);
-    l := Length(FLibCachePath);
-    if l = 0 then
-    begin
-      FLibCachePath := FRootPath + 'plug-ins-cache\';
-    end else
-    begin
-      FLibCachePath := PathWithBackslash(FLibCachePath);
-    end;
 
-    try
-      ForceDirectories(FLibCachePath);
-    except
-      on E:Exception do
-      begin
-        TFileLogger.instance.logMessage(
-                      Format('创建插件缓存目录[%s]出现异常', [FLibCachePath]) + e.Message,
-                      'pluginLoaderErr');
-      end;
+  FCopyDestPath := GetAbsolutePath(FRootPath, lvTempPath);
+  l := Length(FCopyDestPath);
+  if l = 0 then
+  begin
+    FCopyDestPath := FRootPath + 'plug-ins-cache\';
+  end else
+  begin
+    FCopyDestPath := PathWithBackslash(FCopyDestPath);
+  end;
+
+  try
+    ForceDirectories(FCopyDestPath);
+  except
+    on E:Exception do
+    begin
+      TFileLogger.instance.logMessage(
+                    Format('创建插件缓存目录[%s]出现异常', [FCopyDestPath]) + e.Message,
+                    'pluginLoaderErr');
     end;
   end;
+
 end;
 
 function TApplicationContext.checkRegisterBean(pvBeanID: string;
@@ -476,7 +489,7 @@ begin
 
   if not FileExists(lvFile) then
   begin
-    FTraceLoadFile := true;
+    FTraceLoadFile := False;
   end;
 
   FINIFile := TIniFile.Create(lvFile);
@@ -643,6 +656,18 @@ begin
   end;
 end;
 
+function TApplicationContext.checkLoadBeanConfigFile(
+  pvConfigFile: PAnsiChar): Boolean;
+begin
+
+end;
+
+function TApplicationContext.checkLoadLibraryFile(
+  pvLibFile: PAnsiChar): Boolean;
+begin
+
+end;
+
 function TApplicationContext.executeLoadFromConfigFile(pvFileName: String):
     Integer;
 var
@@ -744,11 +769,8 @@ begin
       lvIsOK := false;
       try
         lvLib.LibFileName := lvFile;
-        checkProcessLib2Cache(lvLib);
-
         if checkInitializeFactoryObject(TBaseFactoryObject(lvLib), False) then
         begin
-
           try
             ZeroMemory(@lvBeanIDs[1], 4096);
             lvLib.beanFactory.getBeanList(@lvBeanIDs[1], 4096);
@@ -822,44 +844,6 @@ end;
 class function TApplicationContext.instance: TApplicationContext;
 begin
   Result := __instanceAppContext;
-end;
-
-procedure TApplicationContext.checkProcessLib2Cache(pvLib:TLibFactoryObject);
-var
-  lvCacheFile, lvFileName, lvSourceFile:String;
-begin
-  if FuseCache then
-  begin
-    lvSourceFile := pvLib.libFileName;
-    lvFileName := ExtractFileName(lvSourceFile);
-    lvCacheFile := FLibCachePath + lvFileName;
-    if SameText(lvCacheFile, lvSourceFile) then exit;
-
-    pvLib.libFileName := lvCacheFile;
-
-    if FileExists(lvCacheFile) then
-    begin
-      DeleteFile(PChar(lvCacheFile));
-    end;
-
-    CopyFile(PChar(lvSourceFile), PChar(lvCacheFile), False);
-  end;
-end;
-
-procedure TApplicationContext.checkProcessLibsCache;
-var
-  i:Integer;
-  lvLibObject:TBaseFactoryObject;
-begin
-  ///全部执行一次Finalize;
-  for i := 0 to FFactoryObjectList.Count -1 do
-  begin
-    lvLibObject := TBaseFactoryObject(FFactoryObjectList.Objects[i]);
-    if lvLibObject is TLibFactoryObject then
-    begin
-      checkProcessLib2Cache(TLibFactoryObject(lvLibObject));
-    end;
-  end;
 end;
 
 class function TApplicationContext.getAbsolutePath(BasePath, RelativePath:
@@ -999,22 +983,24 @@ end;
 
 initialization
   __instanceKeyMap := TKeyMapImpl.Create;
-  __instanceKeyMapKeyMapIntf := __instanceKeyMap;
+  __instanceKeyMapKeyIntf := __instanceKeyMap;
 
   __instanceAppContext := TApplicationContext.Create;
   __instanceAppContextAppContextIntf := __instanceAppContext;
 
   mybean.core.intf.appPluginContext := __instanceAppContext;
   mybean.core.intf.applicationKeyMap := __instanceKeyMap;
-
   appPluginContext.checkInitialize;
 
 finalization  
   mybean.core.intf.appPluginContext := nil;
+  mybean.core.intf.applicationKeyMap := nil;
+
+  executeKeyMapCleanup;
   appContextCleanup;
 
-  mybean.core.intf.applicationKeyMap := nil;
-  executeKeyMapCleanup;
-  __instanceKeyMapKeyMapIntf := nil;
+  logDebugInfo;
+  __instanceAppContextAppContextIntf := nil;
+  __instanceKeyMapKeyIntf := nil;
 
 end.
