@@ -3,7 +3,7 @@ unit FileLogger;
 interface
 
 uses
-  SysUtils, SyncObjs, IdGlobal;
+  SysUtils, SyncObjs;
 
 type
   TFileLogger = class(TObject)
