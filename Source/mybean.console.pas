@@ -16,7 +16,8 @@ unit mybean.console;
 interface
 
 uses  
-  Classes, SysUtils, Windows,
+  Classes, SysUtils, Windows, ShLwApi,
+
   mybean.core.intf,
   mybean.console.loader,
   mybean.console.loader.dll,
@@ -155,7 +156,13 @@ type
     function registerBeanFactory(const pvFactory: IBeanFactory; const pvNameSapce:PAnsiChar):Integer;stdcall;
 
   public
+    //1 根据基础路径和相对路径获取绝对路径(杨茂丰)
+    class function getAbsolutePath(BasePath, RelativePath: string): string;
+    class function getFileNameList(vFileList: TStrings; const aSearchPath: string):
+        integer;
     class function instance: TApplicationContext;
+    class function pathWithBackslash(const Path: string): String;
+    class function pathWithoutBackslash(const Path: string): string;
 
   end;
 
@@ -228,7 +235,7 @@ function applicationKeyMap: IKeyMap; stdcall;
 implementation
 
 uses
-  FileLogger, superobject, uSOTools, uFileTools;
+  superobject, uSOTools, FileLogger;
 
 
 
@@ -359,14 +366,14 @@ begin
 
   if FuseCache then
   begin
-    FLibCachePath := TFileTools.GetAbsolutePath(FRootPath, lvTempPath);
+    FLibCachePath := GetAbsolutePath(FRootPath, lvTempPath);
     l := Length(FLibCachePath);
     if l = 0 then
     begin
       FLibCachePath := FRootPath + 'plug-ins-cache\';
     end else
     begin
-      FLibCachePath := TFileTools.PathWithBackslash(FLibCachePath);
+      FLibCachePath := PathWithBackslash(FLibCachePath);
     end;
 
     try
@@ -622,12 +629,12 @@ begin
 
       lvFileName := ExtractFileName(lvStr);
       lvPath := ExtractFilePath(lvStr);
-      lvPath := TFileTools.GetAbsolutePath(FRootPath, lvPath);
+      lvPath := GetAbsolutePath(FRootPath, lvPath);
       lvFileName := lvPath + lvFileName;
 
 
       lvStrings.Clear;
-      TFileTools.getFileNameList(lvStrings, lvFileName);
+      getFileNameList(lvStrings, lvFileName);
       Result := Result + executeLoadFromConfigFiles(lvStrings);
     end;
 
@@ -728,8 +735,8 @@ var
 begin
   lvStrings := TStringList.Create;
   try
-    TFileTools.getFileNameList(lvStrings, ExtractFilePath(ParamStr(0)) + 'plug-ins\*.dll');
-    TFileTools.getFileNameList(lvStrings, ExtractFilePath(ParamStr(0)) + '*.dll');
+    getFileNameList(lvStrings, ExtractFilePath(ParamStr(0)) + 'plug-ins\*.dll');
+    getFileNameList(lvStrings, ExtractFilePath(ParamStr(0)) + '*.dll');
     for i := 0 to lvStrings.Count - 1 do
     begin
       lvFile := lvStrings[i];
@@ -853,6 +860,65 @@ begin
       checkProcessLib2Cache(TLibFactoryObject(lvLibObject));
     end;
   end;
+end;
+
+class function TApplicationContext.getAbsolutePath(BasePath, RelativePath:
+    string): string;
+var
+  Dest: array[0..MAX_PATH] of Char;
+begin
+  FillChar(Dest, SizeOf(Dest), 0);
+  PathCombine(Dest, PChar(BasePath), PChar(RelativePath));
+  Result := string(Dest);
+end;
+
+class function TApplicationContext.getFileNameList(vFileList: TStrings; const
+    aSearchPath: string): integer;
+var dirinfo: TSearchRec;
+  dir, lCurrentDir: string;
+begin
+  result := 0;
+  lCurrentDir := GetCurrentDir;
+  SetCurrentDir(ExtractFileDir(ParamStr(0)));
+  try
+    dir := ExtractFilePath(ExpandFileName(aSearchPath));
+    if (dir <> '') then
+      dir := IncludeTrailingPathDelimiter(dir);
+
+    if (FindFirst(aSearchPath, faArchive, dirinfo) = 0) then repeat
+        vFileList.Add(dir + dirinfo.Name);
+        Inc(result);
+      until (FindNext(dirinfo) <> 0);
+    SysUtils.FindClose(dirinfo);
+  finally
+    SetCurrentDir(lCurrentDir);
+  end;
+end;
+
+class function TApplicationContext.pathWithBackslash(const Path: string):
+    String;
+var
+  ilen: Integer;
+begin
+  Result := Path;
+  ilen := Length(Result);
+  if (ilen > 0) and not (Result[ilen] in ['\', '/']) then
+    Result := Result + '\';
+end;
+
+class function TApplicationContext.pathWithoutBackslash(const Path: string):
+    string;
+var
+  I, ilen: Integer;
+begin
+  Result := Path;
+  ilen := Length(Result);
+  for I := ilen downto 1 do
+  begin
+    if not (Result[I] in ['\', '/', ' ', #13]) then Break;
+  end;
+  if I <> ilen then
+    SetLength(Result, I);
 end;
 
 function TApplicationContext.registerBeanFactory(const pvFactory: IBeanFactory;
