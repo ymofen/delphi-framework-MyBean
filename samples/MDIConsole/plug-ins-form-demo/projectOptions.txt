@@ -1,5 +1,5 @@
 Outputs\
-  ..\BIN\plug-ins
+..\BIN\plug-ins
 
 Search path:
 $(myBean_HOME)\Source

@@ -17,11 +17,11 @@ interface
 
 uses  
   Classes, SysUtils, Windows, ShLwApi,
-
   mybean.core.intf,
   mybean.console.loader,
   mybean.console.loader.dll,
-  uKeyInterface, IniFiles;
+  uKeyInterface, IniFiles,
+  safeLogger;
 
 type
   TApplicationContext = class(TInterfacedObject
@@ -240,10 +240,11 @@ procedure logDebugInfo;
 
 
 
+
 implementation
 
 uses
-  superobject, uSOTools, FileLogger;
+  superobject, uSOTools;
 
 
 
@@ -253,6 +254,8 @@ var
   
   __instanceKeyMap:TKeyMapImpl;
   __instanceKeyMapKeyIntf:IInterface;
+
+  __beanLogger:TSafeLogger;
 
 
 
@@ -274,7 +277,7 @@ begin
     end;
     if __instanceAppContext.RefCount > 1 then
     begin
-      TFileLogger.instance.logErrMessage(Format('appPluginContext存在[%d]未释放的情况', [__instanceAppContext.RefCount-1]));
+      __beanLogger.logMessage('appPluginContext存在[%d]未释放的情况', [__instanceAppContext.RefCount-1]);
     end;
     __instanceAppContextAppContextIntf := nil;
   except
@@ -313,8 +316,8 @@ begin
   try
     if __instanceKeyMap.RefCount > 1 then
     begin
-      TFileLogger.instance.logErrMessage(Format('applicationKeyMap存在[%d]未释放的情况',
-        [__instanceKeyMap.RefCount-1]));
+      __beanLogger.logMessage('applicationKeyMap存在[%d]未释放的情况',
+        [__instanceKeyMap.RefCount-1], 'DEBUG_');
     end;
   except
   end;
@@ -323,8 +326,8 @@ begin
   try
     if __instanceAppContext.RefCount > 1 then
     begin
-      TFileLogger.instance.logErrMessage(Format('applicationContext存在[%d]未释放的情况',
-        [__instanceAppContext.RefCount-1]));
+      __beanLogger.logMessage('applicationContext存在[%d]未释放的情况',
+        [__instanceAppContext.RefCount-1], 'DEBUG_');
     end;
   except
   end;
@@ -343,7 +346,7 @@ begin
     if lvConfigFiles <> '' then
     begin
       if FTraceLoadFile then
-         TFileLogger.instance.logMessage('从配置文件中加载bean配置', 'load_trace');
+         __beanLogger.logMessage('从配置文件中加载bean配置', 'LOAD_TRACE_');
       if checkInitializeFromConfigFiles(lvConfigFiles) > 0 then
       begin
 
@@ -355,12 +358,12 @@ begin
       end else
       begin
         if FTraceLoadFile then
-          TFileLogger.instance.logMessage('没有加载任何配置文件', 'load_trace');
+           __beanLogger.logMessage('没有加载任何配置文件', 'LOAD_TRACE_');
       end;
     end else
     begin
       if FTraceLoadFile then
-        TFileLogger.instance.logMessage('直接加载DLL文件', 'load_trace');
+        __beanLogger.logMessage('直接加载DLL文件', 'LOAD_TRACE_');
       executeLoadLibrary;
     end;
   end;
@@ -374,7 +377,7 @@ begin
   FRootPath := ExtractFilePath(ParamStr(0));
 
 
-  lvTempPath := FINIFile.ReadString('main', 'plug-ins-cache-path', 'plug-ins-cache\');
+  lvTempPath := FINIFile.ReadString('main', 'copyDest', 'plug-ins\');
 
   FTraceLoadFile := FINIFile.ReadBool('main','traceLoadLib', FTraceLoadFile);
 
@@ -383,7 +386,7 @@ begin
   l := Length(FCopyDestPath);
   if l = 0 then
   begin
-    FCopyDestPath := FRootPath + 'plug-ins-cache\';
+    FCopyDestPath := FRootPath + 'plug-ins\';
   end else
   begin
     FCopyDestPath := PathWithBackslash(FCopyDestPath);
@@ -394,9 +397,9 @@ begin
   except
     on E:Exception do
     begin
-      TFileLogger.instance.logMessage(
-                    Format('创建插件缓存目录[%s]出现异常', [FCopyDestPath]) + e.Message,
-                    'pluginLoaderErr');
+      __beanLogger.logMessage(
+                    '创建Copy目标文件夹[%s]出现异常:%s', [FCopyDestPath, e.Message],
+                    'LOAD_ERROR_');
     end;
   end;
 
@@ -417,8 +420,8 @@ begin
     if j <> -1 then
     begin
       lvLibObject := TBaseFactoryObject(FBeanMapList.Objects[j]);
-      TFileLogger.instance.logMessage(Format('在注册插件[%s]时发现重复,已经在[%s]进行了注册',
-         [lvID,lvLibObject.namespace]), 'load_trace');
+      __beanLogger.logMessage(Format('在注册插件[%s]时发现重复,已经在[%s]进行了注册',
+         [lvID,lvLibObject.namespace]), 'LOAD_TRACE_');
     end else
     begin
       FBeanMapList.AddObject(lvID, pvFactoryObject);
@@ -526,7 +529,7 @@ begin
     begin
       if FTraceLoadFile then
       begin
-        TFileLogger.instance.logMessage('准备初始化插件文件[' + String(pvFactoryObject.namespace) + ']', 'loadDLL_trace');
+        __beanLogger.logMessage('准备初始化插件文件[' + String(pvFactoryObject.namespace) + ']', 'LOAD_TRACE_');
       end;
       pvFactoryObject.checkInitialize;
     end;
@@ -535,9 +538,9 @@ begin
     on E:Exception do
     begin
       Result := false;
-      TFileLogger.instance.logMessage(
+      __beanLogger.logMessage(
                     Format('加载插件文件[%s]出现异常:', [pvFactoryObject.namespace]) + e.Message,
-                    'loadDLL_trace');
+                    'LOAD_TRACE_');
       if pvRaiseException then
         raise;
     end;
@@ -590,7 +593,7 @@ begin
       if j <> -1 then
       begin
         lvLibObject := TBaseFactoryObject(FBeanMapList.Objects[j]);
-        TFileLogger.instance.logMessage(Format('在注册插件[%s]时发现重复,已经在[%s]进行了注册',
+        __beanLogger.logMessage(Format('在注册插件[%s]时发现重复,已经在[%s]进行了注册',
            [lvID,lvLibObject.namespace]));
       end else
       begin
@@ -610,12 +613,12 @@ begin
     lvFactoryObject := TBaseFactoryObject(FFactoryObjectList.Objects[i]);
     try
       if FTraceLoadFile then
-        TFileLogger.instance.logMessage('准备初始化bean工厂:' + lvFactoryObject.namespace, 'load_trace');
+        __beanLogger.logMessage('准备初始化bean工厂:' + lvFactoryObject.namespace, 'LOAD_TRACE_');
       lvFactoryObject.checkInitialize;
     except
       on E:Exception do
       begin
-        TFileLogger.instance.logMessage(
+        __beanLogger.logMessage(
                       Format('加载插件文件[%s]出现异常', [lvFactoryObject.namespace]) + e.Message,
                       'pluginLoaderErr');
       end;
@@ -685,7 +688,7 @@ begin
 
   if (lvPluginList = nil) or (not lvPluginList.IsType(stArray)) then
   begin
-    TFileLogger.instance.logMessage(Format('配置文件[%s]非法', [pvFileName]), 'pluginsLoader');
+    __beanLogger.logMessage(Format('配置文件[%s]非法', [pvFileName]), 'pluginsLoader');
     Exit;
   end;
 
@@ -695,13 +698,13 @@ begin
     lvLibFile := FRootPath + lvItem.S['lib'];
     if not FileExists(lvLibFile) then
     begin
-      TFileLogger.instance.logMessage(Format('未找到配置文件[%s]中的Lib文件[%s]', [pvFileName, lvLibFile]), 'pluginsLoader');
+      __beanLogger.logMessage(Format('未找到配置文件[%s]中的Lib文件[%s]', [pvFileName, lvLibFile]), 'pluginsLoader');
     end else
     begin
       lvLibObj := TBaseFactoryObject(checkCreateLibObject(lvLibFile));
       if lvLibObj = nil then
       begin
-        TFileLogger.instance.logMessage(Format('未找到Lib文件[%s]', [lvLibFile]), 'pluginsLoader');
+        __beanLogger.logMessage(Format('未找到Lib文件[%s]', [lvLibFile]), 'pluginsLoader');
       end else
       begin
         try
@@ -724,7 +727,7 @@ begin
         except
           on E:Exception do
           begin
-            TFileLogger.instance.logMessage(
+            __beanLogger.logMessage(
                           Format('加载插件文件[%s]出现异常:', [lvLibObj.namespace]) + e.Message,
                           'pluginLoaderErr');
           end;
@@ -780,7 +783,7 @@ begin
           except
             on E:Exception do
             begin
-              TFileLogger.instance.logMessage(
+              __beanLogger.logMessage(
                             Format('加载插件文件[%s]出现异常', [lvLib.LibFileName]) + e.Message,
                             'pluginLoaderErr');
             end;
@@ -819,24 +822,24 @@ begin
       if lvLibObject.beanFactory = nil then
       begin
         if FTraceLoadFile then
-          TFileLogger.instance.logMessage('初始化bean工厂_BEGIN:' + lvLibObject.namespace, 'load_trace');
+          __beanLogger.logMessage('初始化bean工厂_BEGIN:' + lvLibObject.namespace, 'LOAD_TRACE_');
         lvLibObject.checkInitialize;
         if FTraceLoadFile then
-          TFileLogger.instance.logMessage('初始化bean工厂_END:' + lvLibObject.namespace, 'load_trace');
+          __beanLogger.logMessage('初始化bean工厂_END:' + lvLibObject.namespace, 'LOAD_TRACE_');
       end;
       Result := lvLibObject.beanFactory;
     end else
     begin
-      TFileLogger.instance.logMessage(
+      __beanLogger.logMessage(
                     Format('找不到对应的[%s]插件工厂', [lvBeanID]),
                     'pluginLoaderErr');
     end;
   except
     on E:Exception do
     begin
-      TFileLogger.instance.logMessage(
+      __beanLogger.logMessage(
                     Format('获取插件工厂[%s]出现异常', [lvBeanID]) + e.Message,
-                    'load_trace');
+                    'LOAD_TRACE_');
     end;
   end;
 end;
@@ -982,6 +985,10 @@ begin
 end;
 
 initialization
+  __beanLogger := TSafeLogger.Create;
+  __beanLogger.setAppender(TLogFileAppender.Create(False));
+  __beanLogger.start;
+
   __instanceKeyMap := TKeyMapImpl.Create;
   __instanceKeyMapKeyIntf := __instanceKeyMap;
 
@@ -1002,5 +1009,10 @@ finalization
   logDebugInfo;
   __instanceAppContextAppContextIntf := nil;
   __instanceKeyMapKeyIntf := nil;
+
+  __beanLogger.Free;
+  __beanLogger := nil;
+
+
 
 end.
