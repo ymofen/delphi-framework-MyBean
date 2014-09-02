@@ -655,6 +655,7 @@ begin
     end;
 
   finally
+    lvFilesList.Free;
     lvStrings.Free;
   end;
 end;
