@@ -29,7 +29,6 @@ implementation
 initialization
   __beanLogger := TSafeLogger.Create;
   __beanLogger.setAppender(TLogFileAppender.Create(False));
-  __beanLogger.start;
 
 finalization  
   __beanLogger.Free;
