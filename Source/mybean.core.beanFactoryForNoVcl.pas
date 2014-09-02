@@ -19,6 +19,7 @@ uses
   SysUtils, SyncObjs, Windows,
   Classes,
   mybean.core.intf,
+  mybean.core.utils,
   superobject;
 
 type
@@ -216,7 +217,7 @@ function beanFactory: TBeanFactory;
 implementation
 
 uses
-  FileLogger, uSOTools;
+  uSOTools;
 
 var
   __instanceObject:TBeanFactory;
@@ -324,7 +325,7 @@ begin
   except
     on E:Exception do
     begin
-      TFileLogger.instance.logMessage('执行初始化时出现了异常' + sLineBreak + e.Message);
+      __beanLogger.logMessage('执行初始化时出现了异常' + sLineBreak + e.Message, 'DEBUG_');
     end;
   end;
 end;
@@ -582,7 +583,7 @@ begin
     begin
       if FLastErrCode = 0 then FLastErrCode := -1;
       FLastErr := E.Message;
-      TFileLogger.instance.logErrMessage(string(FLastErr));
+      __beanLogger.logMessage(string(FLastErr), 'DEBUG_');
     end;
   end;
 end;
