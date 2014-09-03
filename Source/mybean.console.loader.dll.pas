@@ -147,6 +147,8 @@ begin
   begin
     FLibHandle := LoadLibrary(PChar(FlibFileName));
     Result := FLibHandle <> 0;
+    if not Result then RaiseLastOSError;
+
     if Result then doInitialize;
   end;
 end;
