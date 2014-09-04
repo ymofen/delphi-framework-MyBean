@@ -20,6 +20,8 @@ uses
 
 type
   TBaseFactoryObject = class(TObject)
+  private
+    FTag: Integer;
   protected
     /// <summary>
     ///   bean的配置,文件中读取的有一个list配置数组
@@ -52,6 +54,10 @@ type
     property beanFactory: IBeanFactory read FBeanFactory;
 
     property namespace: AnsiString read Fnamespace;
+
+    property Tag: Integer read FTag write FTag;
+
+
   end;
 
   /// <summary>
@@ -71,6 +77,7 @@ uses
 constructor TBaseFactoryObject.Create;
 begin
   inherited Create;
+  FTag := 0;
   FConfig := SO();
   FConfig.O['list'] := SO('[]');
 end;

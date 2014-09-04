@@ -2,6 +2,11 @@
  *	 Unit owner: D10.天地弦
  *	   blog: http://www.cnblogs.com/dksoft
  *
+ *   v0.1.1  (2014-09-03 23:46:16)
+ *     添加 IApplicationContextEx01接口
+ *      可以实现手动加载DLL和配置文件
+ *
+ *
  *   v0.1.0(2014-08-29 13:00)
  *     修改加载方式(beanMananger.dll-改造)
  *
@@ -53,6 +58,7 @@ type
 
     function checkInitializeFactoryObject(pvFactoryObject:TBaseFactoryObject;
         pvRaiseException:Boolean): Boolean;
+
   protected
     /// <summary>
     ///  加载库文件
@@ -77,10 +83,26 @@ type
     /// </summary>
     procedure executeLoadLibrary; stdcall;
 
+
+    /// <summary>
+    ///   加载一个库文件
+    /// </summary>
+    procedure checkLoadALibFile(pvFile:string);
+
     /// <summary>
     ///   根据提供的Lib文件得到TLibFactoryObject对象，如果不列表中不存在则新增一个对象
     /// </summary>
     function checkCreateLibObject(pvFileName:string): TLibFactoryObject;
+
+
+    /// <summary>
+    ///   从FLibFactory中移除，加载失败时进行移除
+    /// </summary>
+    /// <returns>
+    ///   如果移除返回true
+    /// </returns>
+    /// <param name="pvFileName"> 要移除的文件名(全路径) </param>
+    function checkRemoveLibObjectFromList(pvFileName:String): Boolean;
 
   private
     /// <summary>
@@ -235,7 +257,26 @@ procedure executeKeyMapCleanup;
 /// </summary>
 function applicationKeyMap: IKeyMap; stdcall;
 
+
+
+
+
 procedure logDebugInfo;
+
+
+/// <summary>
+///   产生一个Hash值
+///    QDAC群-Hash函数
+/// </summary>
+function hashOf(const p:Pointer;l:Integer): Integer; overload;
+
+/// <summary>
+///   产生一个Hash值
+/// </summary>
+function hashOf(const vStrData:String): Integer; overload;
+
+
+
 
 
 
@@ -277,7 +318,8 @@ begin
     end;
     if __instanceAppContext.RefCount > 1 then
     begin
-      __beanLogger.logMessage('appPluginContext存在[%d]未释放的情况', [__instanceAppContext.RefCount-1]);
+      __beanLogger.logMessage('appPluginContext存在[%d]未释放的情况',
+      [__instanceAppContext.RefCount-1]);
     end;
     __instanceAppContextAppContextIntf := nil;
   except
@@ -333,6 +375,40 @@ begin
   end;
 end;
 
+function hashOf(const p:Pointer;l:Integer): Integer;
+var
+  ps:PInteger;
+  lr:Integer;
+begin
+  Result:=0;
+  if l>0 then
+  begin
+    ps:=p;
+    lr:=(l and $03);//检查长度是否为4的整数倍
+    l:=(l and $FFFFFFFC);//整数长度
+    while l>0 do
+    begin
+      Result:=((Result shl 5) or (Result shr 27)) xor ps^;
+      Inc(ps);
+      Dec(l,4);
+    end;
+    if lr<>0 then
+    begin
+      l:=0;
+      Move(ps^,l,lr);
+      Result:=((Result shl 5) or (Result shr 27)) xor l;
+    end;
+  end;
+end;
+
+function hashOf(const vStrData:String): Integer;
+var
+  lvStr:AnsiString;
+begin
+  lvStr := AnsiString(vStrData);
+  Result := hashOf(PAnsiChar(lvStr), Length(lvStr));
+end;
+
 
 
 procedure TApplicationContext.checkInitialize;
@@ -350,7 +426,7 @@ begin
       if checkInitializeFromConfigFiles(lvConfigFiles) > 0 then
       begin
 
-        if FINIFile.ReadBool('main', 'loadOnStartup', True) then
+        if FINIFile.ReadBool('main', 'loadOnStartup', False) then
         begin
           //加载DLL文件， 把DLL载入
           checkInitializeFactoryObjects;
@@ -498,6 +574,26 @@ begin
   FINIFile := TIniFile.Create(lvFile);
 end;
 
+function TApplicationContext.checkRemoveLibObjectFromList(pvFileName:String):
+    Boolean;
+var
+  lvNameSpace:String;
+  i:Integer;
+begin
+  Result := False;
+  lvNameSpace :=ExtractFileName(pvFileName) + '_' + IntToStr(hashOf(pvFileName));
+  if Length(lvNameSpace) = 0 then Exit;
+
+
+
+  i := FFactoryObjectList.IndexOf(lvNameSpace);
+  if i <> -1 then
+  begin
+    Result := true;
+    FFactoryObjectList.Delete(i);
+  end;
+end;
+
 function TApplicationContext.checkCreateLibObject(pvFileName:string):
     TLibFactoryObject;
 var
@@ -505,7 +601,7 @@ var
   i:Integer;
 begin
   Result := nil;
-  lvNameSpace :=ExtractFileName(pvFileName);
+  lvNameSpace :=ExtractFileName(pvFileName) + '_' + IntToStr(hashOf(pvFileName));
   if Length(lvNameSpace) = 0 then Exit;
 
   i := FFactoryObjectList.IndexOf(lvNameSpace);
@@ -620,7 +716,7 @@ begin
       begin
         __beanLogger.logMessage(
                       Format('加载插件文件[%s]出现异常', [lvFactoryObject.namespace]) + e.Message,
-                      'pluginLoaderErr');
+                      'LOAD_TRACE_');
       end;
     end;
   end;
@@ -660,17 +756,105 @@ begin
   end;
 end;
 
+procedure TApplicationContext.checkLoadALibFile(pvFile: string);
+var
+  lvStrings: TStrings;
+  i: Integer;
+  lvFile: string;
+  lvLib:TLibFactoryObject;
+  lvIsOK:Boolean;
+  lvBeanIDs:array[1..4096] of AnsiChar;
+begin
+  if pvFile = '' then exit;
+  lvFile := pvFile;
+  lvLib := checkCreateLibObject(lvFile);
+  lvIsOK := false;
+  try
+    if lvLib.Tag = 1 then
+    begin  //已经加载
+      lvIsOK := true;
+    end else
+    begin
+      if checkInitializeFactoryObject(TBaseFactoryObject(lvLib), False) then
+      begin
+        try
+          ZeroMemory(@lvBeanIDs[1], 4096);
+          lvLib.beanFactory.getBeanList(@lvBeanIDs[1], 4096);
+          DoRegisterPluginIDS(String(lvBeanIDs), TBaseFactoryObject(lvLib));
+          lvIsOK := true;
+          lvLib.Tag := 1;
+        except
+          on E:Exception do
+          begin
+            __beanLogger.logMessage(
+                          Format('加载插件文件[%s]出现异常', [lvLib.LibFileName]) + e.Message,
+                          'LOAD_TRACE_');
+          end;
+        end;
+      end;
+    end;
+
+  finally
+    if not lvIsOK then
+    begin
+      try
+        checkRemoveLibObjectFromList(lvFile);
+        lvLib.DoFreeLibrary;
+        lvLib.Free;
+      except
+      end;
+    end;
+  end;
+end;
+
 function TApplicationContext.checkLoadBeanConfigFile(
   pvConfigFile: PAnsiChar): Boolean;
 begin
-
+  Result := checkInitializeFromConfigFiles(AnsiString(pvConfigFile)) > 0;
 end;
 
 function TApplicationContext.checkLoadLibraryFile(
   pvLibFile: PAnsiChar): Boolean;
+var
+  lvFilesList, lvStrings: TStrings;
+  i, j: Integer;
+  lvStr, lvFileName, lvPath:String;
 begin
+  Result := false;
+  lvStrings := TStringList.Create;
+  lvFilesList := TStringList.Create;
+  try
+    __beanLogger.logMessage('加载插件宿主文件[%s]', [pvLibFile], 'LOAD_TRACE_');
+    lvFilesList.Text := StringReplace(pvLibFile, ',', sLineBreak, [rfReplaceAll]);
+    for i := 0 to lvFilesList.Count - 1 do
+    begin
+      lvStr := lvFilesList[i];
 
+      lvFileName := ExtractFileName(lvStr);
+      lvPath := ExtractFilePath(lvStr);
+      lvPath := GetAbsolutePath(FRootPath, lvPath);
+      lvFileName := lvPath + lvFileName;
+
+      lvStrings.Clear;
+      getFileNameList(lvStrings, lvFileName);
+
+      for j := 0 to lvStrings.Count -1 do
+      begin
+        checkLoadALibFile(trim(lvStrings[j]));
+
+      end;
+
+    end;
+
+    Result := true;
+
+  finally
+    lvFilesList.Free;
+    lvStrings.Free;
+  end;
 end;
+
+
 
 function TApplicationContext.executeLoadFromConfigFile(pvFileName: String):
     Integer;
@@ -689,7 +873,7 @@ begin
 
   if (lvPluginList = nil) or (not lvPluginList.IsType(stArray)) then
   begin
-    __beanLogger.logMessage(Format('配置文件[%s]非法', [pvFileName]), 'pluginsLoader');
+    __beanLogger.logMessage(Format('配置文件[%s]非法', [pvFileName]), 'LOAD_TRACE_');
     Exit;
   end;
 
@@ -699,13 +883,14 @@ begin
     lvLibFile := FRootPath + lvItem.S['lib'];
     if not FileExists(lvLibFile) then
     begin
-      __beanLogger.logMessage(Format('未找到配置文件[%s]中的Lib文件[%s]', [pvFileName, lvLibFile]), 'pluginsLoader');
+      __beanLogger.logMessage(Format('未找到配置文件[%s]中的Lib文件[%s]', [pvFileName, lvLibFile]),
+         'LOAD_TRACE_');
     end else
     begin
       lvLibObj := TBaseFactoryObject(checkCreateLibObject(lvLibFile));
       if lvLibObj = nil then
       begin
-        __beanLogger.logMessage(Format('未找到Lib文件[%s]', [lvLibFile]), 'pluginsLoader');
+        __beanLogger.logMessage(Format('未找到Lib文件[%s]', [lvLibFile]), 'LOAD_TRACE_');
       end else
       begin
         try
@@ -730,7 +915,7 @@ begin
           begin
             __beanLogger.logMessage(
                           Format('加载插件文件[%s]出现异常:', [lvLibObj.namespace]) + e.Message,
-                          'pluginLoaderErr');
+                          'LOAD_TRACE_');
           end;
         end;
       end;
@@ -757,10 +942,6 @@ var
   lvStrings: TStrings;
   i: Integer;
   lvFile: string;
-  lvLib:TLibFactoryObject;
-  lvIsOK:Boolean;
-
-  lvBeanIDs:array[1..4096] of AnsiChar;
 begin
   lvStrings := TStringList.Create;
   try
@@ -769,38 +950,7 @@ begin
     for i := 0 to lvStrings.Count - 1 do
     begin
       lvFile := lvStrings[i];
-      lvLib := TLibFactoryObject.Create;
-      lvIsOK := false;
-      try
-        lvLib.LibFileName := lvFile;
-        if checkInitializeFactoryObject(TBaseFactoryObject(lvLib), False) then
-        begin
-          try
-            ZeroMemory(@lvBeanIDs[1], 4096);
-            lvLib.beanFactory.getBeanList(@lvBeanIDs[1], 4096);
-            DoRegisterPluginIDS(String(lvBeanIDs), TBaseFactoryObject(lvLib));
-            FFactoryObjectList.AddObject(ExtractFileName(lvFile), lvLib);
-            lvIsOK := true;
-          except
-            on E:Exception do
-            begin
-              __beanLogger.logMessage(
-                            Format('加载插件文件[%s]出现异常', [lvLib.LibFileName]) + e.Message,
-                            'pluginLoaderErr');
-            end;
-          end;
-        end;
-
-      finally
-        if not lvIsOK then
-        begin
-          try
-            lvLib.DoFreeLibrary;
-            lvLib.Free;
-          except
-          end;
-        end;
-      end;
+      checkLoadALibFile(lvFile);
     end;
   finally
     lvStrings.Free;
@@ -833,7 +983,7 @@ begin
     begin
       __beanLogger.logMessage(
                     Format('找不到对应的[%s]插件工厂', [lvBeanID]),
-                    'pluginLoaderErr');
+                    'LOAD_TRACE_');
     end;
   except
     on E:Exception do

@@ -2,6 +2,9 @@ unit uIFormShow;
 
 interface
 
+uses
+  Vcl.Controls;
+
 type
   /// <summary>
   ///   ±ê×¼ÏÔÊ¾
@@ -25,6 +28,11 @@ type
   IShowAsMDI = interface(IInterface)
     ['{F68D4D30-C70C-4BCC-9F83-F50D2D873629}']
     procedure showAsMDI; stdcall;
+  end;
+
+  IShowAsChild = interface(IInterface)
+    ['{B0AF3A34-8A50-46F9-B723-DEE17F92633B}']
+    procedure showAsChild(pvParent:TWinControl); stdcall;
   end;
 
 

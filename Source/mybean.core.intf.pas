@@ -2,6 +2,10 @@
  *	 Unit owner: D10.天地弦
  *	   blog: http://www.cnblogs.com/dksoft
  *
+ *   v0.1.1  (2014-09-03 23:46:16)
+ *     添加 IApplicationContextEx01接口
+ *      可以实现手动加载DLL和配置文件
+ *
  *   v0.1.0(2014-08-29 13:00)
  *     修改加载方式(beanMananger.dll-改造)
  *
