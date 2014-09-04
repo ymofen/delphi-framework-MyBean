@@ -4,7 +4,7 @@ interface
 
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  Dialogs, StdCtrls, FileLogger, mybean.tools.beanFactory;
+  Dialogs, StdCtrls, mybean.tools.beanFactory;
 
 type
   TfrmMain = class(TForm)
@@ -23,7 +23,7 @@ var
 implementation
 
 uses
-  uIUIForm, mBeanFrameVars, uIFormShow;
+  uIUIForm, uIFormShow;
 
 {$R *.dfm}
 
@@ -37,7 +37,7 @@ end;
 
 procedure TfrmMain.Button1Click(Sender: TObject);
 begin
-  with TmBeanFrameVars.getBean('tester') as IUIForm do
+  with TMyBeanFactoryTools.getBean('tester') as IUIForm do
   try
     showAsModal;
   finally

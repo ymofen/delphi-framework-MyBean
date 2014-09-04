@@ -7,7 +7,9 @@ uses
   ufrmMain in 'ufrmMain.pas' {frmMain},
   ufrmTester in 'Child\ufrmTester.pas' {frmTester},
   uIUIForm in 'Interface\uIUIForm.pas',
-  ufrmSingleton in 'Child\ufrmSingleton.pas' {frmSingleton};
+  ufrmSingleton in 'Child\ufrmSingleton.pas' {frmSingleton},
+  uIShow in 'Interface\uIShow.pas',
+  uIFormShow in 'Interface\uIFormShow.pas';
 
 {R *.res}
 
