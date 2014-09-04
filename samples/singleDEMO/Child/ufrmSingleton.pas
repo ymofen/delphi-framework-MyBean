@@ -4,7 +4,7 @@ interface
 
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics,
-  Controls, Forms, Dialogs, StdCtrls, uIFreeObject,
+  Controls, Forms, Dialogs, StdCtrls, mybean.core.intf,
   uIFormShow;
 
 type
