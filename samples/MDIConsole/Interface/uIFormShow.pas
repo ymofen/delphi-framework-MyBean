@@ -3,7 +3,7 @@ unit uIFormShow;
 interface
 
 uses
-  Vcl.Controls;
+  Controls;
 
 type
   /// <summary>
