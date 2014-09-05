@@ -39,6 +39,8 @@ type
 
     procedure cleanup;override;
 
+    function checkIsValidLib:Boolean; override;
+
     /// <summary>
     ///   根据beanID获取插件
     /// </summary>
@@ -126,6 +128,32 @@ begin
   //避免提前释放
   lvConfigStr := '';
   lvBeanID:= '';
+end;
+
+function TLibFactoryObject.checkIsValidLib: Boolean;
+var
+  lvFunc:procedure(appContext: IApplicationContext; appKeyMap: IKeyMap); stdcall;
+  lvLibHandle:THandle;
+begin
+  if FLibHandle = 0 then
+  begin
+    lvLibHandle := LoadLibrary(PChar(FlibFileName));
+    if lvLibHandle <> 0 then
+    begin
+      try
+        @lvFunc := GetProcAddress(lvLibHandle, PChar('initializeBeanFactory'));
+        result := (@lvFunc <> nil);
+      finally
+        FreeLibrary(lvLibHandle);
+      end;
+    end else
+    begin
+      Result := false;
+    end;
+  end else
+  begin   // 已经成功加载
+    Result := true;
+  end;
 end;
 
 function TLibFactoryObject.checkLoadLibrary(pvRaiseIfNil: Boolean = true):

@@ -257,6 +257,12 @@ procedure executeKeyMapCleanup;
 /// </summary>
 function applicationKeyMap: IKeyMap; stdcall;
 
+/// <summary>
+///   加载文件
+///     executeLoadLibFiles('plugin\*.dll');
+/// </summary>
+procedure executeLoadLibFiles(const pvLibFiles: string);
+
 
 
 
@@ -274,10 +280,6 @@ function hashOf(const p:Pointer;l:Integer): Integer; overload;
 ///   产生一个Hash值
 /// </summary>
 function hashOf(const vStrData:String): Integer; overload;
-
-
-
-
 
 
 
@@ -409,6 +411,11 @@ begin
   Result := hashOf(PAnsiChar(lvStr), Length(lvStr));
 end;
 
+procedure executeLoadLibFiles(const pvLibFiles: string);
+begin
+  TApplicationContext.instance.checkLoadLibraryFile(PAnsiChar(AnsiString(pvLibFiles)));
+end;
+
 
 
 procedure TApplicationContext.checkInitialize;
@@ -468,16 +475,16 @@ begin
     FCopyDestPath := PathWithBackslash(FCopyDestPath);
   end;
 
-  try
-    ForceDirectories(FCopyDestPath);
-  except
-    on E:Exception do
-    begin
-      __beanLogger.logMessage(
-                    '创建Copy目标文件夹[%s]出现异常:%s', [FCopyDestPath, e.Message],
-                    'LOAD_ERROR_');
-    end;
-  end;
+//  try
+//    ForceDirectories(FCopyDestPath);
+//  except
+//    on E:Exception do
+//    begin
+//      __beanLogger.logMessage(
+//                    '创建Copy目标文件夹[%s]出现异常:%s', [FCopyDestPath, e.Message],
+//                    'LOAD_ERROR_');
+//    end;
+//  end;
 
 end;
 
@@ -627,9 +634,24 @@ begin
       begin
         __beanLogger.logMessage('准备初始化插件文件[' + String(pvFactoryObject.namespace) + ']', 'LOAD_TRACE_');
       end;
-      pvFactoryObject.checkInitialize;
+
+      if pvRaiseException then
+      begin         // 直接进行加载
+        pvFactoryObject.checkInitialize;
+      end else
+      begin        //
+        if not pvFactoryObject.checkIsValidLib then
+        begin
+          __beanLogger.logMessage(
+                        Format('文件[%s]不是有效的插件宿主文件', [pvFactoryObject.namespace]),
+                        'LOAD_TRACE_');
+        end else
+        begin
+          pvFactoryObject.checkInitialize;
+        end;
+      end;
     end;
-    Result := true;
+    Result := pvFactoryObject.beanFactory <> nil;
   except
     on E:Exception do
     begin

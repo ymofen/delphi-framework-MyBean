@@ -6,7 +6,7 @@ uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics,
   Controls, Forms, Dialogs, Menus, ActnList,
   Tabs, ExtCtrls, uIMainForm, PluginTabControl,
-  StdCtrls, IniFiles;
+  StdCtrls, IniFiles, System.Actions;
 
 type
   TfrmMain = class(TForm, IMainForm)
@@ -127,16 +127,21 @@ procedure TfrmMain.FormShow(Sender: TObject);
 var
   lvINiFile:TIniFile;
 begin
-  lvINiFile := TIniFile.Create(ChangeFileExt(ParamStr(0), '.history.ini'));
   try
-    edtPluginID.Text := lvINiFile.ReadString('main', 'lastPluginID', '');
-  finally
-    lvINiFile.Free;
-  end;
+    self.OnShow := nil;
+    lvINiFile := TIniFile.Create(ChangeFileExt(ParamStr(0), '.history.ini'));
+    try
+      edtPluginID.Text := lvINiFile.ReadString('main', 'lastPluginID', '');
+    finally
+      lvINiFile.Free;
+    end;
 
-  if edtPluginID.Text <> '' then
-  begin
-    actCreatePluginAsMDI.Execute;
+    if edtPluginID.Text <> '' then
+    begin
+      actCreatePluginAsMDI.Execute;
+    end;
+  except
+
   end;
 end;
 

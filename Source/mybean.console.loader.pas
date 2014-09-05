@@ -37,7 +37,12 @@ type
 
     procedure checkFinalize;virtual;
     procedure checkInitialize;virtual;
-    
+
+    /// <summary>
+    ///   检测是否是有效的插件宿主文件
+    /// </summary>
+    function checkIsValidLib: Boolean; virtual;
+
     /// <summary>
     ///   beanID和配置信息
     /// </summary>
@@ -124,6 +129,11 @@ end;
 procedure TBaseFactoryObject.addBeanConfig(pvBeanConfig: ISuperObject);
 begin
   FConfig.A['list'].Add(pvBeanConfig);
+end;
+
+function TBaseFactoryObject.checkIsValidLib: Boolean;
+begin
+  Result := False;
 end;
 
 procedure TFactoryInstanceObject.setFactoryObject(const intf:IBeanFactory);
