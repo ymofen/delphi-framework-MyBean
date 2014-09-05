@@ -69,6 +69,15 @@ object frmMain: TfrmMain
     TabOrder = 5
     OnClick = btnOpenClick
   end
+  object btnGetTime: TButton
+    Left = 703
+    Top = 69
+    Width = 106
+    Height = 25
+    Caption = 'btnGetTime'
+    TabOrder = 6
+    OnClick = btnGetTimeClick
+  end
   object cdsMain: TClientDataSet
     Aggregates = <>
     Params = <>
