@@ -36,6 +36,7 @@ type
     procedure cleanup;virtual;
 
     procedure checkFinalize;virtual;
+
     procedure checkInitialize;virtual;
 
     /// <summary>
