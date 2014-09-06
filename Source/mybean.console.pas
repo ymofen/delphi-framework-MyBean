@@ -434,7 +434,7 @@ var
 begin
   if FFactoryObjectList.Count = 0 then
   begin
-    checkReady;
+
     lvConfigFiles := FINIFile.ReadString('main', 'beanConfigFiles', '');
     if lvConfigFiles <> '' then
     begin
@@ -564,6 +564,7 @@ begin
   FFactoryObjectList := TStringList.Create();
   FBeanMapList := TStringList.Create;
   checkCreateINIFile;
+  checkReady;
 end;
 
 destructor TApplicationContext.Destroy;
