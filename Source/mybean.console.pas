@@ -2,6 +2,10 @@
  *	 Unit owner: D10.天地弦
  *	   blog: http://www.cnblogs.com/dksoft
  *
+ *   v0.1.2  (2014-09-06 10:50:44)
+ *     为了满足各种加载需求, 去掉自动加载方式，
+ *       需要在工程开始的地方调用applicationContextInitialize进行初始化
+ *
  *   v0.1.1  (2014-09-03 23:46:16)
  *     添加 IApplicationContextEx01接口
  *      可以实现手动加载DLL和配置文件
@@ -25,6 +29,7 @@ uses
   mybean.core.intf,
   mybean.console.loader,
   mybean.console.loader.dll,
+  mybean.strConsts,
   uKeyInterface, IniFiles,
   safeLogger;
 
@@ -264,6 +269,12 @@ function applicationKeyMap: IKeyMap; stdcall;
 procedure executeLoadLibFiles(const pvLibFiles: string);
 
 
+/// <summary>
+///   执行初始化，如果已经初始化过，则会跳过
+///     根据 ini的配置进行初始化,
+///     如果没有配置文件，直接加载 *.dll和plug-ins\*.dll
+/// </summary>
+procedure applicationContextInitialize;
 
 
 
@@ -318,12 +329,6 @@ begin
       __instanceAppContext.checkFinalize;
     except
     end;
-    if __instanceAppContext.RefCount > 1 then
-    begin
-      __beanLogger.logMessage('appPluginContext存在[%d]未释放的情况',
-      [__instanceAppContext.RefCount-1]);
-    end;
-    __instanceAppContextAppContextIntf := nil;
   except
   end;
 end;
@@ -360,7 +365,7 @@ begin
   try
     if __instanceKeyMap.RefCount > 1 then
     begin
-      __beanLogger.logMessage('applicationKeyMap存在[%d]未释放的情况',
+      __beanLogger.logMessage(sDebug_applicationKeyMapUnload,
         [__instanceKeyMap.RefCount-1], 'DEBUG_');
     end;
   except
@@ -370,7 +375,7 @@ begin
   try
     if __instanceAppContext.RefCount > 1 then
     begin
-      __beanLogger.logMessage('applicationContext存在[%d]未释放的情况',
+      __beanLogger.logMessage(sDebug_applicationContextUnload,
         [__instanceAppContext.RefCount-1], 'DEBUG_');
     end;
   except
@@ -416,6 +421,11 @@ begin
   TApplicationContext.instance.checkLoadLibraryFile(PAnsiChar(AnsiString(pvLibFiles)));
 end;
 
+procedure applicationContextInitialize;
+begin
+  appPluginContext.checkInitialize;
+end;
+
 
 
 procedure TApplicationContext.checkInitialize;
@@ -429,7 +439,7 @@ begin
     if lvConfigFiles <> '' then
     begin
       if FTraceLoadFile then
-         __beanLogger.logMessage('从配置文件中加载bean配置', 'LOAD_TRACE_');
+         __beanLogger.logMessage(sDebug_loadFromConfigFile, 'LOAD_TRACE_');
       if checkInitializeFromConfigFiles(lvConfigFiles) > 0 then
       begin
 
@@ -441,12 +451,12 @@ begin
       end else
       begin
         if FTraceLoadFile then
-           __beanLogger.logMessage('没有加载任何配置文件', 'LOAD_TRACE_');
+           __beanLogger.logMessage(sDebug_NoneConfigFile, 'LOAD_TRACE_');
       end;
     end else
     begin
       if FTraceLoadFile then
-        __beanLogger.logMessage('直接加载DLL文件', 'LOAD_TRACE_');
+        __beanLogger.logMessage(sDebug_directlyLoadLibFile, 'LOAD_TRACE_');
       executeLoadLibrary;
     end;
   end;
@@ -503,7 +513,7 @@ begin
     if j <> -1 then
     begin
       lvLibObject := TBaseFactoryObject(FBeanMapList.Objects[j]);
-      __beanLogger.logMessage(Format('在注册插件[%s]时发现重复,已经在[%s]进行了注册',
+      __beanLogger.logMessage(Format(sLoadTrace_BeanID_Repeat,
          [lvID,lvLibObject.namespace]), 'LOAD_TRACE_');
     end else
     begin
@@ -632,7 +642,8 @@ begin
     begin
       if FTraceLoadFile then
       begin
-        __beanLogger.logMessage('准备初始化插件文件[' + String(pvFactoryObject.namespace) + ']', 'LOAD_TRACE_');
+        __beanLogger.logMessage(
+          sLoadTrace_Lib_Inialize, [String(pvFactoryObject.namespace)], 'LOAD_TRACE_');
       end;
 
       if pvRaiseException then
@@ -643,7 +654,7 @@ begin
         if not pvFactoryObject.checkIsValidLib then
         begin
           __beanLogger.logMessage(
-                        Format('文件[%s]不是有效的插件宿主文件', [pvFactoryObject.namespace]),
+                        Format(sLoadTrace_Lib_Invalidate, [String(pvFactoryObject.namespace)]),
                         'LOAD_TRACE_');
         end else
         begin
@@ -657,7 +668,8 @@ begin
     begin
       Result := false;
       __beanLogger.logMessage(
-                    Format('加载插件文件[%s]出现异常:', [pvFactoryObject.namespace]) + e.Message,
+                    sLoadTrace_Lib_Error,
+                    [String(pvFactoryObject.namespace), e.Message],
                     'LOAD_TRACE_');
       if pvRaiseException then
         raise;
@@ -711,7 +723,7 @@ begin
       if j <> -1 then
       begin
         lvLibObject := TBaseFactoryObject(FBeanMapList.Objects[j]);
-        __beanLogger.logMessage(Format('在注册插件[%s]时发现重复,已经在[%s]进行了注册',
+        __beanLogger.logMessage(Format(sLoadTrace_BeanID_Repeat,
            [lvID,lvLibObject.namespace]));
       end else
       begin
@@ -737,7 +749,7 @@ begin
       on E:Exception do
       begin
         __beanLogger.logMessage(
-                      Format('加载插件文件[%s]出现异常', [lvFactoryObject.namespace]) + e.Message,
+                      sLoadTrace_Lib_Error, [lvFactoryObject.namespace,e.Message],
                       'LOAD_TRACE_');
       end;
     end;
@@ -808,8 +820,7 @@ begin
         except
           on E:Exception do
           begin
-            __beanLogger.logMessage(
-                          Format('加载插件文件[%s]出现异常', [lvLib.LibFileName]) + e.Message,
+            __beanLogger.logMessage(sLoadTrace_Lib_Error, [lvLib.LibFileName, e.Message],
                           'LOAD_TRACE_');
           end;
         end;
@@ -936,7 +947,8 @@ begin
           on E:Exception do
           begin
             __beanLogger.logMessage(
-                          Format('加载插件文件[%s]出现异常:', [lvLibObj.namespace]) + e.Message,
+                      sLoadTrace_Lib_Error,
+                      [String(lvLibObj.namespace), e.Message],
                           'LOAD_TRACE_');
           end;
         end;
@@ -1170,7 +1182,9 @@ initialization
 
   mybean.core.intf.appPluginContext := __instanceAppContext;
   mybean.core.intf.applicationKeyMap := __instanceKeyMap;
-  appPluginContext.checkInitialize;
+
+//  // 初始化
+//  appPluginContext.checkInitialize;
 
 finalization  
   mybean.core.intf.appPluginContext := nil;
@@ -1179,7 +1193,9 @@ finalization
   executeKeyMapCleanup;
   appContextCleanup;
 
+  // 记录未释放的情况
   logDebugInfo;
+
   __instanceAppContextAppContextIntf := nil;
   __instanceKeyMapKeyIntf := nil;
 

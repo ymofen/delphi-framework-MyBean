@@ -12,12 +12,17 @@ uses
   uIMainForm in 'Interface\uIMainForm.pas',
   uICaption in 'Interface\uICaption.pas',
   uIFormShow in 'Interface\uIFormShow.pas',
-  uIPluginForm in 'Interface\uIPluginForm.pas';
+  uIPluginForm in 'Interface\uIPluginForm.pas',
+  mybean.strConsts in '..\..\Source\mybean.strConsts.pas';
 
 {R *.res}
 
 begin
   Application.Initialize;
+
+  // mybean≥ı ºªØ
+  applicationContextInitialize;
+
   Application.MainFormOnTaskbar := True;
   Application.CreateForm(TfrmMain, frmMain);
   Application.Run;
