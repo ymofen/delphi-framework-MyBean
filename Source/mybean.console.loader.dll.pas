@@ -194,7 +194,7 @@ end;
 procedure TLibFactoryObject.SetlibFileName(const Value: String);
 begin
   FlibFileName := Value;
-  Fnamespace := FlibFileName;
+  Fnamespace := AnsiString(FlibFileName);
 end;
 
 end.

@@ -24,7 +24,10 @@ unit mybean.console;
 
 interface
 
-uses  
+{$WARN UNIT_PLATFORM OFF}
+{$WARN SYMBOL_PLATFORM OFF}
+
+uses
   Classes, SysUtils, Windows, ShLwApi,
   mybean.core.intf,
   mybean.console.loader,
@@ -644,7 +647,7 @@ begin
       if FTraceLoadFile then
       begin
         __beanLogger.logMessage(
-          sLoadTrace_Lib_Inialize, [String(pvFactoryObject.namespace)], 'LOAD_TRACE_');
+          sLoadTrace_Lib_Initalize, [String(pvFactoryObject.namespace)], 'LOAD_TRACE_');
       end;
 
       if pvRaiseException then
@@ -744,7 +747,8 @@ begin
     lvFactoryObject := TBaseFactoryObject(FFactoryObjectList.Objects[i]);
     try
       if FTraceLoadFile then
-        __beanLogger.logMessage('准备初始化bean工厂:' + lvFactoryObject.namespace, 'LOAD_TRACE_');
+        __beanLogger.logMessage(sLoadTrace_Factory_Initalize, [string(lvFactoryObject.namespace)],
+           'LOAD_TRACE_');
       lvFactoryObject.checkInitialize;
     except
       on E:Exception do
@@ -793,8 +797,6 @@ end;
 
 procedure TApplicationContext.checkLoadALibFile(pvFile: string);
 var
-  lvStrings: TStrings;
-  i: Integer;
   lvFile: string;
   lvLib:TLibFactoryObject;
   lvIsOK:Boolean;
@@ -844,7 +846,7 @@ end;
 function TApplicationContext.checkLoadBeanConfigFile(
   pvConfigFile: PAnsiChar): Boolean;
 begin
-  Result := checkInitializeFromConfigFiles(AnsiString(pvConfigFile)) > 0;
+  Result := checkInitializeFromConfigFiles(String(AnsiString(pvConfigFile))) > 0;
 end;
 
 function TApplicationContext.checkLoadLibraryFile(
@@ -854,12 +856,12 @@ var
   i, j: Integer;
   lvStr, lvFileName, lvPath:String;
 begin
-  Result := false;
   lvStrings := TStringList.Create;
   lvFilesList := TStringList.Create;
   try
-    __beanLogger.logMessage('加载插件宿主文件[%s]', [pvLibFile], 'LOAD_TRACE_');
-    lvFilesList.Text := StringReplace(pvLibFile, ',', sLineBreak, [rfReplaceAll]);
+    lvStr :=String(AnsiString(pvLibFile));
+    __beanLogger.logMessage('加载插件宿主文件[%s]', [lvStr], 'LOAD_TRACE_');
+    lvFilesList.Text := StringReplace(lvStr, ',', sLineBreak, [rfReplaceAll]);
     for i := 0 to lvFilesList.Count - 1 do
     begin
       lvStr := lvFilesList[i];
@@ -1008,10 +1010,12 @@ begin
       if lvLibObject.beanFactory = nil then
       begin
         if FTraceLoadFile then
-          __beanLogger.logMessage('初始化bean工厂_BEGIN:' + lvLibObject.namespace, 'LOAD_TRACE_');
+          __beanLogger.logMessage(sLoadTrace_Factory_Init_BEGIN, [lvLibObject.namespace],
+             'LOAD_TRACE_');
         lvLibObject.checkInitialize;
         if FTraceLoadFile then
-          __beanLogger.logMessage('初始化bean工厂_END:' + lvLibObject.namespace, 'LOAD_TRACE_');
+          __beanLogger.logMessage(sLoadTrace_Factory_Init_END, [lvLibObject.namespace],
+            'LOAD_TRACE_');
       end;
       Result := lvLibObject.beanFactory;
     end else
@@ -1075,7 +1079,13 @@ var
 begin
   Result := Path;
   ilen := Length(Result);
-  if (ilen > 0) and not (Result[ilen] in ['\', '/']) then
+  if (ilen > 0) and
+   {$IFDEF UNICODE}
+     not CharInSet(Result[ilen], ['\', '/'])
+   {$ELSE}
+     not (Result[ilen] in ['\', '/'])
+   {$ENDIF}
+    then
     Result := Result + '\';
 end;
 
@@ -1088,7 +1098,12 @@ begin
   ilen := Length(Result);
   for I := ilen downto 1 do
   begin
-    if not (Result[I] in ['\', '/', ' ', #13]) then Break;
+   {$IFDEF UNICODE}
+     if not CharInSet(Result[I], ['\', '/', ' ', #13]) then Break;
+   {$ELSE}
+     if not (Result[I] in ['\', '/', ' ', #13]) then Break;
+   {$ENDIF}
+
   end;
   if I <> ilen then
     SetLength(Result, I);

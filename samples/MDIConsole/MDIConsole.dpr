@@ -21,7 +21,8 @@ begin
   Application.Initialize;
 
   // mybean≥ı ºªØ
-  applicationContextInitialize;
+ //applicationContextInitialize;
+  executeLoadLibFiles('*.dll');
 
   Application.MainFormOnTaskbar := True;
   Application.CreateForm(TfrmMain, frmMain);

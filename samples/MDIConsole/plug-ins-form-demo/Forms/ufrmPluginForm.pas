@@ -53,7 +53,7 @@ end;
 procedure TfrmPluginForm.setBeanConfig(pvBeanConfig: PAnsiChar);
 begin
   inherited;
-  Self.mmoConfig.Lines.Text := pvBeanConfig;
+  Self.mmoConfig.Lines.Text :=string(AnsiString(pvBeanConfig));
 end;
 
 end.

@@ -512,6 +512,7 @@ var
   lvConfig:ISuperObject;
   lvConfigStr:string;
 begin
+  Result := false;
   if pvInterface = nil then exit;
   if pvInterface.QueryInterface(IBeanConfigSetter, lvSetter) = S_OK then
   begin
@@ -708,8 +709,8 @@ begin
 end;
 
 procedure TPluginInfo.checkFreeInstance;
-var
-  lvFree:IFreeObject;
+//var
+//  lvFree:IFreeObject;
 begin
 //  if FInstance <> nil then
 //  begin
@@ -726,8 +727,8 @@ begin
 end;
 
 procedure TBeanInfo.checkFreeInstance;
-var
-  lvFree:IFreeObject;
+//var
+//  lvFree:IFreeObject;
 begin
 //  if FInstance <> nil then
 //  begin

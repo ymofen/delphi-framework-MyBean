@@ -68,10 +68,10 @@ destructor TBasePluginForm.Destroy;
 begin
 
   //通知从主窗体中移除掉本插件
-  TmBeanMainFormTools.removeFromMainForm(self.FInstanceID);
+  TmBeanMainFormTools.removeFromMainForm(AnsiString(FInstanceID));
 
   //如果共享变量中存在改接口则进行移除(可以提早移除)
-  TMyBeanFactoryTools.removeObject(FInstanceID);
+  TMyBeanFactoryTools.removeObject(AnsiString(FInstanceID));
 
   inherited Destroy;
 end;
@@ -84,7 +84,7 @@ end;
 
 function TBasePluginForm.getCaption: PAnsiChar;
 begin
-  __pass := self.Caption;
+  __pass := AnsiString(Caption);
   Result := PAnsiChar(__pass);
 end;
 
@@ -110,7 +110,7 @@ end;
 
 procedure TBasePluginForm.setCaption(pvCaption: PAnsiChar);
 begin
-  self.Caption := pvCaption;
+  self.Caption := String(AnsiString(pvCaption));
 end;
 
 procedure TBasePluginForm.showAsMDI;

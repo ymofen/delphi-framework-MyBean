@@ -33,8 +33,6 @@ begin
 end;
 
 function TfrmAbout.showAsModal: Integer;
-var
-  s:TMultiReadExclusiveWriteSynchronizer;
 begin
   Result :=ShowModal;
 end;
