@@ -22,6 +22,8 @@
 
 unit mybean.console;
 
+{$I 'MyBean.inc'}
+
 interface
 
 {$WARN UNIT_PLATFORM OFF}
@@ -35,6 +37,8 @@ uses
   mybean.strConsts,
   uKeyInterface, IniFiles,
   safeLogger;
+
+
 
 type
   TApplicationContext = class(TInterfacedObject
@@ -515,9 +519,11 @@ begin
     j := FBeanMapList.IndexOf(lvID);
     if j <> -1 then
     begin
-      lvLibObject := TBaseFactoryObject(FBeanMapList.Objects[j]);
-      __beanLogger.logMessage(Format(sLoadTrace_BeanID_Repeat,
-         [lvID,lvLibObject.namespace]), 'LOAD_TRACE_');
+        lvLibObject := TBaseFactoryObject(FBeanMapList.Objects[j]);
+      {$IFDEF LOG_ON}
+        __beanLogger.logMessage(Format(sLoadTrace_BeanID_Repeat,
+           [lvID,lvLibObject.namespace]), 'LOAD_TRACE_');
+      {$ENDIF}
     end else
     begin
       FBeanMapList.AddObject(lvID, pvFactoryObject);
@@ -587,9 +593,14 @@ begin
   if not FileExists(lvFile) then
      lvFile := FRootPath + 'app.config.ini';
 
+  // 不存在配置文件
   if not FileExists(lvFile) then
   begin
-    FTraceLoadFile := False;
+    {$IFDEF LOG_ON}
+      FTraceLoadFile := true;
+    {$ELSE}
+      FTraceLoadFile := False;
+    {$ENDIF}
   end;
 
   FINIFile := TIniFile.Create(lvFile);
@@ -657,9 +668,11 @@ begin
       begin        //
         if not pvFactoryObject.checkIsValidLib then
         begin
+      {$IFDEF LOG_ON}
           __beanLogger.logMessage(
                         Format(sLoadTrace_Lib_Invalidate, [String(pvFactoryObject.namespace)]),
                         'LOAD_TRACE_');
+      {$ENDIF}
         end else
         begin
           pvFactoryObject.checkInitialize;
@@ -671,10 +684,12 @@ begin
     on E:Exception do
     begin
       Result := false;
+      {$IFDEF LOG_ON}
       __beanLogger.logMessage(
                     sLoadTrace_Lib_Error,
                     [String(pvFactoryObject.namespace), e.Message],
                     'LOAD_TRACE_');
+      {$ENDIF}
       if pvRaiseException then
         raise;
     end;
@@ -727,8 +742,10 @@ begin
       if j <> -1 then
       begin
         lvLibObject := TBaseFactoryObject(FBeanMapList.Objects[j]);
+      {$IFDEF LOG_ON}
         __beanLogger.logMessage(Format(sLoadTrace_BeanID_Repeat,
            [lvID,lvLibObject.namespace]));
+      {$ENDIF}
       end else
       begin
         FBeanMapList.AddObject(lvID, pvFactoryObject);
@@ -823,8 +840,10 @@ begin
         except
           on E:Exception do
           begin
-            __beanLogger.logMessage(sLoadTrace_Lib_Error, [lvLib.LibFileName, e.Message],
-                          'LOAD_TRACE_');
+            {$IFDEF LOG_ON}
+              __beanLogger.logMessage(sLoadTrace_Lib_Error, [lvLib.LibFileName, e.Message],
+                            'LOAD_TRACE_');
+            {$ENDIF}
           end;
         end;
       end;
@@ -860,7 +879,9 @@ begin
   lvFilesList := TStringList.Create;
   try
     lvStr :=String(AnsiString(pvLibFile));
+   {$IFDEF LOG_ON}
     __beanLogger.logMessage('加载插件宿主文件[%s]', [lvStr], 'LOAD_TRACE_');
+   {$ENDIF}
     lvFilesList.Text := StringReplace(lvStr, ',', sLineBreak, [rfReplaceAll]);
     for i := 0 to lvFilesList.Count - 1 do
     begin
@@ -909,7 +930,9 @@ begin
 
   if (lvPluginList = nil) or (not lvPluginList.IsType(stArray)) then
   begin
+    {$IFDEF LOG_ON}
     __beanLogger.logMessage(Format('配置文件[%s]非法', [pvFileName]), 'LOAD_TRACE_');
+    {$ENDIF}
     Exit;
   end;
 
@@ -919,14 +942,18 @@ begin
     lvLibFile := FRootPath + lvItem.S['lib'];
     if not FileExists(lvLibFile) then
     begin
+     {$IFDEF LOG_ON}
       __beanLogger.logMessage(Format('未找到配置文件[%s]中的Lib文件[%s]', [pvFileName, lvLibFile]),
          'LOAD_TRACE_');
+     {$ENDIF}
     end else
     begin
       lvLibObj := TBaseFactoryObject(checkCreateLibObject(lvLibFile));
       if lvLibObj = nil then
       begin
+        {$IFDEF LOG_ON}
         __beanLogger.logMessage(Format('未找到Lib文件[%s]', [lvLibFile]), 'LOAD_TRACE_');
+        {$ENDIF}
       end else
       begin
         try
@@ -949,10 +976,12 @@ begin
         except
           on E:Exception do
           begin
+            {$IFDEF LOG_ON}
             __beanLogger.logMessage(
                       sLoadTrace_Lib_Error,
                       [String(lvLibObj.namespace), e.Message],
                           'LOAD_TRACE_');
+            {$ENDIF}
           end;
         end;
       end;
@@ -1020,9 +1049,11 @@ begin
       Result := lvLibObject.beanFactory;
     end else
     begin
+      {$IFDEF LOG_ON}
       __beanLogger.logMessage(
                     Format('找不到对应的[%s]插件工厂', [lvBeanID]),
                     'LOAD_TRACE_');
+      {$ENDIF}
     end;
   except
     on E:Exception do
@@ -1210,7 +1241,9 @@ finalization
   appContextCleanup;
 
   // 记录未释放的情况
+  {$IFDEF LOG_ON}
   logDebugInfo;
+  {$ENDIF}
 
   __instanceAppContextAppContextIntf := nil;
   __instanceKeyMapKeyIntf := nil;
