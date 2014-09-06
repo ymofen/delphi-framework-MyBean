@@ -15,6 +15,7 @@ uses
 
 begin
   Application.Initialize;
+  applicationContextInitialize;
   registerFactoryObject(beanFactory, 'default');
   Application.MainFormOnTaskbar := True;
   Application.CreateForm(TfrmMain, frmMain);
