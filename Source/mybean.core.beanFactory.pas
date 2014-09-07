@@ -11,10 +11,10 @@ uses
 {$ifend}
   mybean.core.intf,
   mybean.core.utils,
+  mybean.core.objects,
   superobject;
 
 type
-
   TPluginInfo = class(TObject)
   private
     FInstance: IInterface;
@@ -473,7 +473,18 @@ begin
     lvResultObject := TComponentClass(lvClass).Create(FVclOwners);
     try
       lvResultObject.GetInterface(IInterface, Result);
-      if Result = nil then raise Exception.CreateFmt('[%s]未实现IInterface接口,不能进行创建bean', [pvObject.FPluginClass.ClassName]);      
+      if Result = nil then raise Exception.CreateFmt('[%s]未实现IInterface接口,不能进行创建bean', [pvObject.FPluginClass.ClassName]);
+    except
+      lvResultObject.Free;
+      lvResultObject := nil;
+      raise;
+    end;
+  end else if lvClass.InheritsFrom(TMyBeanInterfacedObject) then
+  begin
+    lvResultObject := TMyBeanInterfacedObjectClass(lvClass).Create();
+    try
+      lvResultObject.GetInterface(IInterface, Result);
+      if Result = nil then raise Exception.CreateFmt('[%s]未实现IInterface接口,不能进行创建bean', [pvObject.FPluginClass.ClassName]);
     except
       lvResultObject.Free;
       lvResultObject := nil;
