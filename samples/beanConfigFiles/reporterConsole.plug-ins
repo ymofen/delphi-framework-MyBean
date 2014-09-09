@@ -1,0 +1,36 @@
+{
+   list:
+   [
+      {
+         "id":"reporterConsole",   
+         "remark":"实现接口: IReportConsole , IReporterIM , IReporterDefaultOperatorSetter, IErrorINfo, IBeanConfigSetter",
+         "lib":"plug-ins\\reporterConsole.dll",       //文件名
+         
+         //支持的报表类型列表
+         "reporterList":
+          [
+              {
+                "id":"FR4",   //实现了IReporter接口的插件ID
+                "remark":"FastReporter4.0报表",
+              },
+              {
+                "id":"FR3",   //实现了IReporter接口的插件ID
+                "remark":"FastReporter3.0报表",
+              },
+              {
+                "id":"RM",   //实现了IReporter接口的插件ID
+                "remark":"ReportMachine6.5报表",
+              }, 
+              {
+                "id":"barTender",   //实现了IReporter接口的插件ID
+                "remark":"标签打印",
+              }
+          ]          
+      },
+      {
+         "id":"FR4",   
+         "remark":"实现接口: IReporter , IUIReporter , IReportConsoleSetter",
+         "lib":"plug-ins\\FastReporter.dll",       //文件名
+      }
+   ]
+}

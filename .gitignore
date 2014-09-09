@@ -13,3 +13,4 @@ __history
 *.dproj
 *.skincfg
 *.res
+/BIN
