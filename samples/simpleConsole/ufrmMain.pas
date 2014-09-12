@@ -48,8 +48,11 @@ begin
 end;
 
 procedure TfrmMain.btnShowModalClick(Sender: TObject);
+var
+  lvBean:IInterface;
 begin
-  (TMyBeanFactoryTools.getBean(edtBeanID.Text) as IPluginForm).showAsModal;
+  lvBean := TMyBeanFactoryTools.getBean(edtBeanID.Text);
+  (lvBean as IPluginForm).showAsModal;
 end;
 
 procedure TfrmMain.FormClose(Sender: TObject; var Action: TCloseAction);

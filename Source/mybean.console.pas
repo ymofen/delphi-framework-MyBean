@@ -448,8 +448,7 @@ begin
       if FTraceLoadFile then
          __beanLogger.logMessage(sDebug_loadFromConfigFile, 'LOAD_TRACE_');
       if checkInitializeFromConfigFiles(lvConfigFiles) > 0 then
-      begin
-
+      begin 
         if FINIFile.ReadBool('main', 'loadOnStartup', False) then
         begin
           //加载DLL文件， 把DLL载入
@@ -1012,6 +1011,7 @@ begin
   lvStrings := TStringList.Create;
   try
     getFileNameList(lvStrings, ExtractFilePath(ParamStr(0)) + 'plug-ins\*.dll');
+    getFileNameList(lvStrings, ExtractFilePath(ParamStr(0)) + 'plug-ins\*.bpl');
     getFileNameList(lvStrings, ExtractFilePath(ParamStr(0)) + '*.dll');
     for i := 0 to lvStrings.Count - 1 do
     begin

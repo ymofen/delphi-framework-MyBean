@@ -137,7 +137,15 @@ var
 begin
   if FLibHandle = 0 then
   begin
-    lvLibHandle := LoadLibrary(PChar(FlibFileName));
+    if LowerCase(ExtractFileExt(FlibFileName)) = '.bpl' then
+    begin
+      lvLibHandle := LoadPackage(FlibFileName);
+    end else
+    begin
+      lvLibHandle := LoadLibrary(PChar(FlibFileName));
+    end;
+
+
     if lvLibHandle <> 0 then
     begin
       try
@@ -173,7 +181,14 @@ begin
     Result := false;
   end else
   begin
-    FLibHandle := LoadLibrary(PChar(FlibFileName));
+    if LowerCase(ExtractFileExt(FlibFileName)) = '.bpl' then
+    begin
+      FLibHandle := LoadPackage(FlibFileName);
+    end else
+    begin
+      FLibHandle := LoadLibrary(PChar(FlibFileName));
+    end;
+
     Result := FLibHandle <> 0;
     if not Result then RaiseLastOSError;
 
