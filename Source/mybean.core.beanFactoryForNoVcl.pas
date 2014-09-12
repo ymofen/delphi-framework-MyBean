@@ -1,25 +1,12 @@
-(*
- *	 Unit owner: D10.天地弦
- *	   blog: http://www.cnblogs.com/dksoft
- *
- *   v0.1.0(2014-08-29 13:00)
- *     修改加载方式(beanMananger.dll-改造)
- *
- *	 v0.0.1(2014-05-17)
- *     + first release
- *
- *
- *)
- 
 unit mybean.core.beanFactoryForNoVcl;
 
 interface
 
 uses
-  SysUtils, SyncObjs, Windows,
-  Classes,
+  Classes, SysUtils, SyncObjs, Windows,
   mybean.core.intf,
   mybean.core.utils,
+  mybean.core.objects,
   superobject;
 
 type
@@ -58,7 +45,8 @@ type
 
   TOnInitializeProc = procedure;stdcall;
   TOnCreateInstanceProc = function(pvObject: TPluginInfo):TObject; stdcall;
-  TOnCreateInstanceProcEX = function(pvObject: TPluginInfo; var vBreak: Boolean): TObject; stdcall;
+  TOnCreateInstanceProcEX = function(pvObject: TPluginInfo; var vBreak: Boolean):
+      TObject; stdcall;
 
 
   TBeanFactory = class(TInterfacedObject,
@@ -325,7 +313,7 @@ begin
   except
     on E:Exception do
     begin
-      __beanLogger.logMessage('执行初始化时出现了异常' + sLineBreak + e.Message, 'DEBUG_');
+      __beanLogger.logMessage('执行初始化时出现了异常' + sLineBreak + e.Message);
     end;
   end;
 end;
@@ -464,15 +452,24 @@ begin
 
   ///默认方式创建
   lvClass := pvObject.PluginClass;
-  if (pvObject.IsMainForm) then
-  begin
-    raise Exception.CreateFmt('NoVcl宿主不能创建VCL插件', [pvObject.FPluginClass.ClassName]);      
-  end else if lvClass.InheritsFrom(TComponent) then
+
+  if lvClass.InheritsFrom(TComponent) then
   begin
     lvResultObject := TComponentClass(lvClass).Create(FVclOwners);
     try
       lvResultObject.GetInterface(IInterface, Result);
-      if Result = nil then raise Exception.CreateFmt('[%s]未实现IInterface接口,不能进行创建bean', [pvObject.FPluginClass.ClassName]);      
+      if Result = nil then raise Exception.CreateFmt('[%s]未实现IInterface接口,不能进行创建bean', [pvObject.FPluginClass.ClassName]);
+    except
+      lvResultObject.Free;
+      lvResultObject := nil;
+      raise;
+    end;
+  end else if lvClass.InheritsFrom(TMyBeanInterfacedObject) then
+  begin
+    lvResultObject := TMyBeanInterfacedObjectClass(lvClass).Create();
+    try
+      lvResultObject.GetInterface(IInterface, Result);
+      if Result = nil then raise Exception.CreateFmt('[%s]未实现IInterface接口,不能进行创建bean', [pvObject.FPluginClass.ClassName]);
     except
       lvResultObject.Free;
       lvResultObject := nil;
@@ -511,6 +508,7 @@ var
   lvConfig:ISuperObject;
   lvConfigStr:string;
 begin
+  Result := false;
   if pvInterface = nil then exit;
   if pvInterface.QueryInterface(IBeanConfigSetter, lvSetter) = S_OK then
   begin
@@ -707,8 +705,8 @@ begin
 end;
 
 procedure TPluginInfo.checkFreeInstance;
-var
-  lvFree:IFreeObject;
+//var
+//  lvFree:IFreeObject;
 begin
 //  if FInstance <> nil then
 //  begin
@@ -725,8 +723,8 @@ begin
 end;
 
 procedure TBeanInfo.checkFreeInstance;
-var
-  lvFree:IFreeObject;
+//var
+//  lvFree:IFreeObject;
 begin
 //  if FInstance <> nil then
 //  begin
