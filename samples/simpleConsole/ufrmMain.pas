@@ -4,7 +4,7 @@ interface
 
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  Dialogs, StdCtrls, mybean.tools.beanFactory, uIPluginForm, IniFiles;
+  Dialogs, StdCtrls, mybean.tools.beanFactory, uIPluginForm, IniFiles, uIFormShow;
 
 type
   TfrmMain = class(TForm)
@@ -43,16 +43,35 @@ begin
 end;
 
 procedure TfrmMain.btnShowClick(Sender: TObject);
+var
+  lvBean:IInterface;
+  lvShow:IShowAsNormal;
 begin
-  (TMyBeanFactoryTools.getBean(edtBeanID.Text) as IPluginForm).showAsNormal;
+  lvBean := TMyBeanFactoryTools.getBean(edtBeanID.Text);
+  if lvBean.QueryInterface(IShowAsNormal, lvShow) = S_OK then
+  begin
+    lvShow.showAsNormal;
+  end else
+  begin
+    (lvBean as IPluginForm).showAsModal;
+  end;
 end;
 
 procedure TfrmMain.btnShowModalClick(Sender: TObject);
 var
   lvBean:IInterface;
+  lvShow:IShowAsModal;
 begin
   lvBean := TMyBeanFactoryTools.getBean(edtBeanID.Text);
-  (lvBean as IPluginForm).showAsModal;
+  if lvBean.QueryInterface(IShowAsModal, lvShow) = S_OK then
+  begin
+    lvShow.showAsModal;
+  end else
+  begin
+    (lvBean as IPluginForm).showAsModal;
+  end;
+
+
 end;
 
 procedure TfrmMain.FormClose(Sender: TObject; var Action: TCloseAction);
