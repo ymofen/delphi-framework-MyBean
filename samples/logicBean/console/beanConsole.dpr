@@ -7,8 +7,10 @@ program beanConsole;
 uses
   mybean.console,
   mybean.tools.beanFactory,
+  mybean.core.beanFactoryForNoVcl,
   SysUtils,
-  uILogic in '..\common\uILogic.pas';
+  uILogic in '..\common\uILogic.pas',
+  uMyBeanLoggerImpl in 'uMyBeanLoggerImpl.pas';
 
 var
   s:string;
@@ -17,6 +19,9 @@ begin
   try
     //初始化mybean框架
     applicationContextInitialize;
+
+    //注册EXE中的插件工厂，使EXE也支持注册插件
+    registerFactoryObject(beanFactory, 'exeFactory');
 
     writeLn('input i:');
     Readln(i);

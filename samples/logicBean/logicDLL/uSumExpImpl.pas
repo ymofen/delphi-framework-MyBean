@@ -3,7 +3,7 @@ unit uSumExpImpl;
 interface
 
 uses
-  mybean.core.objects, uILogic;
+  mybean.core.objects, uILogic, mybean.tools.beanFactory;
 
 
 
@@ -20,6 +20,8 @@ implementation
 function TSumExpImpl.sum(i, j: Integer): Integer;
 begin
   Result := i + j;
+
+  (TMyBeanFactoryTools.getBean('mybeanLogger') as IMyBeanLogger).LogMessage('dll插件调用mybeanLogger插件，输出一些信息');
 end;
 
 end.
