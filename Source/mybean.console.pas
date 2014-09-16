@@ -473,9 +473,6 @@ var
   lvTempPath:String;
   l:Integer;
 begin
-  FRootPath := ExtractFilePath(ParamStr(0));
-
-
   lvTempPath := FINIFile.ReadString('main', 'copyDest', 'plug-ins\');
 
   FTraceLoadFile := FINIFile.ReadBool('main','traceLoadLib', FTraceLoadFile);
@@ -571,6 +568,9 @@ begin
   inherited Create;
   FFactoryObjectList := TStringList.Create();
   FBeanMapList := TStringList.Create;
+
+  FRootPath := ExtractFilePath(ParamStr(0));
+
   checkCreateINIFile;
   checkReady;
 end;
