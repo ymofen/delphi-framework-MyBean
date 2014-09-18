@@ -576,6 +576,7 @@ begin
       exit;
     end;
 
+
     lvPluginINfo :=TPluginInfo(FPlugins.Objects[i]);
 
     /// ´¥·¢ÊÂ¼þ
