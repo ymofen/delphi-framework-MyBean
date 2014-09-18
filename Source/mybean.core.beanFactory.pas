@@ -49,6 +49,9 @@ type
   end;
 
   TOnInitializeProc = procedure;stdcall;
+
+  TPluginInfoProc = procedure(pvObject: TPluginInfo); stdcall;
+
   TOnCreateInstanceProc = function(pvObject: TPluginInfo):TObject; stdcall;
   TOnCreateInstanceProcEX = function(pvObject: TPluginInfo; var vBreak: Boolean):
       TObject; stdcall;
@@ -59,6 +62,8 @@ type
      IErrorInfo)
   private
     FVclOwners:TComponent;
+
+    FBeforeGetBean: TPluginInfoProc;
 
 
     /// <summary>
@@ -189,6 +194,8 @@ type
 
   public
 
+    property BeforeGetBean: TPluginInfoProc read FBeforeGetBean write
+        FBeforeGetBean;
     property VclOwners: TComponent read FVclOwners;
     property OnInitializeProc: TOnInitializeProc read FOnInitializeProc write
         FOnInitializeProc;
@@ -570,6 +577,13 @@ begin
     end;
 
     lvPluginINfo :=TPluginInfo(FPlugins.Objects[i]);
+
+    /// ´¥·¢ÊÂ¼þ
+    if Assigned(FBeforeGetBean) then
+    begin
+      FBeforeGetBean(lvPluginINfo);
+    end;
+
     if lvPluginINfo.Singleton then
     begin
       lock;
