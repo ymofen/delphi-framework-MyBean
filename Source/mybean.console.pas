@@ -44,6 +44,7 @@ type
   TApplicationContext = class(TInterfacedObject
      , IApplicationContext
      , IApplicationContextEx01
+     , IApplicationContextEx2
      , IbeanFactoryRegister
      )
   private
@@ -70,6 +71,23 @@ type
 
     function checkInitializeFactoryObject(pvFactoryObject:TBaseFactoryObject;
         pvRaiseException:Boolean): Boolean;
+
+    procedure removeRegistedBeans(pvLibFile:string);
+  protected
+    /// <summary>
+    ///   卸载掉指定的插件宿主文件(dll)
+    ///     在卸载之前应该释放掉由所创建的对象实例，和分配的内存空间，
+    ///     否则会在退出EXE的时候，出现内存访问违规错误
+    ///     卸载如果出现问题，请查看日志文件
+    ///     *(谨慎使用)
+    /// </summary>
+    function unLoadLibraryFile(pvLibFile: PAnsiChar; pvRaiseException: Boolean =
+        true): Boolean; stdcall;
+
+    /// <summary>
+    ///   判断BeanID是否存在
+    /// </summary>
+    function checkBeanExists(pvBeanID:PAnsiChar):Boolean; stdcall;
 
   protected
     /// <summary>
@@ -584,6 +602,14 @@ begin
   inherited Destroy;
 end;
 
+function TApplicationContext.checkBeanExists(pvBeanID: PAnsiChar): Boolean;
+var
+  lvBeanID:String;
+begin
+  lvBeanID := String(AnsiString(pvBeanID));
+  Result := FBeanMapList.IndexOf(lvBeanID)<> -1;
+end;
+
 procedure TApplicationContext.checkCreateINIFile;
 var
   lvFile:String;
@@ -613,9 +639,7 @@ var
 begin
   Result := False;
   lvNameSpace :=ExtractFileName(pvFileName) + '_' + IntToStr(hashOf(pvFileName));
-  if Length(lvNameSpace) = 0 then Exit;
-
-
+  if Length(lvNameSpace) = 0 then Exit; 
 
   i := FFactoryObjectList.IndexOf(lvNameSpace);
   if i <> -1 then
@@ -1160,6 +1184,68 @@ begin
   end;
 end;
 
+procedure TApplicationContext.removeRegistedBeans(pvLibFile: string);
+var
+  i:Integer;
+ // lvNameSpace:String;
+  lvObj:TBaseFactoryObject;
+begin
+//  lvNameSpace :=ExtractFileName(pvLibFile) + '_' + IntToStr(hashOf(pvLibFile));
+//  if Length(lvNameSpace) = 0 then Exit;
+  for i := FBeanMapList.Count - 1 downto 0 do
+  begin
+    lvObj := TBaseFactoryObject(FBeanMapList.Objects[i]);
+    if lvObj.namespace = pvLibFile  then
+    begin
+      FBeanMapList.Delete(i);
+    end;                        
+  end;
+end;
+
+function TApplicationContext.unLoadLibraryFile(pvLibFile: PAnsiChar;
+    pvRaiseException: Boolean = true): Boolean;
+var
+  lvNameSpace:String;
+  i:Integer;
+  lvObj:TBaseFactoryObject;
+begin
+  Result := true;
+
+  lvNameSpace :=ExtractFileName(pvLibFile) + '_' + IntToStr(hashOf(pvLibFile));
+  if Length(lvNameSpace) = 0 then Exit;
+
+  i := FFactoryObjectList.IndexOf(lvNameSpace);
+  if i <> -1 then
+  begin
+    lvObj := TBaseFactoryObject(FFactoryObjectList.Objects[i]);
+    try
+      FFactoryObjectList.Delete(i);
+      removeRegistedBeans(pvLibFile);
+
+      lvObj.checkFinalize;
+      lvObj.cleanup;
+      lvObj.Free;
+
+    except
+      on E:Exception do
+      begin
+        Result := false;
+        
+        {$IFDEF LOG_ON}
+        __beanLogger.logMessage(
+                      Format('卸载插件宿主文件时[%s]出现了异常' + sLineBreak + e.Message, [pvLibFile]),
+                      'LOAD_TRACE_');
+        {$ENDIF}
+
+        if pvRaiseException then
+        begin
+          raise;
+        end;
+      end;
+    end;
+  end;  
+end;
+
 procedure TKeyMapImpl.AfterConstruction;
 begin
   inherited;
@@ -1219,7 +1305,7 @@ end;
 initialization
   __beanLogger := TSafeLogger.Create;
   __beanLogger.setAppender(TLogFileAppender.Create(False));
-  __beanLogger.start;
+
 
   __instanceKeyMap := TKeyMapImpl.Create;
   __instanceKeyMapKeyIntf := __instanceKeyMap;

@@ -66,6 +66,15 @@ object frmMain: TfrmMain
     TabOrder = 4
     OnClick = btnManualLoadClick
   end
+  object btnUnLoad: TButton
+    Left = 122
+    Top = 57
+    Width = 89
+    Height = 25
+    Caption = 'btnUnLoad'
+    TabOrder = 5
+    OnClick = btnUnLoadClick
+  end
   object dlgOpen: TOpenDialog
     Left = 56
     Top = 160

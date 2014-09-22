@@ -85,6 +85,31 @@ type
     function checkLoadBeanConfigFile(pvConfigFile:PAnsiChar): Boolean; stdcall;
   end;
 
+  /// <summary>
+  ///   主控台扩展接口
+  ///    2014-09-22 12:27:56
+  /// </summary>
+  IApplicationContextEx2 = interface(IInterface)
+    ['{401B2E73-3C6B-4738-9DE4-B628EE5E1D44}']
+
+    /// <summary>
+    ///   卸载掉指定的插件宿主文件(dll)
+    ///     在卸载之前应该释放掉由所创建的对象实例，和分配的内存空间，
+    ///     否则会在退出EXE的时候，出现内存访问违规错误
+    ///     卸载如果出现问题, 返回false，请查看日志文件
+    ///     *(谨慎使用)
+    /// </summary>
+    function unLoadLibraryFile(pvLibFile: PAnsiChar; pvRaiseException: Boolean =
+        true): Boolean; stdcall;
+
+    /// <summary>
+    ///   判断BeanID是否存在
+    /// </summary>
+    function checkBeanExists(pvBeanID:PAnsiChar):Boolean; stdcall;
+  end;
+
+
+
 
   /// <summary>
   ///   插件工厂接口,由插件宿主(DLL, BPL)库文件提供

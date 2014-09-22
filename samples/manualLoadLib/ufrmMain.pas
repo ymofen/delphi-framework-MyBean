@@ -18,10 +18,12 @@ type
     Memo1: TMemo;
     dlgOpen: TOpenDialog;
     btnManualLoad: TButton;
+    btnUnLoad: TButton;
     procedure btnManualLoadClick(Sender: TObject);
     procedure FormCreate(Sender: TObject);
     procedure btnShowClick(Sender: TObject);
     procedure btnShowModalClick(Sender: TObject);
+    procedure btnUnLoadClick(Sender: TObject);
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
   private
     { Private declarations }
@@ -66,6 +68,19 @@ end;
 procedure TfrmMain.btnShowModalClick(Sender: TObject);
 begin
   (TMyBeanFactoryTools.getBean(edtBeanID.Text) as IPluginForm).showAsModal;
+end;
+
+procedure TfrmMain.btnUnLoadClick(Sender: TObject);
+var
+  lvFile:string;
+begin
+  if not dlgOpen.Execute then exit;
+  lvFile := dlgOpen.FileName;
+  if (TMyBeanFactoryTools.applicationContext as IApplicationContextEx2).unLoadLibraryFile(PAnsiChar(AnsiString(lvFile))) then
+  begin
+    ShowMessage('–∂‘ÿ≥…π¶');
+  end;
+  //lvFile :='';
 end;
 
 procedure TfrmMain.FormClose(Sender: TObject; var Action: TCloseAction);
