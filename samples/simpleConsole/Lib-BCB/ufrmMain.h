@@ -8,6 +8,9 @@
 #include <StdCtrls.hpp>
 #include <Forms.hpp>
 #include "uIFormShow.hpp"
+#define INTF_IMP_REFCOUNT(BASE) \
+  ULONG   __stdcall AddRef() { return BASE::_AddRef();} \
+  ULONG   __stdcall Release(){ return BASE::_Release();}
 //---------------------------------------------------------------------------
 class TForm1 : public TForm, IShowAsNormal, IShowAsModal
 {
@@ -19,16 +22,16 @@ public:		// User declarations
 	__fastcall TForm1(TComponent* Owner);
 	int __stdcall showAsModal(void);
 	void __stdcall showAsNormal(void);
-    //INTFOBJECT_IMPL_IUNKNOWN(TForm);
-	ULONG __stdcall AddRef()
-	{
-			return TForm::_AddRef();
-	}
-
-	ULONG __stdcall Release()
-	{
-			return TForm::_Release();
-	}
+	INTF_IMP_REFCOUNT(TForm);
+//	ULONG __stdcall AddRef()
+//	{
+//			return TForm::_AddRef();
+//	}
+//
+//	ULONG __stdcall Release()
+//	{
+//			return TForm::_Release();
+//	}
 };
 //---------------------------------------------------------------------------
 extern PACKAGE TForm1 *Form1;
