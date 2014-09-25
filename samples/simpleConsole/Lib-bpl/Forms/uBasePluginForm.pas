@@ -3,7 +3,7 @@ unit uBasePluginForm;
 interface
 
 uses
-  Forms, uIPluginForm,  Classes, superobject, uIMainForm, ComObj,
+  Forms, uIPluginForm,  Classes, superobject, ComObj,
   SysUtils, uKeyInterface,
   mybean.core.intf,  mybean.tools.beanFactory;
 
