@@ -4,6 +4,7 @@ uses
   FastMM4,
   FastMM4Messages,
   mybean.console,
+  ActiveX,
   Forms,
   ufrmMain in 'mainForm\ufrmMain.pas' {frmMain},
   PluginTabControl in 'mainForm\PluginTabControl.pas',
@@ -18,11 +19,13 @@ uses
 {R *.res}
 
 begin
+  
   Application.Initialize;
-
-  // mybean初始化
+ // mybean初始化
  //applicationContextInitialize;
   executeLoadLibFiles('*.dll');
+
+  CoInitialize(nil);
 
   Application.MainFormOnTaskbar := True;
   Application.CreateForm(TfrmMain, frmMain);

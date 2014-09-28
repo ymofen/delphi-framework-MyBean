@@ -67,7 +67,7 @@ end;
 
 function TfrmTester.showAsModal: Integer;
 begin
-  ShowModal;
+  Result := ShowModal;
 end;
 
 procedure TfrmTester.UIFormClose;

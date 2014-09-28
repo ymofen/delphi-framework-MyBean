@@ -3,7 +3,7 @@ unit uMainFormTools;
 interface
 
 uses
-  SysUtils, uIPluginForm;
+  SysUtils, uIPluginForm, uIFormShow;
 
 type
   TMainFormTools = class(TObject)
@@ -50,11 +50,15 @@ end;
 class procedure TMainFormTools.showAsMDI(const pvPlugin: IInterface);
 var
   lvForm:IPluginForm;
+  lvShow: IShowAsMDI;
 begin
-  if pvPlugin.QueryInterface(IPluginForm, lvForm) = S_OK then
+  if pvPlugin.QueryInterface(IShowAsMDI, lvShow) = S_OK then
+  begin
+    lvShow.showAsMDI;
+  end else if pvPlugin.QueryInterface(IPluginForm, lvForm) = S_OK then
   begin
     lvForm.showAsMDI;
-  end;   
+  end;
 end;
 
 class procedure TMainFormTools.showAsNormal(const pvPlugin: IInterface);
