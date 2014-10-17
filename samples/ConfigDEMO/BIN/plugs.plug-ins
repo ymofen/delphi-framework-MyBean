@@ -1,0 +1,16 @@
+{
+   list:
+   [
+      {
+         "id":"aboutForm",
+         "pluginID":"aboutForm",           //如果与id一致可以进行忽略
+         "lib":"plugin_form_demo.dll",       //文件名
+      },
+      {
+         "id":"aboutForm2",
+         "pluginID":"aboutForm",           //如果与id一致可以进行忽略
+         "singleton":true,                 //单件模式
+         "lib":"plugin_form_demo.dll",     //文件名
+      },
+   ]
+}
