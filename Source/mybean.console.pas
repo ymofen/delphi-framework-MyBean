@@ -1173,7 +1173,7 @@ begin
   lvObj := TFactoryInstanceObject.Create;
   try
     lvObj.setFactoryObject(pvFactory);
-    lvObj.setNameSpace(pvNameSapce);
+    lvObj.setNameSpace(String(AnsiString(pvNameSapce)));
     ZeroMemory(@lvBeanIDs[1], 4096);
     lvObj.beanFactory.getBeanList(@lvBeanIDs[1], 4096);
     DoRegisterPluginIDS(String(lvBeanIDs), lvObj);
@@ -1211,7 +1211,8 @@ var
 begin
   Result := true;
 
-  lvNameSpace :=ExtractFileName(pvLibFile) + '_' + IntToStr(hashOf(pvLibFile));
+  lvNameSpace :=ExtractFileName(String(AnsiString(pvLibFile))) + '_' +
+    IntToStr(hashOf(String(AnsiString(pvLibFile))));
   if Length(lvNameSpace) = 0 then Exit;
 
   i := FFactoryObjectList.IndexOf(lvNameSpace);
@@ -1220,7 +1221,7 @@ begin
     lvObj := TBaseFactoryObject(FFactoryObjectList.Objects[i]);
     try
       FFactoryObjectList.Delete(i);
-      removeRegistedBeans(pvLibFile);
+      removeRegistedBeans(String(AnsiString(pvLibFile)));
 
       lvObj.checkFinalize;
       lvObj.cleanup;

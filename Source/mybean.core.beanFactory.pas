@@ -214,10 +214,13 @@ procedure initializeBeanFactory(appContext: IApplicationContext; appKeyMap: IKey
 
 function beanFactory: TBeanFactory;
 
+function CreateNewName(const pvRoot: TComponent; const pvBaseName: string): string;
+
 implementation
 
 uses
   uSOTools;
+
 
 var
   __instanceObject:TBeanFactory;
@@ -225,6 +228,9 @@ var
 
 exports
   getBeanFactory, initializeBeanFactory;
+
+
+
 
 function getBeanFactory: IBeanFactory; stdcall;
 begin
@@ -241,6 +247,21 @@ procedure initializeBeanFactory(appContext: IApplicationContext; appKeyMap:
 begin
   mybean.core.intf.appPluginContext := appContext;
   mybean.core.intf.applicationKeyMap := appKeyMap;
+end;
+
+function CreateNewName(const pvRoot: TComponent; const pvBaseName: string):
+    string;
+var
+  i: integer;
+begin
+  Result := pvBaseName;
+  if (Length(Result) > 1) and (Result[1] = 'T') then Delete(Result, 1, 1);
+  i := 1;
+  if pvRoot <> nil then
+    with pvRoot do
+      while FindComponent(Result + IntToStr(i)) <> nil do
+        inc(i);
+  Result := Result + IntToStr(i);
 end;
 
 
@@ -479,6 +500,13 @@ begin
   begin
     lvResultObject := TComponentClass(lvClass).Create(FVclOwners);
     try
+      if TComponent(lvResultObject).Name <> '' then
+      begin
+        TComponent(lvResultObject).Name := CreateNewName(FVclOwners, TComponent(lvResultObject).Name);
+      end else
+      begin
+        TComponent(lvResultObject).Name := CreateNewName(FVclOwners, 'BeanVcl_');
+      end;
       lvResultObject.GetInterface(IInterface, Result);
       if Result = nil then raise Exception.CreateFmt('[%s]未实现IInterface接口,不能进行创建bean', [pvObject.FPluginClass.ClassName]);
     except

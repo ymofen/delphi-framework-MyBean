@@ -209,7 +209,7 @@ end;
 procedure TLibFactoryObject.SetlibFileName(const Value: String);
 begin
   FlibFileName := Value;
-  Fnamespace := AnsiString(FlibFileName);
+  Fnamespace := FlibFileName;
 end;
 
 end.

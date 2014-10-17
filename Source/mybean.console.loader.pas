@@ -29,7 +29,7 @@ type
     FConfig: ISuperObject;
   protected
     FbeanFactory: IBeanFactory;
-    Fnamespace: AnsiString;
+    Fnamespace: string;
   public
     constructor Create;
     destructor Destroy; override;
@@ -59,7 +59,7 @@ type
     /// </summary>
     property beanFactory: IBeanFactory read FBeanFactory;
 
-    property namespace: AnsiString read Fnamespace;
+    property namespace: string read Fnamespace;
 
     property Tag: Integer read FTag write FTag;
 
@@ -72,7 +72,7 @@ type
   TFactoryInstanceObject = class(TBaseFactoryObject)
   public
     procedure setFactoryObject(const intf:IBeanFactory);
-    procedure setNameSpace(const pvNameSpace:AnsiString);
+    procedure setNameSpace(const pvNameSpace: string);
   end;
 
 implementation
@@ -142,7 +142,7 @@ begin
   FbeanFactory := intf;
 end;
 
-procedure TFactoryInstanceObject.setNameSpace(const pvNameSpace: AnsiString);
+procedure TFactoryInstanceObject.setNameSpace(const pvNameSpace: string);
 begin
   Fnamespace := pvNameSpace;
 end;
