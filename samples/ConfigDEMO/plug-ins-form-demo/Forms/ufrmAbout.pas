@@ -7,14 +7,18 @@ uses
   Controls, Forms, Dialogs, StdCtrls, uIFormShow, mybean.core.intf;
 
 type
-  TfrmAbout = class(TForm, IShowAsModal, IFreeObject)
+  TfrmAbout = class(TForm, IShowAsModal, IShowAsNormal, IFreeObject)
     Memo1: TMemo;
   private
     { Private declarations }
   public
     { Public declarations }
     function showAsModal: Integer; stdcall;
+    procedure showAsNormal; stdcall;
+
     procedure FreeObject; stdcall;
+
+    destructor Destroy; override;
   end;
 
 var
@@ -27,6 +31,12 @@ implementation
 
 { TfrmAbout }
 
+destructor TfrmAbout.Destroy;
+begin
+
+  inherited;
+end;
+
 procedure TfrmAbout.FreeObject;
 begin
   self.Free;
@@ -38,5 +48,10 @@ begin
 end;
 
 
+
+procedure TfrmAbout.showAsNormal;
+begin
+  self.Show;
+end;
 
 end.

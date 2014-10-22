@@ -79,7 +79,17 @@ end;
 procedure TLibFactoryObject.doFreeLibrary;
 begin
   FBeanFactory := nil;
-  if FLibHandle <> 0 then FreeLibrary(FLibHandle);
+  if FLibHandle <> 0 then
+  begin
+    if LowerCase(ExtractFileExt(FlibFileName)) = '.bpl' then
+    begin
+      UnloadPackage(FLibHandle);
+    end else
+    begin
+      FreeLibrary(FLibHandle);
+    end;
+
+  end;
 end;
 
 procedure TLibFactoryObject.doInitalizeBeanFactory;

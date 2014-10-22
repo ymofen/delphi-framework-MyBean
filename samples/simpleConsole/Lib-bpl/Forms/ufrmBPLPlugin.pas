@@ -26,4 +26,8 @@ implementation
 initialization
   beanFactory.RegisterBean('bplFormDEMO', TfrmBPLPlugin);
 
+finalization
+  ;
+
+
 end.

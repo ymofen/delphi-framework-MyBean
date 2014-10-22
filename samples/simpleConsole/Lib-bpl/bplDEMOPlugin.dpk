@@ -30,6 +30,7 @@ requires
   vcl;
 
 contains
+  mybean.core.beanFactory,
   ufrmBPLPlugin in 'Forms\ufrmBPLPlugin.pas' {frmBPLPlugin},
   uIPluginForm in '..\uIPluginForm.pas',
   uBasePluginForm in 'Forms\uBasePluginForm.pas';

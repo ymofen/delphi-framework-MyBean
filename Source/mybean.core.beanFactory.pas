@@ -119,6 +119,7 @@ type
     function getErrorDesc(pvErrorDesc: PAnsiChar; pvLength: Integer): Integer;  stdcall;
   protected
     procedure clear;
+    function _Release: Integer; stdcall;
   public
     /// <summary>TBeanFactory.RegisterBean
     /// </summary>
@@ -734,6 +735,11 @@ end;
 procedure TBeanFactory.unLock;
 begin
   FCS.Leave;
+end;
+
+function TBeanFactory._Release: Integer;
+begin
+  Result := inherited _Release;
 end;
 
 function TBeanFactory.RegisterBean(pvPluginID: String; pvClass: TClass;
