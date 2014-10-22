@@ -1,0 +1,11 @@
+* bug 现象:
+    使用BPL插件文件时，关闭EXE会提示内存泄漏。
+  
+  报告人: 
+    觉悟
+  
+  修正说明:
+    修正BPL卸载方式<FreeLibary->UnLoadPackage>, FreeLibaray会导致不会执行BPL单元的finalization部分。
+  
+  时间:
+    2014-10-22 12:08:10
