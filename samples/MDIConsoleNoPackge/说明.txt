@@ -1,0 +1,29 @@
+一、添加了几个单元：
+1、Interface\uIMainApplication.pas
+
+2、common\uMainApplication.pas
+
+3、common\uBasePluginFormNoPackge.pas  （修改自uBasePluginForm.pas）
+
+二、插件DLL单元文件修改
+
+（插件示例在Plugin_MdiChildForm_WithoutPackge目录）
+
+详见：PluginMdiChild.dpr文件
+
+三、使用方法
+1、在主控程序中 uses uMainApplication
+
+2、新建一个插件DLL，按示例修改工程源代码
+
+3、插件窗体引用uBasePluginFormNoPackge.pas   
+
+
+四、已知问题
+
+关闭程序时，有时会出现内存访问错。
+
+
+
+
+
