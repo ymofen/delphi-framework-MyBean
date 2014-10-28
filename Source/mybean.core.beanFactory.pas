@@ -209,6 +209,15 @@ type
 
   end;
 
+
+var
+  // 初始化 库文件
+  OnIntializeLibFactory:TProcedure;
+
+  // 反初始化 库文件
+  OnFinalizeLibFactory:TProcedure;
+  
+
 function getBeanFactory: IBeanFactory; stdcall;
 procedure initializeBeanFactory(appContext: IApplicationContext; appKeyMap: IKeyMap); stdcall;
 
@@ -216,6 +225,7 @@ procedure initializeBeanFactory(appContext: IApplicationContext; appKeyMap: IKey
 function beanFactory: TBeanFactory;
 
 function CreateNewName(const pvRoot: TComponent; const pvBaseName: string): string;
+
 
 implementation
 
@@ -248,6 +258,10 @@ procedure initializeBeanFactory(appContext: IApplicationContext; appKeyMap:
 begin
   mybean.core.intf.appPluginContext := appContext;
   mybean.core.intf.applicationKeyMap := appKeyMap;
+  if Assigned(OnIntializeLibFactory) then
+  begin
+    OnIntializeLibFactory();
+  end;
 end;
 
 function CreateNewName(const pvRoot: TComponent; const pvBaseName: string):
@@ -271,6 +285,12 @@ procedure TBeanFactory.checkFinalize;
 begin
   FVclOwners.DestroyComponents;
   clear;
+
+  if Assigned(OnFinalizeLibFactory) then
+  begin
+    OnFinalizeLibFactory();
+  end;
+  
 end;
 
 function TBeanFactory.checkGetBeanAccordingBeanConfig(pvBeanID: PAnsiChar;
