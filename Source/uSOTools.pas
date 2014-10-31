@@ -31,12 +31,79 @@ type
     class function JsnSaveToFile(pvData: ISuperObject; pvFile: string): Boolean;
 
     /// <summary>
+    ///   保留能作为命名的字符
+    /// </summary>
+    class function clearAvalidIDChar(pvStringData: string): String;
+
+    /// <summary>
+    ///   删除一些字符
+    /// </summary>
+    class function DeleteChars(const s: string; pvCharSets: TSysCharSet): string;
+
+    /// <summary>
     ///   制作一个JSonKey
     /// </summary>
     class function makeMapKey(pvStringData: string): String;
   end;
 
 implementation
+
+class function TSOTools.clearAvalidIDChar(pvStringData: string): String;
+var
+  i, l, r: Integer;
+  lvStr: string;
+begin
+  Result := '';
+  l := Length(pvStringData);
+  if l = 0 then exit;
+
+  SetLength(lvStr, l);
+  r := 0;
+  for i := 2 to l do
+  begin
+    if r = 0 then
+    begin    // 第一个字符为字母或者下画线
+      if pvStringData[i] in ['_', 'a'..'z', 'A'..'Z'] then
+      begin
+        inc(r);
+        lvStr[r] := pvStringData[i];
+      end;
+    end else if pvStringData[i] in ['_', 'a'..'z', 'A'..'Z', '0'..'9'] then
+    begin
+      inc(r);
+      lvStr[r] := pvStringData[i];
+    end;
+  end;
+  if r > 0 then
+  begin
+    SetLength(lvStr, r);
+    Result := lvStr;
+  end;
+end;
+
+//   字符长度:3.8M 15ns
+//   字符长度:38.15 M  391ns
+//   DeleteChars(pvGUIDKey, ['-', '{','}']);
+class function TSOTools.DeleteChars(const s: string; pvCharSets: TSysCharSet):
+    string;
+var
+  i, l, times: Integer;
+  lvStr: string;
+begin
+  l := Length(s);
+  SetLength(lvStr, l);
+  times := 0;
+  for i := 1 to l do
+  begin
+    if not (s[i] in pvCharSets) then
+    begin
+      inc(times);
+      lvStr[times] := s[i];
+    end;
+  end;
+  SetLength(lvStr, times);
+  Result := lvStr;
+end;
 
 class function TSOTools.hashOf(const vStrData:String): Integer;
 var

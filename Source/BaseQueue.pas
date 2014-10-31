@@ -5,7 +5,9 @@ interface
 uses
   SyncObjs;
 
-{$DEFINE __debug}
+{$IFDEF DEBUG}
+  {$DEFINE DEBUG_ON}
+{$ENDIF}
 
 type
   PQueueData = ^TQueueData;
@@ -13,6 +15,8 @@ type
     Data: Pointer;
     Next: PQueueData;
   end;
+
+
 
   TBaseQueue = class(TObject)
   private
@@ -22,7 +26,7 @@ type
     FHead: PQueueData;
     FTail: PQueueData;
 
-    {$IFDEF __debug}
+    {$IFDEF DEBUG_ON}
     FPopCounter:Integer;
     FPushCounter:Integer;
     {$ENDIF}
@@ -66,8 +70,62 @@ type
 
     property Name: String read FName write FName;
 
+  end;
 
+type
+  /// <summary>
+  ///   without lock
+  /// </summary>
+  TSimpleQueue = class(TObject)
+  private
+    FName: String;
+    FCount: Integer;
+    FHead: PQueueData;
+    FTail: PQueueData;
 
+    {$IFDEF DEBUG_ON}
+    FPopCounter:Integer;
+    FPushCounter:Integer;
+    {$ENDIF}
+
+    /// <summary>
+    ///   清空所有数据
+    /// </summary>
+    procedure clear;
+    function innerPop: PQueueData;
+    procedure innerAddToTail(AData: PQueueData);
+    procedure innerAddToHead(AData: PQueueData);
+  public
+    constructor Create;
+    destructor Destroy; override;
+    function IsEmpty: Boolean;
+
+    function size:Integer;
+
+    function Pop: Pointer;overload;
+    function Pop(var outPointer:Pointer):Boolean;overload;
+
+    /// <summary>
+    ///   add to tail
+    /// </summary>
+    procedure Push(AData: Pointer);
+
+    /// <summary>
+    ///   add to head
+    /// </summary>
+    procedure AddToHead(AData: Pointer);
+
+    /// <summary>
+    ///  invoke Only Data Pointer is TObject
+    /// </summary>
+    procedure FreeDataObject;
+
+    /// <summary>
+    ///   dispose all data
+    /// </summary>
+    procedure DisposeAllData;
+
+    property Name: String read FName write FName;
 
   end;
 
@@ -87,7 +145,7 @@ type
     FSize: Integer;
     FLocker: TCriticalSection;
 
-    {$IFDEF __debug}
+    {$IFDEF DEBUG_ON}
     FPopCounter:Integer;
     FPushCounter:Integer;
     {$ENDIF}
@@ -104,6 +162,17 @@ var
   // data pool of PQueueData
   queueDataPool :TQueueDataPool;
 
+function IsDebugMode: Boolean;
+begin
+{$IFDEF MSWINDOWS}
+{$warn symbol_platform off}
+  Result := Boolean(DebugHook);
+{$warn symbol_platform on}
+{$ELSE}
+  Result := false;
+{$ENDIF}
+end;
+
 constructor TBaseQueue.Create;
 begin
   inherited Create;
@@ -116,8 +185,10 @@ end;
 
 destructor TBaseQueue.Destroy;
 begin
-  {$IFDEF __debug}
+  {$IFDEF DEBUG_ON}
+  if IsDebugMode then
     Assert(FPopCounter = FPushCounter, ('[' + FName + ']PopCounter <> PushCounter'));
+
   {$ENDIF}
 
   Clear;
@@ -260,7 +331,7 @@ begin
 
     Inc(FCount);
 
-    {$IFDEF __debug}
+    {$IFDEF DEBUG_ON}
       Inc(FPushCounter);
     {$ENDIF}
   finally
@@ -281,7 +352,7 @@ begin
 
       Dec(FCount);
 
-    {$IFDEF __debug}
+    {$IFDEF DEBUG_ON}
       Inc(FPopCounter);
     {$ENDIF}
     end;
@@ -305,7 +376,7 @@ begin
     FTail := AData;
     Inc(FCount);
 
-    {$IFDEF __debug}
+    {$IFDEF DEBUG_ON}
       Inc(FPushCounter);
     {$ENDIF}
 
@@ -327,7 +398,8 @@ destructor TQueueDataPool.Destroy;
 var
   lvData: PQueueData;
 begin
-  {$IFDEF __debug}
+  {$IFDEF DEBUG_ON}
+  if IsDebugMode then
     Assert(FPopCounter = FPushCounter, ('PopCounter <> PushCounter'));
   {$ENDIF}
 
@@ -351,7 +423,7 @@ begin
     FFirst := Result.Next;
     Dec(FCount);
   end;
-  {$IFDEF __debug}
+  {$IFDEF DEBUG_ON}
     Inc(FPopCounter);
   {$ENDIF}
   FLocker.Leave;
@@ -376,7 +448,7 @@ begin
     FFirst := pvQueueData;
     Inc(FCount);
   end;
-  {$IFDEF __debug}
+  {$IFDEF DEBUG_ON}
     Inc(FPushCounter);
   {$ENDIF}
   FLocker.Leave;
@@ -386,6 +458,196 @@ begin
     FreeMem(pvQueueData);
   end;
 end; 
+
+constructor TSimpleQueue.Create;
+begin
+  inherited Create;
+  FHead := nil;
+  FTail := nil;
+  FCount := 0;
+  FName := 'simpleQueue';
+end;
+
+destructor TSimpleQueue.Destroy;
+begin
+  {$IFDEF DEBUG_ON}
+  if IsDebugMode then
+    Assert(FPopCounter = FPushCounter, ('[' + FName + ']PopCounter <> PushCounter'));
+  {$ENDIF}
+
+  Clear;
+  inherited Destroy;
+end;
+
+procedure TSimpleQueue.DisposeAllData;
+var
+  lvData:Pointer;
+begin
+  while True do
+  begin
+    lvData := nil;
+    if Pop(lvData) then
+    begin
+      if lvData = nil then
+      begin
+        lvData := nil;
+      end else
+      begin
+        Dispose(lvData);
+      end;
+    end else
+    begin
+      Break;
+    end;
+  end;
+end;
+
+{ TSimpleQueue }
+
+procedure TSimpleQueue.AddToHead(AData: Pointer);
+var
+  lvTemp:PQueueData;
+begin
+  lvTemp := queueDataPool.Pop;
+  lvTemp.Data := AData;
+  innerAddToHead(lvTemp);
+end;
+
+procedure TSimpleQueue.clear;
+var
+  ANext: PQueueData;
+begin
+  if FHead = nil then Exit;
+
+  while FHead.Next <> nil do
+  begin
+    ANext := FHead.Next;
+
+    queueDataPool.Push(FHead);
+    FHead := ANext;
+  end;
+
+  FCount := 0;
+
+end;
+
+procedure TSimpleQueue.freeDataObject;
+var
+  lvData:Pointer;
+begin
+  while True do
+  begin
+    lvData := nil;
+    if Pop(lvData) then
+    begin
+      if lvData = nil then
+      begin
+        lvData := nil;
+      end else
+      begin
+        TObject(lvData).Free;
+      end;
+    end else
+    begin
+      Break;
+    end;
+  end;
+end;
+
+function TSimpleQueue.IsEmpty: Boolean;
+begin
+  Result := (FHead.next = nil);
+end;
+
+function TSimpleQueue.Pop: Pointer;
+var
+  lvTemp:PQueueData;
+begin
+  Result := nil;
+  lvTemp := innerPop;
+  if lvTemp <> nil then
+  begin
+    Result := lvTemp.Data;
+    queueDataPool.Push(lvTemp);
+  end;
+end;
+
+function TSimpleQueue.Pop(var outPointer: Pointer): Boolean;
+var
+  lvTemp:PQueueData;
+begin
+  Result := false;
+  lvTemp := innerPop;
+  if lvTemp <> nil then
+  begin
+    outPointer := lvTemp.Data;
+    queueDataPool.Push(lvTemp);
+    Result := true;
+  end;
+end;
+
+procedure TSimpleQueue.Push(AData: Pointer);
+var
+  lvTemp:PQueueData;
+begin
+  lvTemp := queueDataPool.Pop;
+  lvTemp.Data := AData;
+  innerAddToTail(lvTemp);
+end;
+
+function TSimpleQueue.size: Integer;
+begin
+  Result := FCount;
+end;
+
+procedure TSimpleQueue.innerAddToHead(AData: PQueueData);
+begin
+  AData.Next := FHead;
+  FHead := AData;
+  if FTail = nil then FTail := FHead;
+  Inc(FCount);
+
+  {$IFDEF DEBUG_ON}
+    Inc(FPushCounter);
+  {$ENDIF}
+
+end;
+
+function TSimpleQueue.innerPop: PQueueData;
+begin
+  Result := FHead;
+  if Result <> nil then
+  begin
+    FHead := Result.Next;
+
+    if FHead = nil then FTail := nil;
+
+    Dec(FCount);
+
+  {$IFDEF DEBUG_ON}
+    Inc(FPopCounter);
+  {$ENDIF}
+  end;
+end;
+
+procedure TSimpleQueue.innerAddToTail(AData: PQueueData);
+begin
+  AData.Next := nil;
+  if FTail = nil then
+    FHead := AData
+  else
+  begin
+    FTail.Next := AData;
+  end;
+
+  FTail := AData;
+  Inc(FCount);
+
+  {$IFDEF DEBUG_ON}
+    Inc(FPushCounter);
+  {$ENDIF}
+
+end;
 
 
 initialization
