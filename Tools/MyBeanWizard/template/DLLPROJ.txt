@@ -1,0 +1,11 @@
+library %ProjectName%;
+
+uses
+  System.SysUtils,
+  System.Classes,
+  mybean.core.beanFactory;
+
+{$R *.res}
+
+begin
+end.

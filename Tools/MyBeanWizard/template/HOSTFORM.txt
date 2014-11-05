@@ -1,0 +1,25 @@
+object %FormIdent%: T%FormIdent%
+  Left = 0
+  Top = 0
+  Caption = 'MyBean Application'
+  ClientHeight = 329
+  ClientWidth = 535
+  Color = clBtnFace
+  Font.Charset = DEFAULT_CHARSET
+  Font.Color = clWindowText
+  Font.Height = -11
+  Font.Name = 'Tahoma'
+  Font.Style = []
+  OldCreateOrder = False
+  PixelsPerInch = 96
+  TextHeight = 13
+  object btnCall: TButton
+    Left = 80
+    Top = 64
+    Width = 75
+    Height = 25
+    Caption = 'Call function'
+    TabOrder = 0
+    OnClick = btnCallClick
+  end
+end

@@ -1,0 +1,20 @@
+unit %ModuleIdent%;
+
+interface
+
+Type
+  I%IntfName%=interface(IInterface)
+  {在这里 Ctrl+SHIFT+G 生成GUID}
+
+    {下面是示例接口}
+    procedure showAsMDI; stdcall;
+    function showAsModal: Integer; stdcall;
+    procedure UIFormClose; stdcall; //关闭
+    procedure UIFormFree; stdcall;//释放窗体
+    function getObject:TObject; stdcall;//获取窗体对象
+    function getInstanceID: Integer; stdcall;//获取实例ID
+  end;
+
+implementation
+
+end.

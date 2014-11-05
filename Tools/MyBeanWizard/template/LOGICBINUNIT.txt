@@ -1,0 +1,29 @@
+unit %ModuleIdent%;
+
+interface
+
+uses
+  mybean.core.objects, uILogic, mybean.tools.beanFactory;
+
+type
+  T%BeanName% = class(TMyBeanInterfacedObject {, I_XXX})
+  protected
+    {实例函数来自接口I_XXX }
+    function sum(i:Integer; j:Integer):Integer; stdcall;
+
+  end;
+
+
+implementation
+
+function T%BeanName%.sum(i, j: Integer): Integer;
+begin
+  Result := i + j;
+
+  (TMyBeanFactoryTools.getBean('mybeanLogger') as IMyBeanLogger).LogMessage('dll插件调用mybeanLogger插件，输出一些信息');
+end;
+
+
+initialization
+  beanFactory.RegisterBean('%BeanName%', T%BeanName% );
+end.

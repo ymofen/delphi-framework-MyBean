@@ -1,0 +1,34 @@
+unit %ModuleIdent%;
+
+interface
+
+uses
+  Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants, System.Classes,
+  Vcl.Graphics, Vcl.Controls, Vcl.Forms , {I_XXX_Intf}
+  Vcl.Dialogs, mybean.tools.beanFactory;
+
+type
+  T%FormIdent% = class(T%AncestorIdent% {, I_XXX})
+  private
+    { Private declarations }
+  protected
+    {实例函数来自接口I_XXX}
+    //function I_XXX_Function1: integer; Stdcall;
+
+  public
+    { Public declarations }
+  end;
+
+var
+  %FormIdent%: T%FormIdent%;
+
+implementation 
+
+uses mybean.console, mybean.core.intf, mybean.core.beanFactory;
+
+{$R *.dfm}
+
+
+initialization
+  beanFactory.RegisterBean('%FormIdent%', T%FormIdent% );
+end.

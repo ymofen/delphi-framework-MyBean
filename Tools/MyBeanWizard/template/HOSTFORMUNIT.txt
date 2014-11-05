@@ -1,0 +1,55 @@
+unit %ModuleIdent%;
+
+interface
+
+uses
+  Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants,
+  System.Classes,Vcl.Graphics, Vcl.Controls, Vcl.Forms, Vcl.Dialogs,
+
+  mybean.tools.beanFactory, mybean.console, mybean.core.intf,
+  mybean.core.beanFactory;
+
+type
+  T%FormIdent% = class(T%AncestorIdent%)
+    btnCall: TButton;
+    procedure btnCallClick(Sender: TObject);
+  private
+    { Private declarations }
+  public
+    { Public declarations }
+  end;
+
+var
+  %FormIdent%: T%FormIdent%;
+
+implementation 
+
+{$R *.dfm}
+
+procedure T%FormIdent%.btnCallClick(Sender: TObject);
+begin
+{
+调用Bean的方法：
+var lInterface : ISomeInterface
+  lvBean:IInterface;
+begin
+  lInterface:=appPluginContext.getBean('BeanName') as ISomeInterface
+  lInterface.CallFunction(...);
+
+  或者:
+  with TMyBeanFactoryTools.getBean('BeanName') as ISomeInterface do
+  try
+    CallFunction(...);
+  finally
+    callfree;
+  end;
+
+  或者用安全的取接口方法：
+  lvBean := TMyBeanFactoryTools.getBean('BeanName');
+  if lvBean.QueryInterface(ISomeInterface, lInterface) = S_OK then
+    lInterface.CallFunction(...);
+end.
+}
+end;
+
+end.
