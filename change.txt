@@ -14,3 +14,9 @@
 * 添加向导工具包BeanWizard.dpk
   感谢:清风和煦(81987514)
   2014-11-05 15:32:41
+
+* mybean.console.loader.dll.pas
+  修正checkIsValidLib- bug, 释放时判断是否BPL，bpl按照BPL释放的方式,之前版本都是用FreeLibary进行释放，
+  bug反应，BPL没有进行正确释放,造成内存泄漏
+  2014-11-06 21:31:10
+  感谢:清风和煦(81987514)报告
