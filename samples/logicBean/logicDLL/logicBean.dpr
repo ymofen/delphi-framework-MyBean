@@ -12,7 +12,7 @@ library logicBean;
 
 uses
   SysUtils,
-  mybean.core.beanFactoryForNoVcl,
+  mybean.core.beanFactory,
   Classes,
   uSumExpImpl in 'uSumExpImpl.pas',
   uILogic in '..\common\uILogic.pas';
