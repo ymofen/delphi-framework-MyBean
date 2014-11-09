@@ -37,8 +37,19 @@ type
     /// <summary>
     ///   获取远程文件大小
     /// </summary>
-    function FileSize(pvRFileName: PAnsiChar): Int64;
+    function FileSize(pvRFileName, pvType: PAnsiChar): Int64;
   end;
+
+  IRemoteConnector = interface(IInterface)
+    ['{ABDDE5A3-4E88-4006-99E1-47E16C86DEC5}']
+    procedure SetHost(pvHost:PAnsiChar); stdcall;
+    procedure SetPort(pvPort:Integer); stdcall;
+
+    procedure Open;stdcall;
+    procedure Close;stdcall;
+  end;
+
+  
 
 implementation
 

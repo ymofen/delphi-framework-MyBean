@@ -4,22 +4,12 @@ interface
 
 uses
   uIRemoteFileAccess,
-  uDTcpClientCoderImpl,
-  uStreamCoderSocket,
-  uZipTools,
-  SimpleMsgPack,
-  Classes,
-  SysUtils,
-  DTcpClient, uICoderSocket;
+  uFileOperaObject;
 
 type
-  TDIOCPFileAccessImpl = class(TInterfacedObject, IRemoteFileAccess)
+  TDIOCPFileAccessImpl = class(TInterfacedObject, IRemoteFileAccess, IRemoteConnector)
   private
-    FTcpClient: TDTcpClient;
-    FCoderSocket: ICoderSocket;
-    FMsgPack:TSimpleMsgPack;
-    FSendStream:TMemoryStream;
-    FRecvStream:TMemoryStream;
+    FFileOperaObject: TFileOperaObject;
   protected
 
     /// <summary>
@@ -35,7 +25,6 @@ type
     /// </summary>
     /// <param name="pvRFileName"> 远程文件名 </param>
     procedure DeleteFile(pvRFileName, pvType: PAnsiChar);
-
     /// <summary>
     ///   下载文件
     /// </summary>
@@ -50,74 +39,80 @@ type
     /// <summary>
     ///   获取远程文件大小
     /// </summary>
-    function FileSize(pvRFileName: PAnsiChar): Int64;
+    function FileSize(pvRFileName, pvType: PAnsiChar): Int64;
   public
     constructor Create;
-    procedure setHost(pvHost: string);
-    procedure setPort(pvPort:Integer);
-    procedure open;
+    procedure AfterConstruction;override;
+    procedure SetHost(pvHost: PAnsiChar); stdcall;
+    procedure SetPort(pvPort:Integer); stdcall;
+    procedure Open; stdcall;
+    procedure Close;stdcall;
     destructor Destroy; override;
   end;
 
 implementation
 
+procedure TDIOCPFileAccessImpl.AfterConstruction;
+begin
+  inherited AfterConstruction;
+  FFileOperaObject := TFileOperaObject.Create;
+end;
+
+procedure TDIOCPFileAccessImpl.Close;
+begin
+  FFileOperaObject.close;  
+end;
+
 constructor TDIOCPFileAccessImpl.Create;
 begin
   inherited Create;
-  FTcpClient := TDTcpClient.Create(nil);
-  FCoderSocket := TDTcpClientCoderImpl.Create(FTcpClient);
-  
-  FMsgPack := TSimpleMsgPack.Create;
-  FRecvStream := TMemoryStream.Create;
-  FSendStream := TMemoryStream.Create;
+
 end;
 
 procedure TDIOCPFileAccessImpl.DeleteFile(pvRFileName, pvType: PAnsiChar);
 begin
-  
+  FFileOperaObject.deleteFile(pvRFileName, pvType);
 end;
 
 destructor TDIOCPFileAccessImpl.Destroy;
 begin
-  FCoderSocket := nil;
-  FTcpClient.Disconnect;
-  FTcpClient.Free;
-  FMsgPack.Free;
-  FRecvStream.Free;
-  FSendStream.Free;
+  if FFileOperaObject <> nil then FFileOperaObject.Free;
   inherited Destroy;
 end;
 
 function TDIOCPFileAccessImpl.DownFile(pvRFileName, pvLocalFileName,
   pvType: PAnsiChar): Boolean;
 begin
-
+  FFileOperaObject.downFile(pvRFileName, pvLocalFileName, pvType);
+  Result := true;
 end;
 
-function TDIOCPFileAccessImpl.FileSize(pvRFileName: PAnsiChar): Int64;
+function TDIOCPFileAccessImpl.FileSize(pvRFileName, pvType: PAnsiChar): Int64;
 begin
-
+  FFileOperaObject.readFileINfo(pvRFileName, pvType, False);
+  Result := FFileOperaObject.FileSize;
 end;
 
-procedure TDIOCPFileAccessImpl.open;
+procedure TDIOCPFileAccessImpl.Open;
 begin
-  FTcpClient.Disconnect;
-  FTcpClient.Connect;
+  FFileOperaObject.close;
+  FFileOperaObject.Open;
 end;
 
-procedure TDIOCPFileAccessImpl.setHost(pvHost: string);
+procedure TDIOCPFileAccessImpl.SetHost(pvHost: PAnsiChar);
 begin
-  FTcpClient.Host := pvHost;
+  FFileOperaObject.setHost(pvHost);
 end;
 
-procedure TDIOCPFileAccessImpl.setPort(pvPort: Integer);
+procedure TDIOCPFileAccessImpl.SetPort(pvPort:Integer);
 begin
-  FTcpClient.Port := pvPort;  
+  FFileOperaObject.setPort(pvPort);
 end;
 
 procedure TDIOCPFileAccessImpl.UploadFile(pvRFileName, pvLocalFileName,
   pvType: PAnsiChar);
 begin
+  FFileOperaObject.uploadFile(pvRFileName, pvLocalFileName, pvType);
 
 end;
 

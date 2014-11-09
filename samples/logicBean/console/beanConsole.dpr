@@ -7,7 +7,7 @@ program beanConsole;
 uses
   mybean.console,
   mybean.tools.beanFactory,
-  mybean.core.beanFactoryForNoVcl,
+  mybean.core.beanFactory,
   SysUtils,
   uILogic in '..\common\uILogic.pas',
   uMyBeanLoggerImpl in 'uMyBeanLoggerImpl.pas';

@@ -4,11 +4,15 @@ interface
 
 uses
   Classes, SysUtils, SyncObjs, Windows,
-{$if CompilerVersion < 23}
-  Forms,
-{$else}
-  Vcl.Forms,
-{$ifend}
+{$IFDEF CONSOLE}
+
+{$ELSE}
+  {$if CompilerVersion < 23}
+    Forms,
+  {$else}
+    Vcl.Forms,
+  {$ifend}
+{$ENDIF}
   mybean.core.intf,
   mybean.core.utils,
   mybean.core.objects,
@@ -506,6 +510,7 @@ begin
 
   ///默认方式创建
   lvClass := pvObject.PluginClass;
+{$IFNDEF CONSOLE}
   if (pvObject.IsMainForm) then
   begin
     Application.CreateForm(TCustomFormClass(lvClass), lvResultObject);
@@ -517,7 +522,10 @@ begin
       lvResultObject := nil;
       raise;
     end;
-  end else if lvClass.InheritsFrom(TComponent) then
+  end else
+{$ENDIF}
+
+  if lvClass.InheritsFrom(TComponent) then
   begin
     lvResultObject := TComponentClass(lvClass).Create(FVclOwners);
     try
@@ -837,6 +845,9 @@ end;
 initialization
   __instanceObject := TBeanFactory.Create;
   __Instance := __instanceObject;
+{$IFDEF CONSOLE}
+   // writeLn('逻辑Bean');
+{$ENDIF}
 
 finalization
   __instance := nil;

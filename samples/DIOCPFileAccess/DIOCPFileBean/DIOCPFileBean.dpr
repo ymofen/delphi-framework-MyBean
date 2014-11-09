@@ -16,7 +16,11 @@ uses
   mybean.core.beanFactory,
   uIRemoteFileAccess in '..\interface\uIRemoteFileAccess.pas',
   uDIOCPFileAccessImpl in 'service\uDIOCPFileAccessImpl.pas',
-  SimpleMsgPack in 'service\SimpleMsgPack.pas';
+  SimpleMsgPack in 'service\SimpleMsgPack.pas',
+  uFileOperaObject in 'service\uFileOperaObject.pas',
+  ufrmMain in 'Tester\ufrmMain.pas' {frmMain},
+  uIFormShow in 'Tester\uIFormShow.pas',
+  uDIOCPFileAccessTools in 'Tester\uDIOCPFileAccessTools.pas';
 
 {$R *.res}
 
@@ -25,4 +29,6 @@ begin
   ///   diocpÔ¶³ÌÎÄ¼þ´æ´¢
   /// </summary>
   beanFactory.RegisterBean('diocpRemoteFile', TDIOCPFileAccessImpl);
+
+  beanFactory.RegisterBean('diocpRemoteFileDEMO', TfrmMain);
 end.
