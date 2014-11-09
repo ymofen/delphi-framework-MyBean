@@ -1,0 +1,2 @@
+1.BPL的插件文件，需要编译后放到plug-ins目录。BPL和EXE必须都用相同版本的IDE编译
+2.DLL的插件文件放到EXE相同目录和plug-ins目录都可以。
