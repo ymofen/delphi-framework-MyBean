@@ -2,6 +2,9 @@
  *	 Unit owner: D10.天地弦
  *	   blog: http://www.cnblogs.com/dksoft
  *
+ *   v0.1.1(2014-11-06 21:27:40)
+ *     修正checkIsValidLib- bug, 释放时判断是否BPL，bpl按照BPL释放的方式
+ *
  *   v0.1.0(2014-08-29 13:00)
  *     修改加载方式(beanMananger.dll-改造)
  *
@@ -144,10 +147,12 @@ function TLibFactoryObject.checkIsValidLib: Boolean;
 var
   lvFunc:procedure(appContext: IApplicationContext; appKeyMap: IKeyMap); stdcall;
   lvLibHandle:THandle;
+  lvIsBpl:Boolean;
 begin
   if FLibHandle = 0 then
   begin
-    if LowerCase(ExtractFileExt(FlibFileName)) = '.bpl' then
+    lvIsBpl :=LowerCase(ExtractFileExt(FlibFileName)) = '.bpl';
+    if lvIsBpl then
     begin
       lvLibHandle := LoadPackage(FlibFileName);
     end else
@@ -162,7 +167,13 @@ begin
         @lvFunc := GetProcAddress(lvLibHandle, PChar('initializeBeanFactory'));
         result := (@lvFunc <> nil);
       finally
-        FreeLibrary(lvLibHandle);
+        if lvIsBpl then
+        begin
+          UnloadPackage(lvLibHandle);
+        end else
+        begin
+          FreeLibrary(lvLibHandle);
+        end;
       end;
     end else
     begin

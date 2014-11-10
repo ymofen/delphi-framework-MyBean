@@ -4,7 +4,7 @@ interface
 
 uses
   mybean.core.objects, uILogic,
-  mybean.core.beanFactoryForNoVcl;
+  mybean.core.beanFactory;
 
 type
   TMyBeanLoggerImpl = class(TMyBeanInterfacedObject, IMyBeanLogger)

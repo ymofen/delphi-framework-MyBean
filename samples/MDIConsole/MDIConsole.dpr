@@ -21,9 +21,9 @@ uses
 begin
   
   Application.Initialize;
- // mybean初始化
- //applicationContextInitialize;
-  executeLoadLibFiles('*.dll');
+  // mybean初始化
+  applicationContextInitialize;
+  //executeLoadLibFiles('*.dll');
 
   CoInitialize(nil);
 
