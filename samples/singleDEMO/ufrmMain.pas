@@ -39,9 +39,9 @@ procedure TfrmMain.Button1Click(Sender: TObject);
 begin
   with TMyBeanFactoryTools.getBean('tester') as IUIForm do
   try
-    showAsModal;
+    showAsNormal;
   finally
-    UIFormFree;
+    //UIFormFree;
   end;
 end;
 

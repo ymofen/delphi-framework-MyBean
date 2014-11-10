@@ -4,10 +4,10 @@ interface
 
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  Dialogs, uIUIForm,  mybean.core.beanFactory;
+  Dialogs, uIUIForm,  mybean.core.beanFactory, uIFormShow;
 
 type
-  TfrmTester = class(TForm, IUIForm)
+  TfrmTester = class(TForm, IUIForm, IShowAsNormal)
     procedure FormCreate(Sender: TObject);
   private
     { Private declarations }
@@ -17,7 +17,7 @@ type
     procedure showAsMDI; stdcall;
 
     function showAsModal: Integer; stdcall;
-
+    procedure showAsNormal; stdcall;
     //¹Ø±Õ
     procedure UIFormClose; stdcall;
 
@@ -68,6 +68,11 @@ end;
 function TfrmTester.showAsModal: Integer;
 begin
   Result := ShowModal;
+end;
+
+procedure TfrmTester.showAsNormal;
+begin
+  Show();
 end;
 
 procedure TfrmTester.UIFormClose;
