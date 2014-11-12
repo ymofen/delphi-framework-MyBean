@@ -3,8 +3,8 @@ unit uFileOperaObject;
 interface
 
 uses
-  IdTCPClient, SysUtils, SimpleMsgPack, Classes, Math, uCRCTools,
-  uStreamCoderSocket, uZipTools, DTcpClient, uICoderSocket, uDTcpClientCoderImpl;
+  SysUtils, SimpleMsgPack, Classes, Math, uCRCTools,
+  uStreamCoderSocket, DTcpClient, uICoderSocket, uDTcpClientCoderImpl;
 
 
 type
@@ -40,6 +40,8 @@ type
     procedure copyAFile(pvRFile, pvRDestFile, pvType: String);
 
     procedure deleteFile(pvRFile:String; pvType: string);
+    class function verifyData(const buf; len:Cardinal): Cardinal;
+    class function verifyStream(pvStream:TStream; len:Cardinal): Cardinal;
 
     property FileCheckSum: Cardinal read FFileCheckSum;
 
@@ -166,7 +168,10 @@ begin
 
   lvRFileSize := FFileSize;
 
-  if lvRFileSize = 0 then Exit;
+  if lvRFileSize = 0 then
+  begin
+    raise Exception.CreateFmt('远程文件[%s]不存在!', [pvRFile]);
+  end;
 //  if FProgConsole <> nil then
 //  begin
 //    FProgConsole.SetMax(lvRFileSize);
@@ -272,7 +277,7 @@ begin
   begin
     lvFileStream := TFileStream.Create(pvFile, fmOpenRead);
     try
-      result := TZipTools.verifyStream(lvFileStream, 0);
+      result := verifyStream(lvFileStream, 0);
     finally
       lvFileStream.Free;
     end;
@@ -452,6 +457,51 @@ begin
     Result := lvFileStream.Size;
   finally
     lvFileStream.Free;
+  end;
+end;
+
+class function TFileOperaObject.verifyData(const buf; len: Cardinal): Cardinal;
+var
+  i:Cardinal;
+  p:PByte;
+begin
+  i := 0;
+  Result := 0;
+  p := PByte(@buf);
+  while i < len do
+  begin
+    Result := Result + p^;
+    Inc(p);
+    Inc(i);
+  end;
+end;
+
+class function TFileOperaObject.verifyStream(pvStream:TStream; len:Cardinal):
+    Cardinal;
+var
+  l, j:Cardinal;
+  lvBytes:TBytes;
+begin
+  SetLength(lvBytes, 1024);
+
+  if len = 0 then
+  begin
+    j := pvStream.Size - pvStream.Position;
+  end else
+  begin
+    j := len;
+  end;
+
+  Result := 0;
+
+  while j > 0 do
+  begin
+    if j <1024 then l := j else l := 1024;
+    
+    pvStream.ReadBuffer(lvBytes[0], l);
+
+    Result := Result + verifyData(lvBytes[0], l);
+    Dec(j, l);
   end;
 end;
 
