@@ -16,12 +16,11 @@ type
   { TDllBeanCreator }
 
   TDllBeanCreator = class(TWzOTACustomProjectCreator)
-  private
   protected
     function NewProjectSource(const ProjectName: string): IOTAFile; override;
     function GetCreatorType: string; override;
   public
-    constructor Create(); virtual;
+
   end;
 
   { TDllBeanWizard }
@@ -41,20 +40,12 @@ uses
   SysUtils;
 
 { TDllBeanCreator }
-
-constructor TDllBeanCreator.Create();
-begin
-  inherited Create;
-
-end;
-
 function TDllBeanCreator.GetCreatorType: string;
 begin
   Result := sLibrary;
 end;
 
-function TDllBeanCreator.NewProjectSource(
-  const ProjectName: string): IOTAFile;
+function TDllBeanCreator.NewProjectSource(const ProjectName: string): IOTAFile;
 var
   S: string;
 begin
@@ -82,9 +73,7 @@ end;
 
 function TDllBeanWizard.GetGlyph: Cardinal;
 begin
-
   Result := LoadIcon(HInstance, 'DLLBEAN');
-
 end;
 
 function TDllBeanWizard.GetIDString: string;

@@ -43,6 +43,8 @@ contains
   BeanLogicWiz in 'BeanLogicWiz.pas',
   BeanProperty in 'BeanProperty.pas' {beanPropertyDlg},
   BeanDLLwiz in 'BeanDLLwiz.pas',
-  NewInterface in 'NewInterface.pas';
+  NewInterface in 'NewInterface.pas',
+  uSelPackages in 'uSelPackages.pas' {frmSelPackages},
+  mergePkg in 'mergePkg.pas';
 
 end.

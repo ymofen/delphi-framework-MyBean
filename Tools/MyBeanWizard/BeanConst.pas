@@ -2,7 +2,7 @@ unit BeanConst;
 
 interface
 
-uses  Classes, SysUtils, winapi.windows;
+uses  Classes, SysUtils, windows;
 
 const
   PageName='MyBean';

@@ -18,12 +18,11 @@ type
   { THostApplicationCreator }
 
   THostApplicationCreator = class(TWzOTACustomProjectCreator)
-  private
   protected
     function NewProjectSource(const ProjectName: string): IOTAFile; override;
     function GetCreatorType: string; override;
   public
-    constructor Create; virtual;
+
   end;
 
   { THostApplicationWizard }
@@ -40,24 +39,8 @@ type
   { THostFormCreator }
 
   THostFormCreator = class(TWzOTAFormCreator)
-  private
-  protected
-
   public
     constructor Create;
-    //
-  end;
-
-  { THostFormWizard }
-
-  THostFormWizard = class(TWzOTACustomRepositoryWizard
-    {$IFDEF DELPHI8}, IOTAProjectWizard{$ENDIF}
-  )
-  protected
-    procedure Execute; override;
-    function GetIDString: string; override;
-    function GetComment: string; override;
-    function GetName: string; override;
   end;
 
 implementation
@@ -66,12 +49,6 @@ uses
   SysUtils;
 
 { THostApplicationCreator }
-
-constructor THostApplicationCreator.Create;
-begin
-  inherited Create;
-end;
-
 function THostApplicationCreator.GetCreatorType: string;
 begin
   Result := sApplication;
@@ -107,9 +84,7 @@ end;
 
 function THostApplicationWizard.GetGlyph: Cardinal;
 begin
-
   Result := LoadIcon(HInstance, 'HOSTAPP');
-
 end;
 
 function THostApplicationWizard.GetIDString: string;
@@ -128,37 +103,10 @@ constructor THostFormCreator.Create;
 var
   AFormTemplate, AImplTemplate, AIntfTemplate: string;
 begin
-//  LoadTemplates(APersonality, AFormTemplate, AImplTemplate, AIntfTemplate);
   AFormTemplate := LoadResResource('HOSTFORM');
   AIntfTemplate := '';
   AImplTemplate := LoadResResource('HOSTFORMUNIT');
   inherited Create(AFormTemplate, AImplTemplate, AIntfTemplate);
-end;
-
-
-{ THostFormWizard }
-
-procedure THostFormWizard.Execute;
-var
-  AModuleServices: IOTAModuleServices;
-begin
-  if Supports(BorlandIDEServices, IOTAModuleServices, AModuleServices) then
-    AModuleServices.CreateModule(THostFormCreator.Create());
-end;
-
-function THostFormWizard.GetComment: string;
-begin
-  Result := HostFormWizardComment;
-end;
-
-function THostFormWizard.GetIDString: string;
-begin
-  Result := '{6558DE12-35D8-426F-8230-E5B4102EFAFE}';
-end;
-
-function THostFormWizard.GetName: string;
-begin
-  Result := HostFormWizardName;
 end;
 
 end.

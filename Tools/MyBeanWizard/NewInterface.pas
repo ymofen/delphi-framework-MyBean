@@ -77,7 +77,6 @@ end;
 function TBeanInterfaceWizard.GetGlyph: Cardinal;
 begin
   Result := LoadIcon(HInstance, 'BEANINTERFACE');
-
 end;
 
 function TBeanInterfaceWizard.GetIDString: string;

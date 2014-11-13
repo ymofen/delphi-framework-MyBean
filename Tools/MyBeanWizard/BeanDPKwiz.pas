@@ -16,12 +16,9 @@ type
   { TdpkBeanCreator }
 
   TdpkBeanCreator = class(TWzOTACustomProjectCreator)
-  private
   protected
     function NewProjectSource(const ProjectName: string): IOTAFile; override;
     function GetCreatorType: string; override;
-  public
-    constructor Create(); virtual;
   end;
 
   { TdpkBeanWizard }
@@ -41,13 +38,6 @@ uses
   SysUtils;
 
 { TdpkBeanCreator }
-
-constructor TdpkBeanCreator.Create();
-begin
-  inherited Create;
-
-end;
-
 function TdpkBeanCreator.GetCreatorType: string;
 begin
   Result := sPackage;
@@ -82,9 +72,7 @@ end;
 
 function TdpkBeanWizard.GetGlyph: Cardinal;
 begin
-
   Result := LoadIcon(HInstance, 'LIBBEAN');
-
 end;
 
 function TdpkBeanWizard.GetIDString: string;
@@ -95,7 +83,6 @@ end;
 function TdpkBeanWizard.GetName: string;
 begin
   Result := dpkWizardName;
-
 end;
 
 

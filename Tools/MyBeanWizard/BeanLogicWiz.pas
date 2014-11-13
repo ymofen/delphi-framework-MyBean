@@ -7,8 +7,6 @@ interface
 uses
   Classes, Windows, DesignIntf, ToolsApi, DesignEditors, WizHelpers, BeanConst;
 
-
-
 type
 
   { TLogicBeanCreator }
@@ -18,7 +16,6 @@ type
   end;
 
   { TLogicBeanWizard }
-
   TLogicBeanWizard = class(TWzOTACustomRepositoryWizard
     {$IFDEF DELPHI8}, IOTAProjectWizard{$ENDIF}
   )
@@ -33,7 +30,7 @@ type
 implementation
 
 uses
-  SysUtils,  Vcl.Controls, BeanProperty;
+  SysUtils,  Controls, BeanProperty;
 
 { TLogicBeanCreator }
 
@@ -79,7 +76,6 @@ end;
 function TLogicBeanWizard.GetGlyph: Cardinal;
 begin
   Result := LoadIcon(HInstance, 'BEAN');
-
 end;
 
 function TLogicBeanWizard.GetIDString: string;
