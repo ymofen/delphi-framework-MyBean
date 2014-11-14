@@ -25,6 +25,7 @@ type
     ///   获取applicationContext接口
     /// </summary>
     class function applicationContext: IApplicationContext;
+
     
     class procedure checkRaiseErrorINfo(const pvIntf: IInterface);
 

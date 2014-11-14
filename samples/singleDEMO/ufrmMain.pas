@@ -37,7 +37,7 @@ end;
 
 procedure TfrmMain.Button1Click(Sender: TObject);
 begin
-  with TMyBeanFactoryTools.getBean('tester') as IUIForm do
+  with TMyBeanFactoryTools.getBean('tester') as IShowAsNormal do
   try
     showAsNormal;
   finally

@@ -4,7 +4,7 @@ interface
 
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  Dialogs, StdCtrls, mybean.tools.beanFactory, uIPluginForm, IniFiles, uIFormShow;
+  Dialogs, StdCtrls, mybean.tools.beanFactory, mybean.core.intf, uIPluginForm, IniFiles, uIFormShow;
 
 type
   TfrmMain = class(TForm)
@@ -13,6 +13,8 @@ type
     Label1: TLabel;
     btnShow: TButton;
     Memo1: TMemo;
+    btnGetBeanInfos: TButton;
+    procedure btnGetBeanInfosClick(Sender: TObject);
     procedure FormCreate(Sender: TObject);
     procedure btnShowClick(Sender: TObject);
     procedure btnShowModalClick(Sender: TObject);
@@ -29,6 +31,20 @@ var
 implementation
 
 {$R *.dfm}
+
+procedure TfrmMain.btnGetBeanInfosClick(Sender: TObject);
+var
+  lvBuf: array[1..4096] of AnsiChar;
+  s :String;
+  l:Integer;
+begin
+  FillChar(lvBuf[1], 4096, 0);
+  l := (TMyBeanFactoryTools.applicationContext as IApplicationContextEx3).GetBeanInfos(PAnsiChar(@lvBuf[1]), 4096);
+  s := UTF8Decode(StrPas(PAnsiChar(@lvBuf[1])));
+
+  Memo1.Clear;
+  Memo1.Lines.Add(s);
+end;
 
 procedure TfrmMain.FormCreate(Sender: TObject);
 var

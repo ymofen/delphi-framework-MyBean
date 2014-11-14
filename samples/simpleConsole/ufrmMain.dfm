@@ -3,8 +3,8 @@ object frmMain: TfrmMain
   Top = 0
   BorderIcons = [biSystemMenu]
   Caption = 'frmMain'
-  ClientHeight = 204
-  ClientWidth = 408
+  ClientHeight = 309
+  ClientWidth = 656
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -14,6 +14,9 @@ object frmMain: TfrmMain
   OldCreateOrder = False
   OnClose = FormClose
   OnCreate = FormCreate
+  DesignSize = (
+    656
+    309)
   PixelsPerInch = 96
   TextHeight = 13
   object Label1: TLabel
@@ -26,7 +29,7 @@ object frmMain: TfrmMain
   object btnShowModal: TButton
     Left = 256
     Top = 24
-    Width = 113
+    Width = 81
     Height = 25
     Caption = 'ShowModal'
     TabOrder = 0
@@ -40,9 +43,9 @@ object frmMain: TfrmMain
     TabOrder = 1
   end
   object btnShow: TButton
-    Left = 256
-    Top = 55
-    Width = 113
+    Left = 343
+    Top = 24
+    Width = 65
     Height = 25
     Caption = 'Show'
     TabOrder = 2
@@ -51,10 +54,21 @@ object frmMain: TfrmMain
   object Memo1: TMemo
     Left = 8
     Top = 88
-    Width = 361
-    Height = 97
+    Width = 640
+    Height = 213
+    Anchors = [akLeft, akTop, akRight, akBottom]
     Lines.Strings = (
       #23454#29616#30340#25554#20214#38656#35201#23454#29616'IPluginForm'#25509#21475#25165#33021#26377#34987#35813'DEMO'#35843#29992)
     TabOrder = 3
+    ExplicitHeight = 169
+  end
+  object btnGetBeanInfos: TButton
+    Left = 8
+    Top = 57
+    Width = 113
+    Height = 25
+    Caption = 'GetBeanInfos'
+    TabOrder = 4
+    OnClick = btnGetBeanInfosClick
   end
 end

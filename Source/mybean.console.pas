@@ -2,6 +2,9 @@
  *	 Unit owner: D10.天地弦
  *	   blog: http://www.cnblogs.com/dksoft
  *
+ *   2014-11-14 13:59:05
+ *     添加GetBeanInfos
+ *
  *   v0.1.2  (2014-09-06 10:50:44)
  *     为了满足各种加载需求, 去掉自动加载方式，
  *       需要在工程开始的地方调用applicationContextInitialize进行初始化
@@ -45,6 +48,7 @@ type
      , IApplicationContext
      , IApplicationContextEx01
      , IApplicationContextEx2
+     , IApplicationContextEx3
      , IbeanFactoryRegister
      )
   private
@@ -89,6 +93,19 @@ type
     /// </summary>
     function checkBeanExists(pvBeanID:PAnsiChar):Boolean; stdcall;
 
+
+    /// <summary>
+    ///   获取所有Bean信息
+    ///   result:     返回读取到的数据长度
+    ///   pvLength:   尝试读取的长度，传入的pvBeanInfo必须分配有足够的内存
+    ///   pvBeanInfo: 返回读取到的数据
+    ///    utf8 AnsiString
+    ///    [
+    ///      {"id":"beanid", "lib":"libfile"}
+    ///      ...
+    ///    ]
+    /// </summary>
+    function GetBeanInfos(pvBeanInfo:PAnsiChar; pvLength:Integer): Integer; stdcall;
   protected
     /// <summary>
     ///  加载库文件
@@ -857,7 +874,7 @@ begin
         try
           ZeroMemory(@lvBeanIDs[1], 4096);
           lvLib.beanFactory.getBeanList(@lvBeanIDs[1], 4096);
-          DoRegisterPluginIDS(String(lvBeanIDs), TBaseFactoryObject(lvLib));
+          DoRegisterPluginIDS(StrPas(@lvBeanIDs[1]), TBaseFactoryObject(lvLib));
           lvIsOK := true;
           lvLib.Tag := 1;
         except
@@ -1089,6 +1106,8 @@ begin
   end;
 end;
 
+
+
 class function TApplicationContext.instance: TApplicationContext;
 begin
   Result := __instanceAppContext;
@@ -1102,6 +1121,39 @@ begin
   FillChar(Dest, SizeOf(Dest), 0);
   PathCombine(Dest, PChar(BasePath), PChar(RelativePath));
   Result := string(Dest);
+end;
+
+function TApplicationContext.GetBeanInfos(pvBeanInfo:PAnsiChar;
+    pvLength:Integer): Integer;
+var
+  i:Integer;
+  lvLibObject:TBaseFactoryObject;
+  lvJSon, lvItem:ISuperObject;
+  s :AnsiString;
+begin
+  lvJSon := SO('[]');
+  for i := 0 to FBeanMapList.Count - 1 do
+  begin
+    lvLibObject := TBaseFactoryObject(FBeanMapList.Objects[i]);
+    lvItem := SO();
+    lvItem.S['id'] := FBeanMapList.Strings[i];
+    if lvLibObject is TLibFactoryObject then
+    begin
+      lvItem.s['lib'] := TLibFactoryObject(lvLibObject).libFileName;
+    end else
+    begin
+      lvItem.s['lib'] := lvLibObject.namespace;
+    end;
+    lvJSon.AsArray.Add(lvItem);
+  end;
+  s := UTF8Encode(lvJSon.AsJSon(True, False));
+  Result := Length(s);
+
+  if pvBeanInfo <> nil then
+  begin
+    if pvLength < Result then Result := pvLength;
+    Move(s[1], pvBeanInfo^, Result);
+  end;                             
 end;
 
 class function TApplicationContext.getFileNameList(vFileList: TStrings; const

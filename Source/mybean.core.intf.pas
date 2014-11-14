@@ -109,6 +109,27 @@ type
   end;
 
 
+  /// <summary>
+  ///   主控台扩展接口
+  ///     2014-11-14 12:40:17
+  /// </summary>
+  IApplicationContextEx3 = interface(IInterface)
+    ['{4D0387BC-0FF8-4D89-B064-C8C30AA432BE}']
+
+    /// <summary>
+    ///   获取所有Bean信息
+    ///   result:     返回读取到的数据长度
+    ///   pvLength:   尝试读取的长度，传入的pvBeanInfo必须分配有足够的内存
+    ///   pvBeanInfo: 返回读取到的数据
+    ///    utf8 AnsiString
+    ///    [
+    ///      {"id":"beanid", "lib":"libfile"}
+    ///      ...
+    ///    ]
+    /// </summary>
+    function GetBeanInfos(pvBeanInfo:PAnsiChar; pvLength:Integer): Integer; stdcall;
+  end;
+
 
 
   /// <summary>
