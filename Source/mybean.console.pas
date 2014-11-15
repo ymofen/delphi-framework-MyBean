@@ -876,7 +876,7 @@ begin
           ZeroMemory(@lvBeanIDs[1], 4096);
           lvLib.beanFactory.getBeanList(@lvBeanIDs[1], 4096);
 
-          DoRegisterPluginIDS(String(PAnsiChar(@lvBeanIDs[1])), TBaseFactoryObject(lvLib));
+          DoRegisterPluginIDS(String(AnsiString(PAnsiChar(@lvBeanIDs[1]))), TBaseFactoryObject(lvLib));
           lvIsOK := true;
           lvLib.Tag := 1;
         except
@@ -1230,7 +1230,7 @@ begin
     lvObj.setNameSpace(String(AnsiString(pvNameSapce)));
     ZeroMemory(@lvBeanIDs[1], 4096);
     lvObj.beanFactory.getBeanList(@lvBeanIDs[1], 4096);
-    DoRegisterPluginIDS(String(lvBeanIDs), lvObj);
+    DoRegisterPluginIDS(String(AnsiString(PAnsiChar(@lvBeanIDs[1]))), lvObj);
     FFactoryObjectList.AddObject(String(AnsiString(pvNameSapce)), lvObj);
     Result := 0;
   except
