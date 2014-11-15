@@ -38,6 +38,7 @@ uses
   mybean.console.loader,
   mybean.console.loader.dll,
   mybean.strConsts,
+
   uKeyInterface, IniFiles,
   safeLogger;
 
@@ -874,7 +875,8 @@ begin
         try
           ZeroMemory(@lvBeanIDs[1], 4096);
           lvLib.beanFactory.getBeanList(@lvBeanIDs[1], 4096);
-          DoRegisterPluginIDS(StrPas(@lvBeanIDs[1]), TBaseFactoryObject(lvLib));
+
+          DoRegisterPluginIDS(String(PAnsiChar(@lvBeanIDs[1])), TBaseFactoryObject(lvLib));
           lvIsOK := true;
           lvLib.Tag := 1;
         except
