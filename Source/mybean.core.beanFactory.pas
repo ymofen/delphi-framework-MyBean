@@ -850,6 +850,7 @@ initialization
 {$ENDIF}
 
 finalization
+  __instance.checkFinalize;
   __instance := nil;
 
 end.

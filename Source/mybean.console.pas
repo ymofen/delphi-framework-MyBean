@@ -38,8 +38,19 @@ uses
   mybean.console.loader,
   mybean.console.loader.dll,
   mybean.strConsts,
-
   uKeyInterface, IniFiles,
+
+{$IFDEF CONSOLE}
+
+{$ELSE}
+  // 引用Forms单元，避免在Application和Screen对象释放之后清理该单元
+  {$if CompilerVersion < 23}
+    Forms,
+  {$else}
+    Vcl.Forms,
+  {$ifend}
+{$ENDIF}
+
   safeLogger;
 
 

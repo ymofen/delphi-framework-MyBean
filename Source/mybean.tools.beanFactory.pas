@@ -154,7 +154,8 @@ end;
 
 class procedure TMyBeanFactoryTools.removeObject(pvID: AnsiString);
 begin
-  applicationKeyMap.removeObject(PAnsiChar(pvID));
+  if applicationKeyMap <> nil then
+    applicationKeyMap.removeObject(PAnsiChar(pvID));
 end;
 
 
