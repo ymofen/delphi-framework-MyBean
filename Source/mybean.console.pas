@@ -330,6 +330,12 @@ procedure executeLoadLibFiles(const pvLibFiles: string);
 /// </summary>
 procedure applicationContextInitialize;
 
+/// <summary>
+///   应用程序退出时可以手动调用该方法，
+///    可以清理全局对象，卸载DLL
+/// </summary>
+procedure applicationContextFinalize;
+
 
 
 procedure logDebugInfo;
@@ -478,6 +484,15 @@ end;
 procedure applicationContextInitialize;
 begin
   appPluginContext.checkInitialize;
+end;
+
+procedure applicationContextFinalize;
+begin
+  mybean.core.intf.appPluginContext := nil;
+  mybean.core.intf.applicationKeyMap := nil;
+
+  executeKeyMapCleanup;
+  appContextCleanup;
 end;
 
 
@@ -1386,11 +1401,7 @@ initialization
 //  appPluginContext.checkInitialize;
 
 finalization  
-  mybean.core.intf.appPluginContext := nil;
-  mybean.core.intf.applicationKeyMap := nil;
-
-  executeKeyMapCleanup;
-  appContextCleanup;
+  applicationContextFinalize;
 
   // 记录未释放的情况
   {$IFDEF LOG_ON}
