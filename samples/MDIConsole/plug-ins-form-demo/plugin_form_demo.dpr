@@ -21,11 +21,14 @@ uses
   uIFormShow in '..\Interface\uIFormShow.pas',
   uIMainForm in '..\Interface\uIMainForm.pas',
   uIPluginForm in '..\Interface\uIPluginForm.pas',
-  mBeanMainFormTools in '..\Interface\mBeanMainFormTools.pas';
+  mBeanMainFormTools in '..\Interface\mBeanMainFormTools.pas',
+  mybean.vcl.BaseForm in '..\..\..\Source\mybean.vcl.BaseForm.pas',
+  ufrmMyBeanPlugin in 'Forms\ufrmMyBeanPlugin.pas' {frmMyBeanPlugin};
 
 {$R *.res}
 
 begin
   beanFactory.RegisterBean('aboutForm', TfrmAbout);
   beanFactory.RegisterBean('demoPluginForm', TfrmPluginForm);
+  beanFactory.RegisterBean('mybeanForm', TfrmMyBeanPlugin);
 end.

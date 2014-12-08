@@ -16,9 +16,11 @@ uses
 begin
   Application.Initialize;
   applicationContextInitialize;
+  beanFactory.RegisterMainFormBean('main', TfrmMain);
   registerFactoryObject(beanFactory, 'default');
   Application.MainFormOnTaskbar := True;
-  Application.CreateForm(TfrmMain, frmMain);
+  //Application.CreateForm(TfrmMain, frmMain);
+  appPluginContext.getBean('main');
   Application.Run;
 
 end.

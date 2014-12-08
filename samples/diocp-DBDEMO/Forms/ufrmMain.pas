@@ -7,7 +7,7 @@ uses
   Controls, Forms, Dialogs, StdCtrls,
   Grids, DBGrids, uBasePluginForm,
   mybean.tools.beanFactory,
-  uIRemoteServer, DB, DBClient;
+  uIRemoteServer, DB, DBClient, ExtCtrls, TeeProcs, TeEngine, Chart, DBChart;
 
 type
   TfrmMain = class(TBasePluginForm)
@@ -20,6 +20,7 @@ type
     cdsMain: TClientDataSet;
     dsMain: TDataSource;
     btnGetTime: TButton;
+    DBChart1: TDBChart;
     procedure btnConnectClick(Sender: TObject);
     procedure btnGetTimeClick(Sender: TObject);
     procedure btnOpenClick(Sender: TObject);

@@ -22,13 +22,18 @@ type
     edtPluginID: TEdit;
     btnCreateAsMDI: TButton;
     actCreatePluginAsMDI: TAction;
+    Button1: TButton;
+    Button2: TButton;
     procedure actAboutExecute(Sender: TObject);
     procedure actCreateDemoFormExecute(Sender: TObject);
     procedure actCreatePluginAsMDIExecute(Sender: TObject);
     procedure actCreateReporterDEMOExecute(Sender: TObject);
+    procedure Button1Click(Sender: TObject);
+    procedure Button2Click(Sender: TObject);
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
     procedure FormShow(Sender: TObject);
   private
+    FTempIntf:IInterface;
     FPluginTabControl: TPluginTabControl;
     procedure closePluginQuery(const pvForm: IInterface; vCanClose: Boolean);
         stdcall;
@@ -103,6 +108,19 @@ var
 begin
   lvPlugin := TMyBeanFactoryTools.getBean('reporterDemoForm');
   self.showPluginAsMDI(lvPlugin);
+end;
+
+procedure TfrmMain.Button1Click(Sender: TObject);
+var
+  FTempIntf:IInterface;
+begin
+  FTempIntf := TMyBeanFactoryTools.getBean(edtPluginID.Text);
+  self.showPluginAsMDI(FTempIntf);
+end;
+
+procedure TfrmMain.Button2Click(Sender: TObject);
+begin
+  FTempIntf := nil;
 end;
 
 procedure TfrmMain.closePluginQuery(const pvForm: IInterface; vCanClose:

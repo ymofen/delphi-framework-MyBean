@@ -27,7 +27,10 @@ package bplDEMOPlugin;
 
 requires
   rtl,
-  vcl;
+  vcl,
+  dbrtl,
+  teedb,
+  tee;
 
 contains
   mybean.core.beanFactory,

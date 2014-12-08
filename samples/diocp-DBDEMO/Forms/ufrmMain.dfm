@@ -78,6 +78,15 @@ object frmMain: TfrmMain
     TabOrder = 6
     OnClick = btnGetTimeClick
   end
+  object DBChart1: TDBChart
+    Left = 136
+    Top = 160
+    Width = 400
+    Height = 250
+    Title.Text.Strings = (
+      'TDBChart')
+    TabOrder = 7
+  end
   object cdsMain: TClientDataSet
     Aggregates = <>
     Params = <>
