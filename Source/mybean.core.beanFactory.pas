@@ -10,7 +10,7 @@ uses
   {$if CompilerVersion < 23}
     Forms,
   {$else}
-    Vcl.Forms,
+    vcl.Forms,
   {$ifend}
 {$ENDIF}
   mybean.core.intf,
