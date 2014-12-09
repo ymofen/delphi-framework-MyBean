@@ -24,3 +24,18 @@
 + 添加接口IApplicationContextEx3
     GetBeanInfos函数，获取bean信息
   2014-11-14 13:09:17
+
++ 注册插件时，可以通过自定义函数去创建插件实例,该方法可以是匿名方法(在支持匿名方法的版本上)
+  添加了mybean.vcl.BaseForm.pas单元(扩展一个基类窗体,不是必须的)
+  2014-12-09 13:00:08
+  
+  [code]
+  
+  function CreatePlugin:TObject;
+  begin
+    Result := TfrmMyBeanPlugin.Create(beanFactory.VclOwners);
+  end;
+
+  initialization
+    beanFactory.RegisterBean('mybeanMethodForm', CreatePlugin);  
+  [/code]

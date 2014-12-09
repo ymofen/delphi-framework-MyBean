@@ -30,5 +30,5 @@ uses
 begin
   beanFactory.RegisterBean('aboutForm', TfrmAbout);
   beanFactory.RegisterBean('demoPluginForm', TfrmPluginForm);
-  beanFactory.RegisterBean('mybeanForm', TfrmMyBeanPlugin);  
+  beanFactory.RegisterBean('mybeanForm', TfrmMyBeanPlugin);
 end.

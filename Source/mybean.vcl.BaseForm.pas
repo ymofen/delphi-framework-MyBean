@@ -1,24 +1,12 @@
 unit mybean.vcl.BaseForm;
 
-{$I Hydra.inc}
+
 
 interface
 
 uses
   Classes,
-  {$IFDEF MSWINDOWS}
-  Messages, Forms, Controls, ActnList;
-  {$ENDIF}
-  {$IFDEF LINUX}
-  QForms, QControls, QActnList, QComCtrls, QMenus;
-  {$ENDIF}
-
-const
-  WM_TABOUTOFPLUGIN = WM_USER + 1;
-  WM_FOCUSOUTOFHOST = WM_USER + 2;
-  WM_HOSTIDLE = WM_USER + 3;
-  WM_GETHOSTTYPE = WM_USER + 5;
-  FMX_HOST = $F1;
+  Messages, Forms, Controls, ActnList, Windows;
 
 type
   /// <summary>
@@ -51,135 +39,37 @@ type
   end;
 
 
-  TReferenceCountOperation = (rcoAddRef, rcoReleaseRef);
-  TReferenceCountChangeEvent = procedure(Sender: TObject; NewReferenceCount: integer;
-    Operation: TReferenceCountOperation) of object;
-
   { TMyBeanBaseForm }
   TMyBeanBaseForm = class(TForm
       , IInterfaceComponentReference
       , IShowAsNormal
+      , IShowAsMDI
       , IShowAsModal)
   private
-    fRefCount: integer;
-    fBorder: boolean;
-    fOnReferenceCountChange: TReferenceCountChangeEvent;
-    procedure SetBorder(const Value: Boolean);
-    property Border: Boolean read fBorder write SetBorder;
   protected
-    procedure Paint; override;
-    procedure Notification(AComponent: TComponent; Operation: TOperation); override;
-    {$IFDEF LINUX}
-    procedure InitWidget; override;
-    {$ELSE}
     procedure CreateParams(var Params: TCreateParams); override;
-    {$ENDIF}
-    { IInterface }
-    function QueryInterface(const IID: TGUID; out Obj): HResult; reintroduce; virtual; stdcall;
     {IInterfaceComponentReference}
     function GetComponent: TComponent;
-
-    { IHYVisualPlugin }
-    procedure ShowWindowed;
-    procedure ShowParented(aParent: TWinControl);
-    function GetVisible: boolean;
-    procedure SetVisible(Value: boolean);
-
-    { IHYPlugin }
+    
     function GetObject: TObject;
     function GetInstanceID: integer;
-    procedure WMHostIdle(var Message: TMessage); message WM_HOSTIDLE;
   public
     procedure showAsNormal; stdcall;
+    procedure showAsMDI; stdcall;
     function showAsModal: Integer; stdcall;
-  public
-    constructor Create(aOwner: TComponent); override;
-    destructor Destroy; override;
 
-    class function NewInstance: TObject; override;
-    procedure AfterConstruction; override;
-    function SetFocusedControl(Control: TWinControl): Boolean; override;
+  public
   published
-    property OnReferenceCountChange: TReferenceCountChangeEvent read fOnReferenceCountChange write fOnReferenceCountChange;
   end;
 
 implementation
 
-uses
-  {$IFDEF MSWINDOWS}Windows, {$IFDEF DELPHI7UP}Themes,{$ENDIF} {$ENDIF}
-  SysUtils;
 
-{$IFNDEF DELPHI9UP}
-type
-  TApplicationHack = class (TApplication)
-  end;
-{$ENDIF}
 
-procedure TMyBeanBaseForm.AfterConstruction;
-begin
-  inherited;
-  InterlockedDecrement(FRefCount);
-end;
-
-constructor TMyBeanBaseForm.Create(aOwner: TComponent);
-begin
-  {$IFDEF DEBUG_HYDRA_INSTANCES}
-  DebugServer.EnterMethod(['Hydra','Instances','Creation'],'%s.Create',[ClassName]);
-  try
-  {$ENDIF}
-    inherited;
-  {$IFDEF DEBUG_HYDRA_INSTANCES}
-  finally
-    DebugServer.ExitMethod(['Hydra','Instances','Creation'],'%s.Create',[ClassName]);
-  end;
-  {$ENDIF}
-end;
-
-destructor TMyBeanBaseForm.Destroy;
-begin
-  {$IFDEF DEBUG_HYDRA_INSTANCES}
-  DebugServer.EnterMethod(['Hydra','Instances','Destruction'],'%s.Destroy',[ClassName]);
-  try
-  {$ENDIF}
-    inherited;
-  {$IFDEF DEBUG_HYDRA_INSTANCES}
-  finally
-    DebugServer.ExitMethod(['Hydra','Instances','Destruction'],'%s.Destroy',[ClassName]);
-  end;
-  {$ENDIF}
-end;
-
-function TMyBeanBaseForm.QueryInterface(const IID: TGUID; out Obj): HResult;
-begin
-  result := inherited QueryInterface(IID, Obj);
-end;
 
 function TMyBeanBaseForm.GetComponent: TComponent;
 begin
   Result := Self;
-end;
-
-procedure TMyBeanBaseForm.ShowParented(aParent: TWinControl);
-begin
-  Parent := aParent;
-
-  if aParent <> nil then begin
-    Align := alClient;
-    Border := False;
-  end
-  else begin
-    Align := alNone;
-    Border := True;
-  end;
-
-  {$IFDEF MSWINDOWS}
-  BorderStyle := bsNone;
-  {$ENDIF}
-  {$IFDEF LINUX}
-  BorderStyle := fbsSizeable;//fbsNone;
-  {$ENDIF}
-
-  if not Visible then Show;
 end;
 
 function TMyBeanBaseForm.GetObject: TObject;
@@ -198,45 +88,12 @@ begin
   Include(Result, ssAlt);
 end;
 
-procedure TMyBeanBaseForm.WMHostIdle(var Message: TMessage);
-{$IFNDEF DELPHI9UP}
-var
-  IdleMessage: tagMSG;
-{$ENDIF}
-begin
-  {$IFNDEF DELPHI9UP}
-  IdleMessage.hwnd := 0;
-  IdleMessage.message := 0;
-  IdleMessage.wParam := 0;
-  IdleMessage.lParam := 0;
-  THYApplicationHack(Application).Idle(IdleMessage);
-  {$ELSE}
-  Application.DoApplicationIdle;
-  {$ENDIF}
-end;
-
-class function TMyBeanBaseForm.NewInstance: TObject;
-begin
-  Result := inherited NewInstance;
-  TMyBeanBaseForm(Result).FRefCount := 1;
-end;
-
-procedure TMyBeanBaseForm.Notification(AComponent: TComponent;
-  Operation: TOperation);
-begin
-  inherited;
-end;
-
 function TMyBeanBaseForm.GetInstanceID: integer;
 begin
   result := integer(Self);
 end;
 
-{$IFDEF LINUX}
-procedure TMyBeanBaseForm.InitWidget;
-begin
-end;
-{$ELSE}
+
 procedure TMyBeanBaseForm.CreateParams(var Params: TCreateParams);
 begin
   inherited CreateParams(Params);
@@ -244,16 +101,13 @@ begin
     Params.Style := Params.Style xor (Params.style and (WS_Caption or WS_THICKFRAME));
   end;
 end;
-{$ENDIF}
 
-function TMyBeanBaseForm.GetVisible: boolean;
-begin
-  result := Visible
-end;
 
-procedure TMyBeanBaseForm.SetVisible(Value: boolean);
+procedure TMyBeanBaseForm.showAsMDI;
 begin
-  Visible := Value;
+  self.FormStyle := fsMDIChild;
+  self.WindowState := wsMaximized;
+  self.Show;
 end;
 
 function TMyBeanBaseForm.showAsModal: Integer;
@@ -264,51 +118,6 @@ end;
 procedure TMyBeanBaseForm.showAsNormal;
 begin
   Show;
-end;
-
-function TMyBeanBaseForm.SetFocusedControl(Control: TWinControl): Boolean;
-begin
-  Result := inherited SetFocusedControl(Control);
-  if ActiveControl <> nil then
-    SendMessage(ParentWindow, WM_FOCUSOUTOFHOST, 0, 0);
-end;
-
-procedure TMyBeanBaseForm.Paint;
-begin
-  inherited;
-  {$IFDEF DELPHIXE2UP}
-  if StyleServices.Enabled then
-    StyleServices.DrawParentBackground(Handle, Canvas.Handle, nil, False);
-  {$ELSE}
-  {$IFDEF DELPHI7UP}
-  if ThemeServices.ThemesEnabled then
-    ThemeServices.DrawParentBackground(Handle, Canvas.Handle, nil, False);
-  {$ENDIF}
-  {$ENDIF}
-end;
-
-procedure TMyBeanBaseForm.ShowWindowed;
-begin
-  Align := alNone;
-  Parent := nil;
-  SetBorder(True);
-  inherited Show;
-end;
-
-procedure TMyBeanBaseForm.SetBorder(const Value: Boolean);
-var
-  Style: Longint;
-begin
-  if fBorder <> Value then
-  begin
-    fBorder := Value;
-    if HandleAllocated then
-    begin
-      Style := GetWindowLong(Handle, GWL_STYLE) and not WS_THICKFRAME;
-      if Value then Style := Style or WS_THICKFRAME;
-      SetWindowLong(Handle, GWL_STYLE, Style);
-    end;
-  end;
 end;
 
 end.

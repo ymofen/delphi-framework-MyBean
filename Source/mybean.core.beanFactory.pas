@@ -19,6 +19,19 @@ uses
   superobject;
 
 type
+  {$if CompilerVersion > 23}
+  /// <summary>
+  ///   创建插件方法<匿名方法>
+  /// </summary>
+  TCreatePluginMethod = reference to function():TObject;
+  {$ELSE}
+  /// <summary>
+  ///   创建插件方法
+  /// </summary>
+  TCreatePluginMethod = function():TObject;
+  {$ifend}
+
+
   TPluginInfo = class(TObject)
   private
     FInstance: IInterface;
@@ -26,6 +39,7 @@ type
     FIsMainForm: Boolean;
     FPluginClass: TClass;
     FSingleton: Boolean;
+    FCreateMethod: TCreatePluginMethod;
     procedure checkFreeInstance;
   public
     destructor Destroy; override;
@@ -56,9 +70,9 @@ type
 
   TPluginInfoProc = procedure(pvObject: TPluginInfo); stdcall;
 
-  TOnCreateInstanceProc = function(pvObject: TPluginInfo):TObject; stdcall;
-  TOnCreateInstanceProcEX = function(pvObject: TPluginInfo; var vBreak: Boolean):
-      TObject; stdcall;
+  TOnCreateInstanceProc = function(pvObject: TPluginInfo): TObject; stdcall;
+
+  TOnCreateInstanceProcEX = function(pvObject: TPluginInfo; var vBreak: Boolean): TObject; stdcall;
 
 
   TBeanFactory = class(TInterfacedObject,
@@ -125,7 +139,8 @@ type
     procedure clear;
     function _Release: Integer; stdcall;
   public
-    /// <summary>TBeanFactory.RegisterBean
+    /// <summary>
+    ///   注册插件
     /// </summary>
     /// <returns>
     /// 
@@ -134,7 +149,16 @@ type
     /// <param name="pvClass"> 类 </param>
     /// <param name="pvSingleton"> 是否单实例  </param>
     function RegisterBean(pvPluginID: String; pvClass: TClass; pvSingleton: Boolean
-        = false): TPluginInfo;
+        = false): TPluginInfo; overload;
+
+    /// <summary>
+    ///    注册插件
+    /// </summary>
+    /// <param name="pvCreateMethod"> 创建插件的方法 </param>
+    /// <param name="pvSingleton"> 是否单实例  </param>
+    function RegisterBean(pvPluginID: String; pvCreateMethod: TCreatePluginMethod;
+        pvSingleton: Boolean = false): TPluginInfo; overload;
+
     procedure RegisterMainFormBean(pvPluginID:string; pvClass: TClass);
      
     constructor Create; virtual;
@@ -208,6 +232,9 @@ type
     property OnCreateInstanceProc: TOnCreateInstanceProc read FOnCreateInstanceProc
         write FOnCreateInstanceProc;
 
+    /// <summary>
+    ///   自定义创建插件实例的函数
+    /// </summary>
     property OnCreateInstanceProcEX: TOnCreateInstanceProcEX read
         FOnCreateInstanceProcEX write FOnCreateInstanceProcEX;
 
@@ -222,14 +249,20 @@ var
   OnFinalizeLibFactory:TProcedure;
   
 
+/// <summary>
+///   导出Bean工厂实例给ApplictionContext进行管理
+/// </summary>
 function getBeanFactory: IBeanFactory; stdcall;
+
+/// <summary>
+///   DLL加载，传入ApplictionContext和appKeyMap服务实例
+/// </summary>
 procedure initializeBeanFactory(appContext: IApplicationContext; appKeyMap: IKeyMap); stdcall;
 
 
-function beanFactory: TBeanFactory;
 
+function beanFactory: TBeanFactory;  
 function CreateNewName(const pvRoot: TComponent; const pvBaseName: string): string;
-
 
 implementation
 
@@ -245,7 +278,20 @@ exports
   getBeanFactory, initializeBeanFactory;
 
 
-
+function CreateNewName(const pvRoot: TComponent; const pvBaseName: string):
+    string;
+var
+  i: integer;
+begin
+  Result := pvBaseName;
+  if (Length(Result) > 1) and (Result[1] = 'T') then Delete(Result, 1, 1);
+  i := 1;
+  if pvRoot <> nil then
+    with pvRoot do
+      while FindComponent(Result + IntToStr(i)) <> nil do
+        inc(i);
+  Result := Result + IntToStr(i);
+end;
 
 function getBeanFactory: IBeanFactory; stdcall;
 begin
@@ -268,20 +314,7 @@ begin
   end;
 end;
 
-function CreateNewName(const pvRoot: TComponent; const pvBaseName: string):
-    string;
-var
-  i: integer;
-begin
-  Result := pvBaseName;
-  if (Length(Result) > 1) and (Result[1] = 'T') then Delete(Result, 1, 1);
-  i := 1;
-  if pvRoot <> nil then
-    with pvRoot do
-      while FindComponent(Result + IntToStr(i)) <> nil do
-        inc(i);
-  Result := Result + IntToStr(i);
-end;
+
 
 
 
@@ -507,63 +540,78 @@ begin
     end;
   end;
 
-
-  ///默认方式创建
-  lvClass := pvObject.PluginClass;
-{$IFNDEF CONSOLE}
-  if (pvObject.IsMainForm) then
+  /// 使用提供的方法进行创建
+  if Assigned(pvObject.FCreateMethod) then
   begin
-    Application.CreateForm(TCustomFormClass(lvClass), lvResultObject);
+    lvResultObject := pvObject.FCreateMethod();
     try
       lvResultObject.GetInterface(IInterface, Result);
-      if Result = nil then raise Exception.CreateFmt('[%s]未实现IInterface接口,不能进行创建bean', [pvObject.FPluginClass.ClassName]);      
+      if Result = nil then
+        raise Exception.CreateFmt('[%s]提供的创建方法返回的实例, 未实现IInterface接口,不能进行创建bean', [pvObject.FID]);
     except
       lvResultObject.Free;
       lvResultObject := nil;
       raise;
     end;
   end else
-{$ENDIF}
-
-  if lvClass.InheritsFrom(TComponent) then
   begin
-    lvResultObject := TComponentClass(lvClass).Create(FVclOwners);
-    try
-      if TComponent(lvResultObject).Name <> '' then
-      begin
-        TComponent(lvResultObject).Name := CreateNewName(FVclOwners, TComponent(lvResultObject).Name);
-      end else
-      begin
-        TComponent(lvResultObject).Name := CreateNewName(FVclOwners, 'BeanVcl_');
+    ///默认方式创建
+    lvClass := pvObject.PluginClass;
+  {$IFNDEF CONSOLE}
+    if (pvObject.IsMainForm) then
+    begin
+      Application.CreateForm(TCustomFormClass(lvClass), lvResultObject);
+      try
+        lvResultObject.GetInterface(IInterface, Result);
+        if Result = nil then raise Exception.CreateFmt('[%s]未实现IInterface接口,不能进行创建bean', [pvObject.FPluginClass.ClassName]);
+      except
+        lvResultObject.Free;
+        lvResultObject := nil;
+        raise;
       end;
-      lvResultObject.GetInterface(IInterface, Result);
-      if Result = nil then raise Exception.CreateFmt('[%s]未实现IInterface接口,不能进行创建bean', [pvObject.FPluginClass.ClassName]);
-    except
-      lvResultObject.Free;
-      lvResultObject := nil;
-      raise;
-    end;
-  end else if lvClass.InheritsFrom(TMyBeanInterfacedObject) then
-  begin
-    lvResultObject := TMyBeanInterfacedObjectClass(lvClass).Create();
-    try
-      lvResultObject.GetInterface(IInterface, Result);
-      if Result = nil then raise Exception.CreateFmt('[%s]未实现IInterface接口,不能进行创建bean', [pvObject.FPluginClass.ClassName]);
-    except
-      lvResultObject.Free;
-      lvResultObject := nil;
-      raise;
-    end;
-  end else
-  begin
-    lvResultObject := lvClass.Create;
-    try
-      lvResultObject.GetInterface(IInterface, Result);
-      if Result = nil then raise Exception.CreateFmt('[%s]未实现IInterface接口,不能进行创建bean', [pvObject.FPluginClass.ClassName]);
-    except
-      lvResultObject.Free;
-      lvResultObject := nil;
-      raise;
+    end else
+  {$ENDIF}
+
+    if lvClass.InheritsFrom(TComponent) then
+    begin
+      lvResultObject := TComponentClass(lvClass).Create(FVclOwners);
+      try
+        if TComponent(lvResultObject).Name <> '' then
+        begin
+          TComponent(lvResultObject).Name := CreateNewName(FVclOwners, TComponent(lvResultObject).Name);
+        end else
+        begin
+          TComponent(lvResultObject).Name := CreateNewName(FVclOwners, 'BeanVcl_');
+        end;
+        lvResultObject.GetInterface(IInterface, Result);
+        if Result = nil then raise Exception.CreateFmt('[%s]未实现IInterface接口,不能进行创建bean', [pvObject.FPluginClass.ClassName]);
+      except
+        lvResultObject.Free;
+        lvResultObject := nil;
+        raise;
+      end;
+    end else if lvClass.InheritsFrom(TMyBeanInterfacedObject) then
+    begin
+      lvResultObject := TMyBeanInterfacedObjectClass(lvClass).Create();
+      try
+        lvResultObject.GetInterface(IInterface, Result);
+        if Result = nil then raise Exception.CreateFmt('[%s]未实现IInterface接口,不能进行创建bean', [pvObject.FPluginClass.ClassName]);
+      except
+        lvResultObject.Free;
+        lvResultObject := nil;
+        raise;
+      end;
+    end else
+    begin
+      lvResultObject := lvClass.Create;
+      try
+        lvResultObject.GetInterface(IInterface, Result);
+        if Result = nil then raise Exception.CreateFmt('[%s]未实现IInterface接口,不能进行创建bean', [pvObject.FPluginClass.ClassName]);
+      except
+        lvResultObject.Free;
+        lvResultObject := nil;
+        raise;
+      end;
     end;
   end;
 end;
@@ -653,6 +701,7 @@ begin
         end else
         begin
           Result := createInstance(lvPluginINfo);
+          
           checkBeanConfigSetter(Result, pvBeanID);
           lvPluginINfo.FInstance := Result;
         end;
@@ -738,6 +787,23 @@ end;
 procedure TBeanFactory.lock;
 begin
   FCS.Enter;
+end;
+
+function TBeanFactory.RegisterBean(pvPluginID: String; pvCreateMethod:
+    TCreatePluginMethod; pvSingleton: Boolean = false): TPluginInfo;
+var
+  lvObject:TPluginInfo;
+begin
+  Result := nil;
+  if FPlugins.IndexOf(pvPluginID) <> -1 then Exit;
+  lvObject := TPluginInfo.Create;
+  lvObject.FID := pvPluginID;
+  lvObject.IsMainForm := false;
+  lvObject.FSingleton := pvSingleton;
+  lvObject.FCreateMethod := pvCreateMethod;
+  lvObject.FInstance := nil;
+  FPlugins.AddObject(pvPluginID, lvObject);
+  Result := lvObject;
 end;
 
 procedure TBeanFactory.RegisterMainFormBean(pvPluginID:string; pvClass: TClass);
