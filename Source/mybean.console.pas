@@ -138,13 +138,14 @@ type
     function checkLoadBeanConfigFile(pvConfigFile:PAnsiChar): Boolean; stdcall;
   protected
     /// <summary>
-    ///   直接从DLL中加载插件，在没有配置文件的情况下执行
+    ///     直接从DLL和BPL文件中加载插件，在没有配置文件的情况下执行
+    ///     plug-ins\*.DLL, plug-ins\*.BPL, *.DLL
     /// </summary>
     procedure executeLoadLibrary; stdcall;
 
 
     /// <summary>
-    ///   加载一个库文件
+    ///    加载一个库文件, 获取其中插件，并进行注册
     /// </summary>
     procedure checkLoadALibFile(pvFile:string);
 
@@ -504,6 +505,7 @@ begin
   if FFactoryObjectList.Count = 0 then
   begin
 
+    // 先读取配置文件
     lvConfigFiles := FINIFile.ReadString('main', 'beanConfigFiles', '');
     if lvConfigFiles <> '' then
     begin
@@ -525,6 +527,7 @@ begin
     begin
       if FTraceLoadFile then
         __beanLogger.logMessage(sDebug_directlyLoadLibFile, 'LOAD_TRACE_');
+        
       executeLoadLibrary;
     end;
   end;
@@ -712,8 +715,7 @@ begin
   end else
   begin
     Result := TLibFactoryObject(FFactoryObjectList.Objects[i]);
-  end;
-
+  end;  
 end;
 
 function TApplicationContext.checkInitializeFactoryObject(
@@ -727,22 +729,22 @@ begin
         __beanLogger.logMessage(
           sLoadTrace_Lib_Initalize, [String(pvFactoryObject.namespace)], 'LOAD_TRACE_');
       end;
-
+      
       if pvRaiseException then
-      begin         // 直接进行加载
+      begin   // 抛出异常的情况下, 直接进行初始化
         pvFactoryObject.checkInitialize;
       end else
       begin        //
-        if not pvFactoryObject.checkIsValidLib then
-        begin
-      {$IFDEF LOG_ON}
-          __beanLogger.logMessage(
-                        Format(sLoadTrace_Lib_Invalidate, [String(pvFactoryObject.namespace)]),
-                        'LOAD_TRACE_');
-      {$ENDIF}
-        end else
+        if pvFactoryObject.checkIsValidLib(False) then
         begin
           pvFactoryObject.checkInitialize;
+        end else
+        begin
+        {$IFDEF LOG_ON}
+            __beanLogger.logMessage(
+                          Format(sLoadTrace_Lib_Invalidate, [String(pvFactoryObject.namespace)]),
+                          'LOAD_TRACE_');
+        {$ENDIF}
         end;
       end;
     end;

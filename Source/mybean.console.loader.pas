@@ -42,7 +42,7 @@ type
     /// <summary>
     ///   检测是否是有效的插件宿主文件
     /// </summary>
-    function checkIsValidLib: Boolean; virtual;
+    function checkIsValidLib(pvUnLoadIfSucc: Boolean = false): Boolean; virtual;
 
     /// <summary>
     ///   beanID和配置信息
@@ -132,7 +132,8 @@ begin
   FConfig.A['list'].Add(pvBeanConfig);
 end;
 
-function TBaseFactoryObject.checkIsValidLib: Boolean;
+function TBaseFactoryObject.checkIsValidLib(pvUnLoadIfSucc: Boolean = false):
+    Boolean;
 begin
   Result := False;
 end;

@@ -42,7 +42,10 @@ type
 
     procedure cleanup;override;
 
-    function checkIsValidLib:Boolean; override;
+    /// <summary>
+    ///   判断指定的Lib文件是否是MyBean的插件文件
+    /// </summary>
+    function checkIsValidLib(pvUnLoadIfSucc: Boolean = false): Boolean; override;
 
     /// <summary>
     ///   根据beanID获取插件
@@ -143,7 +146,8 @@ begin
   lvBeanID:= '';
 end;
 
-function TLibFactoryObject.checkIsValidLib: Boolean;
+function TLibFactoryObject.checkIsValidLib(pvUnLoadIfSucc: Boolean = false):
+    Boolean;
 var
   lvFunc:procedure(appContext: IApplicationContext; appKeyMap: IKeyMap); stdcall;
   lvLibHandle:THandle;
@@ -167,12 +171,21 @@ begin
         @lvFunc := GetProcAddress(lvLibHandle, PChar('initializeBeanFactory'));
         result := (@lvFunc <> nil);
       finally
-        if lvIsBpl then
+        if Result then
         begin
-          UnloadPackage(lvLibHandle);
-        end else
-        begin
-          FreeLibrary(lvLibHandle);
+          if pvUnLoadIfSucc then
+          begin
+            if lvIsBpl then
+            begin
+              UnloadPackage(lvLibHandle);
+            end else
+            begin
+              FreeLibrary(lvLibHandle);
+            end;
+          end else
+          begin
+            FLibHandle := lvLibHandle;
+          end;
         end;
       end;
     end else
@@ -188,33 +201,29 @@ end;
 function TLibFactoryObject.checkLoadLibrary(pvRaiseIfNil: Boolean = true):
     Boolean;
 begin
-  if FLibHandle <> 0 then
+  if FLibHandle = 0 then
   begin
-    Result := true;
-    Exit;
-  end;
-  if not FileExists(FlibFileName) then
-  begin
-    if pvRaiseIfNil then
+    if not FileExists(FlibFileName) then
     begin
-      raise Exception.Create('文件[' + FlibFileName + ']未找到!');
-    end;
-    Result := false;
-  end else
-  begin
-    if LowerCase(ExtractFileExt(FlibFileName)) = '.bpl' then
-    begin
-      FLibHandle := LoadPackage(FlibFileName);
+      if pvRaiseIfNil then
+      begin
+        raise Exception.Create('文件[' + FlibFileName + ']未找到!');
+      end;
+      Result := false;
     end else
     begin
-      FLibHandle := LoadLibrary(PChar(FlibFileName));
+      if LowerCase(ExtractFileExt(FlibFileName)) = '.bpl' then
+      begin
+        FLibHandle := LoadPackage(FlibFileName);
+      end else
+      begin
+        FLibHandle := LoadLibrary(PChar(FlibFileName));
+      end;
     end;
-
-    Result := FLibHandle <> 0;
-    if not Result then RaiseLastOSError;
-
-    if Result then doInitialize;
   end;
+  Result := FLibHandle <> 0;
+  if not Result then RaiseLastOSError;  
+  if Result then DoInitialize;  
 end;
 
 procedure TLibFactoryObject.cleanup;
