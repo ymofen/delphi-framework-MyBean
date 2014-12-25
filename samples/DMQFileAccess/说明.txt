@@ -1,0 +1,10 @@
+1.BIN下面有编译好的EXE文件, 先运行服务端，可以上传文件和下载文件。
+
+2.服务端由DMQ商业引擎(多进程服务端插件)框架提供
+
+  客户端由MyBean插件提供可以在MyBean项目中找到
+  samples\DMQFileAccess
+
+  网站可以找到各个项目的开源地址: wwww.diocp.org
+
+DEMO测试过传输4G的文件
