@@ -143,9 +143,14 @@ type
     procedure stopWorker(pvTimeOut: Cardinal);
   private
   {$IFDEF MSWINDOWS}
+    FStateLocker:TCriticalSection;
+    FWorking:Boolean;
     FMessageHandle: HWND;
     FName: String;
     procedure DoMainThreadWork(var AMsg: TMessage);
+    procedure SetWorking(pvWorking:Boolean);
+    function isWorking():Boolean;
+    procedure DoWork();
   {$ENDIF}
     procedure incWorkerCount;
     procedure decWorker(pvWorker: TLogWorker);
@@ -190,12 +195,12 @@ type
 
 var
   sfLogger:TSafeLogger;
-
+  __ProcessIDStr :String;
   __GetThreadStackFunc: TThreadStackFunc;
 
+procedure SafeWriteFileMsg(pvMsg:String; pvFilePre:string);
+
 implementation
-
-
 
 
 var
@@ -204,7 +209,7 @@ var
 {$IFDEF MSWINDOWS}
 const
   WM_SYNC_METHOD = WM_USER + 1;
-
+  WM_NOTIFY_WORK = WM_USER + 2;
 {$ENDIF}
 
 function tick_diff(tick_start, tick_end: Cardinal): Cardinal;
@@ -254,6 +259,31 @@ asm
 {$endif}
 end;
 
+procedure SafeWriteFileMsg(pvMsg:String; pvFilePre:string);
+var
+  lvFileName, lvBasePath:String;
+  lvLogFile: TextFile;
+begin
+  try
+    lvBasePath :=ExtractFilePath(ParamStr(0)) + 'log';
+    ForceDirectories(lvBasePath);
+    lvFileName :=lvBasePath + '\' + __ProcessIDStr+ '_' + pvFilePre +
+     FormatDateTime('mmddhhnn', Now()) + '.log';
+
+    AssignFile(lvLogFile, lvFileName);
+    if (FileExists(lvFileName)) then
+      append(lvLogFile)
+    else
+      rewrite(lvLogFile);
+
+    writeln(lvLogFile, pvMsg);
+    flush(lvLogFile);
+    CloseFile(lvLogFile);
+  except
+    ;
+  end;
+end;
+
 procedure TSafeLogger.checkForWorker;
 begin
   if lock_cmp_exchange(False, True, FWorkerAlive) = False then
@@ -281,8 +311,10 @@ begin
   FEnable := true;
   FSyncMainThreadType := rtSync;
 {$IFDEF MSWINDOWS}
-//  FSyncMainThreadType := rtPostMessage;
+  FSyncMainThreadType := rtPostMessage;
+  FWorking := False;
   FMessageHandle := AllocateHWnd(DoMainThreadWork);
+  FStateLocker := TCriticalSection.Create;
 {$ENDIF}
   FDataQueue := TBaseQueue.Create();
   FAppender := nil;
@@ -308,6 +340,7 @@ begin
   end;
 {$IFDEF MSWINDOWS}
   DeallocateHWnd(FMessageHandle);
+  FStateLocker.Free;
 {$ENDIF}
   inherited Destroy;
 end;
@@ -326,8 +359,59 @@ begin
       if AMsg.LPARAM <> 0 then
         TEvent(AMsg.LPARAM).SetEvent;
     end;
+  end else if AMsg.Msg = WM_NOTIFY_WORK then
+  begin
+    FDebugInfo :=   'DoMainThreadWork:WM_NOTIFY_WORK -- Start';
+    SetWorking(True);
+    try
+      DoWork();
+    finally
+      SetWorking(False);
+      FDebugInfo := 'DoMainThreadWork:WM_NOTIFY_WORK -- END';
+    end;
   end else
     AMsg.Result := DefWindowProc(FMessageHandle, AMsg.Msg, AMsg.WPARAM, AMsg.LPARAM);
+end;
+
+procedure TSafeLogger.DoWork;
+var
+  lvPData:TLogDataObject;
+begin
+  while self.FEnable do
+  begin 
+    if not FDataQueue.Pop(Pointer(lvPData)) then Break;
+    if lvPData <> nil then
+    begin
+      try
+        FDebugData := lvPData;
+        ExecuteLogData(lvPData);
+      except
+        incErrorCounter;
+      end;
+      __dataObjectPool.Push(lvPData);
+    end;
+  end;
+end;
+
+procedure TSafeLogger.SetWorking(pvWorking: Boolean);
+begin
+  FStateLocker.Enter;
+  try
+    FWorking := pvWorking;
+  finally
+    FStateLocker.Leave;
+  end;                 
+end;
+
+
+function TSafeLogger.isWorking: Boolean;
+begin
+  FStateLocker.Enter;
+  try
+    Result := FWorking;
+  finally
+    FStateLocker.Leave;
+  end;   
 end;
 {$ENDIF}
 
@@ -353,6 +437,8 @@ procedure TSafeLogger.incWorkerCount;
 begin
   InterlockedIncrement(FWorkerCounter);
 end;
+
+
 
 procedure TSafeLogger.decWorker(pvWorker: TLogWorker);
 begin
@@ -411,7 +497,20 @@ begin
   lvPData.FMsgType := pvMsgType;
   FDataQueue.Push(lvPData);
   InterlockedIncrement(FPostCounter);
+{$IFDEF MSWINDOWS}
+  if (FAppendInMainThread) and (FSyncMainThreadType = rtPostMessage) then
+  begin
+    if not isWorking then
+    begin
+      PostMessage(FMessageHandle, WM_NOTIFY_WORK, 0, 0);
+    end;
+  end else
+  begin
+    checkForWorker;
+  end;
+{$ELSE}
   checkForWorker;
+{$ENDIF};
 end;
 
 procedure TSafeLogger.logMessage(pvMsg: string; const args: array of const;
@@ -436,6 +535,7 @@ begin
     FAppender.FOwner := Self;
   end;
 end;
+
 
 procedure TSafeLogger.start;
 begin
@@ -724,6 +824,7 @@ begin
 end;
 
 initialization
+  __ProcessIDStr := IntToStr(GetCurrentProcessId);
   __GetThreadStackFunc := nil;
   __dataObjectPool := TBaseQueue.Create;
   __dataObjectPool.Name := 'safeLoggerDataPool';
