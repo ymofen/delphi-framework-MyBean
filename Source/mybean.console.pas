@@ -800,7 +800,9 @@ procedure TApplicationContext.DoRegisterPlugins(pvPlugins: TStrings;
 var
   i, j:Integer;
   lvID:String;
+  {$IFDEF LOG_ON}
   lvLibObject:TBaseFactoryObject;
+  {$ENDIF}
 begin
   for i := 0 to pvPlugins.Count - 1 do
   begin
@@ -810,8 +812,8 @@ begin
       j := FBeanMapList.IndexOf(lvID);
       if j <> -1 then
       begin
-        lvLibObject := TBaseFactoryObject(FBeanMapList.Objects[j]);
       {$IFDEF LOG_ON}
+        lvLibObject := TBaseFactoryObject(FBeanMapList.Objects[j]);
         __beanLogger.logMessage(Format(sLoadTrace_BeanID_Repeat,
            [lvID,lvLibObject.namespace]));
       {$ENDIF}
