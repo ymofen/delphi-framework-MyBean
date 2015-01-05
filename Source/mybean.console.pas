@@ -571,7 +571,9 @@ function TApplicationContext.checkRegisterBean(pvBeanID: string;
 var
   j:Integer;
   lvID:String;
+  {$IFDEF LOG_ON}
   lvLibObject:TBaseFactoryObject;
+  {$ENDIF}
 begin
   Result := false;
   lvID := trim(pvBeanID);
@@ -580,8 +582,8 @@ begin
     j := FBeanMapList.IndexOf(lvID);
     if j <> -1 then
     begin
-        lvLibObject := TBaseFactoryObject(FBeanMapList.Objects[j]);
       {$IFDEF LOG_ON}
+        lvLibObject := TBaseFactoryObject(FBeanMapList.Objects[j]);
         __beanLogger.logMessage(Format(sLoadTrace_BeanID_Repeat,
            [lvID,lvLibObject.namespace]), 'LOAD_TRACE_');
       {$ENDIF}

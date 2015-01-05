@@ -17,9 +17,7 @@ function LoadResResource(const AName: string): string;
 var
   AList: TStringList;
   AStream: TResourceStream;
-  ResInstance: THandle;
 begin
-  ResInstance := FindResourceHInstance(HInstance);
   AStream := TResourceStream.Create(HInstance, AName, RT_RCDATA);
   try
     AList := TStringList.Create;

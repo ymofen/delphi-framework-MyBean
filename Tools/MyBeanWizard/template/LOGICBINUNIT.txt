@@ -4,7 +4,7 @@ interface
 
 uses
   mybean.core.objects, {I_XXX_Intf,}  mybean.tools.beanFactory,
-  mybean.core.beanFactoryForNoVcl;
+  mybean.core.beanFactory;
 
 type
   T%BeanName% = class(TMyBeanInterfacedObject {, I_XXX})
