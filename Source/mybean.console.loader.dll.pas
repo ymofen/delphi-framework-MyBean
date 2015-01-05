@@ -153,6 +153,7 @@ var
   lvLibHandle:THandle;
   lvIsBpl:Boolean;
 begin
+  Result := false;
   if FLibHandle = 0 then
   begin
     lvIsBpl :=LowerCase(ExtractFileExt(FlibFileName)) = '.bpl';
@@ -209,7 +210,6 @@ begin
       begin
         raise Exception.Create('нд╪Ч[' + FlibFileName + ']н╢ур╣╫!');
       end;
-      Result := false;
     end else
     begin
       if LowerCase(ExtractFileExt(FlibFileName)) = '.bpl' then

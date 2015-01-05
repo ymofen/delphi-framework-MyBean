@@ -48,6 +48,18 @@ type
 
 implementation
 
+{$if CompilerVersion < 23}
+function CharInSet(C: AnsiChar; const CharSet: TSysCharSet): Boolean;
+begin
+  Result := C in CharSet;
+end;
+
+function CharInSet(C: WideChar; const CharSet: TSysCharSet): Boolean;
+begin
+  Result := C in CharSet;
+end;
+{$ifend}
+
 class function TSOTools.clearAvalidIDChar(pvStringData: string): String;
 var
   i, l, r: Integer;
@@ -63,12 +75,12 @@ begin
   begin
     if r = 0 then
     begin    // 第一个字符为字母或者下画线
-      if pvStringData[i] in ['_', 'a'..'z', 'A'..'Z'] then
+      if (CharInSet(pvStringData[i], ['_', 'a'..'z', 'A'..'Z'])) then
       begin
         inc(r);
         lvStr[r] := pvStringData[i];
       end;
-    end else if pvStringData[i] in ['_', 'a'..'z', 'A'..'Z', '0'..'9'] then
+    end else if (CharInSet(pvStringData[i], ['_', 'a'..'z', 'A'..'Z', '0'..'9'])) then
     begin
       inc(r);
       lvStr[r] := pvStringData[i];
@@ -95,7 +107,7 @@ begin
   times := 0;
   for i := 1 to l do
   begin
-    if not (s[i] in pvCharSets) then
+    if not (CharInSet(s[i], pvCharSets)) then
     begin
       inc(times);
       lvStr[times] := s[i];
