@@ -53,7 +53,7 @@ var
   AModuleServices: IOTAModuleServices;
   beanName : string;
 begin
-  beanName := 'GreenName';
+  beanName := 'GreenBean';
   beanPropertyDlg := TbeanPropertyDlg.Create(NIL);
   try
     if beanPropertyDlg.ShowModal = mrOK then

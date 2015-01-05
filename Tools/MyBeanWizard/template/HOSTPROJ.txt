@@ -3,7 +3,6 @@ Program %ProjectName%;
 uses
   mybean.console,
   mybean.tools.beanFactory,
-  mybean.core.beanFactoryForNoVcl,
   Vcl.Forms;
 
 {$R *.res}

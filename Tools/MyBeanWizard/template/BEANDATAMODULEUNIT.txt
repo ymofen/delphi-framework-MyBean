@@ -1,0 +1,32 @@
+unit %ModuleIdent%;
+
+interface
+
+uses
+  System.SysUtils, System.Classes, {I_XXX_Intf,} mybean.tools.beanFactory;
+
+type
+  T%FormIdent% = class(T%AncestorIdent% {, I_XXX})
+  private
+    { Private declarations }
+  protected
+    {实例函数来自接口I_XXX}
+    //function I_XXX_Function1: integer; Stdcall;
+  public
+    { Public declarations }
+  end;
+
+var
+  %FormIdent%: T%FormIdent%;
+
+implementation
+
+{%CLASSGROUP 'Vcl.Controls.TControl'}
+
+uses mybean.console, mybean.core.intf, mybean.core.beanFactory;
+
+{$R *.dfm}
+
+initialization
+  beanFactory.RegisterBean('%FormIdent%', T%FormIdent% );
+end.

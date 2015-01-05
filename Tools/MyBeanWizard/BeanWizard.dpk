@@ -45,6 +45,7 @@ contains
   BeanDLLwiz in 'BeanDLLwiz.pas',
   NewInterface in 'NewInterface.pas',
   uSelPackages in 'uSelPackages.pas' {frmSelPackages},
-  mergePkg in 'mergePkg.pas';
+  mergePkg in 'mergePkg.pas',
+  BeanDataModuleWiz in 'BeanDataModuleWiz.pas';
 
 end.

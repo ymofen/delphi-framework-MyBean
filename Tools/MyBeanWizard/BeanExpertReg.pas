@@ -7,7 +7,7 @@ procedure Register;
 implementation
 
 uses WizHelpers, BeanHostAppWiz, BeanFormWiz, BeanDPKWiz, BeanLogicWiz,
-  BeanDLLWiz, NewInterface, mergePkg;
+  BeanDLLWiz, NewInterface, mergePkg, BeanDataModuleWiz;
 
 procedure Register;
 begin
@@ -18,6 +18,8 @@ begin
   wzRegisterPackageWizard(TDllBeanWizard.Create);
   wzRegisterPackageWizard(TBeanInterfaceWizard.Create);
   wzRegisterPackageWizard(TdpkMerageWizard.Create);
+  wzRegisterPackageWizard(TBeanDataModuleWizard.Create);
+
 end;
 
 end.

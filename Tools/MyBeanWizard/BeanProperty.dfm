@@ -1,7 +1,7 @@
 object beanPropertyDlg: TbeanPropertyDlg
   Left = 0
   Top = 0
-  ActiveControl = btnOK
+  ActiveControl = lbEditBeanName
   BorderStyle = bsDialog
   Caption = #23646#24615
   ClientHeight = 240
