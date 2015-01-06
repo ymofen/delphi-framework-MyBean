@@ -48,13 +48,13 @@ type
 
 implementation
 
-{$if CompilerVersion < 23}
-function CharInSet(C: AnsiChar; const CharSet: TSysCharSet): Boolean;
+{$if CompilerVersion < 22}
+function CharInSet(C: AnsiChar; const CharSet: TSysCharSet): Boolean; overload;
 begin
   Result := C in CharSet;
 end;
 
-function CharInSet(C: WideChar; const CharSet: TSysCharSet): Boolean;
+function CharInSet(C: WideChar; const CharSet: TSysCharSet): Boolean; overload;
 begin
   Result := C in CharSet;
 end;
