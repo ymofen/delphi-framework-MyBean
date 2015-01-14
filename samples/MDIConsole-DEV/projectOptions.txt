@@ -1,0 +1,8 @@
+Outputs\
+  BIN
+
+Search path:
+$(myBean_HOME)\Source
+
+runtime Package
+rtl;vcl;

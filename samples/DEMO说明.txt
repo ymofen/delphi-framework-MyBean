@@ -1,3 +1,7 @@
+samples\MDIConsole-DEV
+  MDI模式，带DEV控件的子插件  
+
+
 samples\MDIConsoleNoPackge
   不用带包的MDI演示(不建议使用)
   感谢青铜提供

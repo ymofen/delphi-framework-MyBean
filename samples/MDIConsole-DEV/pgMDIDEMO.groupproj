@@ -1,0 +1,44 @@
+﻿<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <ProjectGuid>{03bba102-4287-4cf3-93ff-7fb4b8038df6}</ProjectGuid>
+  </PropertyGroup>
+  <ItemGroup />
+  <ItemGroup>
+    <Projects Include="MDIConsole.dproj" />
+    <Projects Include="plug-ins-form-demo\plugin_form_demo.dproj" />
+  </ItemGroup>
+  <ProjectExtensions>
+    <Borland.Personality>Default.Personality</Borland.Personality>
+    <Borland.ProjectType />
+    <BorlandProject>
+  <BorlandProject xmlns=""> <Default.Personality> </Default.Personality> </BorlandProject></BorlandProject>
+  </ProjectExtensions>
+  <Target Name="MDIConsole">
+    <MSBuild Projects="MDIConsole.dproj" Targets="" />
+  </Target>
+  <Target Name="MDIConsole:Clean">
+    <MSBuild Projects="MDIConsole.dproj" Targets="Clean" />
+  </Target>
+  <Target Name="MDIConsole:Make">
+    <MSBuild Projects="MDIConsole.dproj" Targets="Make" />
+  </Target>
+  <Target Name="plugin_form_demo">
+    <MSBuild Projects="plug-ins-form-demo\plugin_form_demo.dproj" Targets="" />
+  </Target>
+  <Target Name="plugin_form_demo:Clean">
+    <MSBuild Projects="plug-ins-form-demo\plugin_form_demo.dproj" Targets="Clean" />
+  </Target>
+  <Target Name="plugin_form_demo:Make">
+    <MSBuild Projects="plug-ins-form-demo\plugin_form_demo.dproj" Targets="Make" />
+  </Target>
+  <Target Name="Build">
+    <CallTarget Targets="MDIConsole;plugin_form_demo" />
+  </Target>
+  <Target Name="Clean">
+    <CallTarget Targets="MDIConsole:Clean;plugin_form_demo:Clean" />
+  </Target>
+  <Target Name="Make">
+    <CallTarget Targets="MDIConsole:Make;plugin_form_demo:Make" />
+  </Target>
+  <Import Condition="Exists('$(MSBuildBinPath)\Borland.Group.Targets')" Project="$(MSBuildBinPath)\Borland.Group.Targets" />
+</Project>
