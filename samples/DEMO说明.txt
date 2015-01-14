@@ -1,0 +1,9 @@
+samples\MDIConsoleNoPackge
+  不用带包的MDI演示(不建议使用)
+  感谢青铜提供
+
+samples\Blessed_AdditionalConsole
+  一个将DLL插件嵌入到Panel上面的简单例子  
+  感谢Blessed(305295997)  提供
+  2015-01-14 12:57:06
+
