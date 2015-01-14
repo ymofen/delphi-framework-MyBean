@@ -1,5 +1,6 @@
 samples\MDIConsole-DEV
   MDI模式，带DEV控件的子插件  
+  注意需要带DEV的包
 
 
 samples\MDIConsoleNoPackge
