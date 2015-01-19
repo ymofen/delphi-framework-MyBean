@@ -25,7 +25,8 @@ uses
   DTcpClient in 'service\DTcpClient.pas',
   uDTcpClientCoderImpl in 'service\uDTcpClientCoderImpl.pas',
   uICoderSocket in 'service\uICoderSocket.pas',
-  uStreamCoderSocket in 'service\uStreamCoderSocket.pas';
+  uStreamCoderSocket in 'service\uStreamCoderSocket.pas',
+  uIFileAccess in '..\interface\uIFileAccess.pas';
 
 {$R *.res}
 
