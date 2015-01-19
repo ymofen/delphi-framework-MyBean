@@ -1,8 +1,21 @@
+========== 注意事项
+请认真阅读下面注意事项：
+*  注意Delphi做窗体插件时一般推荐带包，当提示[Cannot create form. No MDI forms are currently active]说明你的DLL和主窗体直接没有共享Application。可以带包解决该问题
+   project ->options ->build with packages
+   一般需要带上vcl;rtl;
+
+*  因为delphi的各个版本直接工程配置文件(.dproj)不太兼容，所以在提交文件时，没有提交配置文件。需要自己配置mybean的source路径(如果加入到libary search path中那可以不需要设置工程的搜索路径), 带包选项project ->options ->build with packages, 和输出路径。
+
+*  高版本(XE)的带包, project - options -> packages -> runtime packages (link with runtime packages设为 true，runtime packages设为要带的包如rtl;vcl;)
+
+*  DEV发现有很多环境在DLL中使用时出现访问违规的异常，这个不是MyBean框架导致的，你可以建一个标准的DLL和EXE可以检测是否也存在这样的问题，或者直接用Blessed提供的工程,存放在samples\CheckDEVInDLL目录下面。可以编译看看是不是有相同的问题。
+
+
+=========== DEMO说明
 samples\MDIConsole-DEV
   MDI模式，带DEV控件的子插件  
   注意需要带DEV的包
-
-
+  
 samples\MDIConsoleNoPackge
   不用带包的MDI演示(不建议使用)
   感谢青铜提供
@@ -11,4 +24,16 @@ samples\Blessed_AdditionalConsole
   一个将DLL插件嵌入到Panel上面的简单例子  
   感谢Blessed(305295997)  提供
   2015-01-14 12:57:06
+   
+samples\singleDEMO
+  演示在单一的EXE中使用mybean框架  
+
+samples\manualLoadLib
+  演示手动初始化DLL或者配置文件，可以在程序启动后再加载和卸载DLL文件。
+  
+samples\logicBean
+  演示纯逻辑插件, 演示控制台中调用逻辑插件，演示EXE提供插件让DLL中进行调用。
+   
+samples\diocp-DBDEMO
+  将DIOCP远程通信做成MyBean插件，可以调用改插件进行与DIOCP远程通信。
 

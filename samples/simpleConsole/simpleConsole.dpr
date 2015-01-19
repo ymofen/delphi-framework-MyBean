@@ -11,7 +11,7 @@ uses
 
 begin
   Application.Initialize;
-  applicationContextInitialize;
+  ApplicationContextInitialize;
   Application.MainFormOnTaskbar := True;
   Application.CreateForm(TfrmMain, frmMain);
   Application.Run;

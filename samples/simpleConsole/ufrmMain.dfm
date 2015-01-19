@@ -60,7 +60,6 @@ object frmMain: TfrmMain
     Lines.Strings = (
       #23454#29616#30340#25554#20214#38656#35201#23454#29616'IPluginForm'#25509#21475#25165#33021#26377#34987#35813'DEMO'#35843#29992)
     TabOrder = 3
-    ExplicitHeight = 169
   end
   object btnGetBeanInfos: TButton
     Left = 8
