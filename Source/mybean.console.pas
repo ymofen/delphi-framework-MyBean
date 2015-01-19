@@ -137,12 +137,6 @@ type
     /// <param name="pvConfigFile"> (PAnsiChar) </param>
     function checkLoadBeanConfigFile(pvConfigFile:PAnsiChar): Boolean; stdcall;
   protected
-    /// <summary>
-    ///     直接从DLL和BPL文件中加载插件，在没有配置文件的情况下执行
-    ///     plug-ins\*.DLL, plug-ins\*.BPL, *.DLL
-    /// </summary>
-    procedure executeLoadLibrary; stdcall;
-
 
     /// <summary>
     ///    加载一个库文件, 获取其中插件，并进行注册
@@ -177,17 +171,6 @@ type
     FRootPath:String;
 
     /// <summary>
-    ///   从单个配置文件中配置插件, 返回成功处理的Bean配置数量
-    ///      会整理配置中Bean对应libFile库对象(TLibFactoryObject)
-    /// </summary>
-    function executeLoadFromConfigFile(pvFileName: String): Integer;
-
-    /// <summary>
-    ///   从多个配置文件中读取配置插件, 返回成功处理的Bean配置数量
-    /// </summary>
-    function executeLoadFromConfigFiles(pvFiles: TStrings): Integer;
-
-    /// <summary>
     ///   准备工作，读取配置文件
     /// </summary>
     procedure checkReady;
@@ -199,16 +182,11 @@ type
         TBaseFactoryObject): Boolean;
 
 
-    /// <summary>
-    ///   从配置文件中加载, 返回成功处理的Bean配置数量
-    /// </summary>
-    function checkInitializeFromConfigFiles(pvConfigFiles: string): Integer;
-
 
     /// <summary>
-    ///   初始化工厂对象
+    ///    确保DLL工厂都已经加载了对应的DLL
     /// </summary>
-    procedure checkInitializeFactoryObjects;
+    procedure CheckInitializeFactoryObjects;
 
   public
     constructor Create;
@@ -222,7 +200,9 @@ type
     procedure checkFinalize; stdcall;
 
     /// <summary>
-    ///   执行初始化
+    ///   初始化框架(线程不安全),
+    ///     1.如果有配置文件<同名的.config.ini>则按照配置进行初始化
+    ///     2.如果没有配置文件，直接加载DLL文件，读取bean注册信息
     /// </summary>
     procedure checkInitialize; stdcall;
 
@@ -244,14 +224,74 @@ type
     function registerBeanFactory(const pvFactory: IBeanFactory; const pvNameSapce:PAnsiChar):Integer;stdcall;
 
   public
-    //1 根据基础路径和相对路径获取绝对路径(杨茂丰)
-    class function getAbsolutePath(BasePath, RelativePath: string): string;
-    class function getFileNameList(vFileList: TStrings; const aSearchPath: string):
-        integer;
-    class function instance: TApplicationContext;
-    class function pathWithBackslash(const Path: string): String;
-    class function pathWithoutBackslash(const Path: string): string;
+    /// <summary>
+    ///   从配置文件中加载, 返回成功处理的Bean配置数量
+    ///
+    ///   pvConfigFiles,配置文件通配符 *.plug-ins, *.config
+    ///   对应的文件必须是json文件，如果不是则忽略
+    /// </summary>
+    function CheckInitializeFromConfigFiles(pvConfigFiles: string): Integer;
 
+    /// <summary>
+    ///   从单个配置文件中配置插件, 返回成功处理的Bean配置数量
+    ///     会整理配置中Bean对应libFile库对象(TLibFactoryObject)
+    /// </summary>
+    function ExecuteLoadFromConfigFile(pvFileName: String): Integer;
+    
+    /// <summary>
+    ///    从多个配置文件中读取配置插件, 返回成功处理的Bean配置数量
+    /// </summary>
+    function ExecuteLoadFromConfigFiles(pvFiles: TStrings): Integer;
+
+    /// <summary>
+    ///     直接从DLL和BPL文件中加载插件，在没有配置文件的情况下执行
+    ///     plug-ins\*.DLL, plug-ins\*.BPL, *.DLL
+    /// </summary>
+    procedure ExecuteLoadLibrary; stdcall;
+
+
+
+    /// <summary>
+    ///   根据基础路径和相对路径获取绝对路径
+    /// </summary>
+    /// <returns>
+    ///   返回完整路径
+    /// </returns>
+    /// <param name="BasePath"> (string) </param>
+    /// <param name="RelativePath"> (string) </param>
+    class function GetAbsolutePath(BasePath, RelativePath: string): string;
+
+
+    /// <summary>
+    ///    获取所有文件
+    /// </summary>
+    /// <returns>
+    ///    返回文件数量
+    /// </returns>
+    /// <param name="vFileList"> 存放文件完整路径 </param>
+    /// <param name="aSearchPath"> 搜索的路径, 可以包含通配符: *.config </param>
+    class function GetFileNameList(vFileList: TStrings; const aSearchPath: string): integer;
+
+    
+    class function Instance: TApplicationContext;
+
+    /// <summary>
+    ///   确保路径带最后带一个"\"
+    /// </summary>
+    /// <returns>
+    ///   路径
+    /// </returns>
+    /// <param name="Path"> 确保的路径 </param>
+    class function PathWithBackslash(const Path: string): String;
+
+    /// <summary>
+    ///   确保路径带最后不带"\"
+    /// </summary>
+    /// <returns>
+    ///   路径
+    /// </returns>
+    /// <param name="Path"> 确保的路径 </param>
+    class function PathWithoutBackslash(const Path: string): string;
   end;
 
 
@@ -329,7 +369,7 @@ procedure executeLoadLibFiles(const pvLibFiles: string);
 ///     根据 ini的配置进行初始化,
 ///     如果没有配置文件，直接加载 *.dll和plug-ins\*.dll
 /// </summary>
-procedure applicationContextInitialize;
+procedure ApplicationContextInitialize;
 
 /// <summary>
 ///   应用程序退出时可以手动调用该方法，
@@ -482,7 +522,7 @@ begin
   TApplicationContext.instance.checkLoadLibraryFile(PAnsiChar(AnsiString(pvLibFiles)));
 end;
 
-procedure applicationContextInitialize;
+procedure ApplicationContextInitialize;
 begin
   appPluginContext.checkInitialize;
 end;
@@ -502,33 +542,35 @@ procedure TApplicationContext.checkInitialize;
 var
   lvConfigFiles:String;
 begin
+  // 判断是否已经进行过初始化
   if FFactoryObjectList.Count = 0 then
   begin
-
-    // 先读取配置文件
+    // 先读取bean配置文件  plug-ins\*.plug-ins, *.plug-ins
     lvConfigFiles := FINIFile.ReadString('main', 'beanConfigFiles', '');
     if lvConfigFiles <> '' then
     begin
-      if FTraceLoadFile then
-         __beanLogger.logMessage(sDebug_loadFromConfigFile, 'LOAD_TRACE_');
-      if checkInitializeFromConfigFiles(lvConfigFiles) > 0 then
+      if FTraceLoadFile then __beanLogger.logMessage(sDebug_loadFromConfigFile, 'LOAD_TRACE_');
+      if CheckInitializeFromConfigFiles(lvConfigFiles) > 0 then
       begin 
         if FINIFile.ReadBool('main', 'loadOnStartup', False) then
         begin
-          //加载DLL文件， 把DLL载入
-          checkInitializeFactoryObjects;
+          // 确保DLL工厂都已经加载了对应的DLL
+          CheckInitializeFactoryObjects;
         end;
       end else
       begin
-        if FTraceLoadFile then
-           __beanLogger.logMessage(sDebug_NoneConfigFile, 'LOAD_TRACE_');
+        if FTraceLoadFile then __beanLogger.logMessage(sDebug_NoneConfigFile, 'LOAD_TRACE_');
       end;
     end else
     begin
-      if FTraceLoadFile then
-        __beanLogger.logMessage(sDebug_directlyLoadLibFile, 'LOAD_TRACE_');
-        
-      executeLoadLibrary;
+      // 在没有配置文件的情况下执行
+      if FTraceLoadFile then __beanLogger.logMessage(sDebug_directlyLoadLibFile, 'LOAD_TRACE_');
+
+      /// 直接从(plug-ins\*.DLL, plug-ins\*.BPL, *.DLL)路径下 加载 DLL和BPL文件中的插件
+      ExecuteLoadLibrary;
+
+      /// 加载ConfigPlugins下面的 配置文件
+      CheckInitializeFromConfigFiles('ConfigPlugins\*.plug-ins');
     end;
   end;
 end;
@@ -827,7 +869,7 @@ begin
   end;
 end;
 
-procedure TApplicationContext.checkInitializeFactoryObjects;
+procedure TApplicationContext.CheckInitializeFactoryObjects;
 var
   i: Integer;
   lvFactoryObject:TBaseFactoryObject;
@@ -852,7 +894,7 @@ begin
 
 end;
 
-function TApplicationContext.checkInitializeFromConfigFiles(pvConfigFiles:
+function TApplicationContext.CheckInitializeFromConfigFiles(pvConfigFiles:
     string): Integer;
 var
   lvFilesList, lvStrings: TStrings;
@@ -875,10 +917,9 @@ begin
 
 
       lvStrings.Clear;
-      getFileNameList(lvStrings, lvFileName);
-      Result := Result + executeLoadFromConfigFiles(lvStrings);
+      GetFileNameList(lvStrings, lvFileName);
+      Result := Result + ExecuteLoadFromConfigFiles(lvStrings);
     end;
-
   finally
     lvFilesList.Free;
     lvStrings.Free;
@@ -939,7 +980,7 @@ end;
 function TApplicationContext.checkLoadBeanConfigFile(
   pvConfigFile: PAnsiChar): Boolean;
 begin
-  Result := checkInitializeFromConfigFiles(String(AnsiString(pvConfigFile))) > 0;
+  Result := CheckInitializeFromConfigFiles(String(AnsiString(pvConfigFile))) > 0;
 end;
 
 function TApplicationContext.checkLoadLibraryFile(
@@ -967,7 +1008,7 @@ begin
       lvFileName := lvPath + lvFileName;
 
       lvStrings.Clear;
-      getFileNameList(lvStrings, lvFileName);
+      GetFileNameList(lvStrings, lvFileName);
 
       for j := 0 to lvStrings.Count -1 do
       begin
@@ -987,13 +1028,14 @@ end;
 
 
 
-function TApplicationContext.executeLoadFromConfigFile(pvFileName: String):
+function TApplicationContext.ExecuteLoadFromConfigFile(pvFileName: String):
     Integer;
 var
   lvConfig, lvPluginList, lvItem:ISuperObject;
   I: Integer;
   lvLibFile, lvID:String;
   lvLibObj:TBaseFactoryObject;
+  lvBasePath:String;
 begin
   Result := 0;
   lvConfig := TSOTools.JsnParseFromFile(pvFileName);
@@ -1001,6 +1043,9 @@ begin
   if lvConfig.IsType(stArray) then lvPluginList := lvConfig
   else if lvConfig.O['list'] <> nil then lvPluginList := lvConfig.O['list']
   else if lvConfig.O['plugins'] <> nil then lvPluginList := lvConfig.O['plugins'];
+
+  // 获取配置文件的路径
+  lvBasePath := ExtractFilePath(pvFileName);
 
   if (lvPluginList = nil) or (not lvPluginList.IsType(stArray)) then
   begin
@@ -1013,7 +1058,15 @@ begin
   for I := 0 to lvPluginList.AsArray.Length - 1 do
   begin
     lvItem := lvPluginList.AsArray.O[i];
-    lvLibFile := FRootPath + lvItem.S['lib'];
+    lvLibFile := lvItem.S['lib'];
+    if Pos('%root%', lvLibFile) > 0 then
+    begin
+      lvLibFile := StringReplace(lvLibFile, '%root%', FRootPath, [rfIgnoreCase]);
+    end else
+    begin  // 相对于配置文件的相对路径
+      lvLibFile := GetAbsolutePath(lvBasePath, lvLibFile);
+    end;
+    // lvLibFile := FRootPath + lvItem.S['lib'];
     if not FileExists(lvLibFile) then
     begin
      {$IFDEF LOG_ON}
@@ -1063,7 +1116,7 @@ begin
   end;
 end;
 
-function TApplicationContext.executeLoadFromConfigFiles(pvFiles: TStrings):
+function TApplicationContext.ExecuteLoadFromConfigFiles(pvFiles: TStrings):
     Integer;
 var
   i:Integer;
@@ -1073,11 +1126,11 @@ begin
   for i := 0 to pvFiles.Count - 1 do
   begin
     lvFile := pvFiles[i];
-    Result := Result +  executeLoadFromConfigFile(lvFile);
+    Result := Result +  ExecuteLoadFromConfigFile(lvFile);
   end;
 end;
 
-procedure TApplicationContext.executeLoadLibrary;
+procedure TApplicationContext.ExecuteLoadLibrary;
 var
   lvStrings: TStrings;
   i: Integer;
@@ -1085,9 +1138,9 @@ var
 begin
   lvStrings := TStringList.Create;
   try
-    getFileNameList(lvStrings, ExtractFilePath(ParamStr(0)) + 'plug-ins\*.dll');
-    getFileNameList(lvStrings, ExtractFilePath(ParamStr(0)) + 'plug-ins\*.bpl');
-    getFileNameList(lvStrings, ExtractFilePath(ParamStr(0)) + '*.dll');
+    GetFileNameList(lvStrings, ExtractFilePath(ParamStr(0)) + 'plug-ins\*.dll');
+    GetFileNameList(lvStrings, ExtractFilePath(ParamStr(0)) + 'plug-ins\*.bpl');
+    GetFileNameList(lvStrings, ExtractFilePath(ParamStr(0)) + '*.dll');
     for i := 0 to lvStrings.Count - 1 do
     begin
       lvFile := lvStrings[i];
@@ -1142,12 +1195,12 @@ end;
 
 
 
-class function TApplicationContext.instance: TApplicationContext;
+class function TApplicationContext.Instance: TApplicationContext;
 begin
   Result := __instanceAppContext;
 end;
 
-class function TApplicationContext.getAbsolutePath(BasePath, RelativePath:
+class function TApplicationContext.GetAbsolutePath(BasePath, RelativePath:
     string): string;
 var
   Dest: array[0..MAX_PATH] of Char;
@@ -1190,7 +1243,7 @@ begin
   end;                             
 end;
 
-class function TApplicationContext.getFileNameList(vFileList: TStrings; const
+class function TApplicationContext.GetFileNameList(vFileList: TStrings; const
     aSearchPath: string): integer;
 var dirinfo: TSearchRec;
   dir, lCurrentDir: string;
@@ -1213,7 +1266,7 @@ begin
   end;
 end;
 
-class function TApplicationContext.pathWithBackslash(const Path: string):
+class function TApplicationContext.PathWithBackslash(const Path: string):
     String;
 var
   ilen: Integer;
@@ -1230,7 +1283,7 @@ begin
     Result := Result + '\';
 end;
 
-class function TApplicationContext.pathWithoutBackslash(const Path: string):
+class function TApplicationContext.PathWithoutBackslash(const Path: string):
     string;
 var
   I, ilen: Integer;

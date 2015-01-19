@@ -34,11 +34,11 @@ type
     ['{0FE2FD2D-3A21-475B-B51D-154E1728893B}']
 
     /// <summary>
-    ///   初始化配置(线程不安全),
-    ///      pvLoadLib为true时加载配置文件的同时加载DLL文件(服务端程序推荐)
-    ///               为flase时只加载配置文件(客户端程序推荐)
-    ///      pvUseLibCache为true时copy,dll文件到Plug-ins-cache文件夹然后进行加载
-    ///                   为false时不进行copy，原来目录进行加载
+    ///   初始化框架(线程不安全),
+    ///     1.如果有配置文件<同名的.config.ini>则按照配置进行初始化
+    ///     2.如果没有配置文件，
+    ///       1>直接从(plug-ins\*.DLL, plug-ins\*.BPL, *.DLL)路径下 加载 DLL和BPL文件中的插件
+    ///       2>加载ConfigPlugins下面的配置文件
     /// </summary>
     procedure checkInitialize; stdcall;
 
