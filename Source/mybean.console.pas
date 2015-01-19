@@ -249,8 +249,6 @@ type
     /// </summary>
     procedure ExecuteLoadLibrary; stdcall;
 
-
-
     /// <summary>
     ///   根据基础路径和相对路径获取绝对路径
     /// </summary>

@@ -128,6 +128,19 @@ type
     ///    ]
     /// </summary>
     function GetBeanInfos(pvBeanInfo:PAnsiChar; pvLength:Integer): Integer; stdcall;
+//
+//    /// <summary>
+//    ///   添加一个插件实例, 可以用GetBean进行获取
+//    /// </summary>
+//    /// <param name="pvPluginID"> 插件的ID, 如果之前有添加，将会被替换成最后一次添加的 </param>
+//    /// <param name="pvPlugin"> 插件实例 </param>
+//    procedure AddPlugin(pvPluginID:PAnsiChar; pvPlugin:IInterface); stdcall;
+//
+//    /// <summary>
+//    ///   移除掉一个插件实例.
+//    /// </summary>
+//    /// <param name="pvPluginID"> 添加时的插件ID </param>
+//    procedure RemovePlugin(pvPluginID:PAnsiChar); stdcall;
   end;
 
 
