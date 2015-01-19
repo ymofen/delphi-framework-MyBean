@@ -41,3 +41,11 @@
   [/code]
 
 * 修复编译warning 和hit <XE7>
+
+* 修改框架加载流程 
+  2015-01-19 13:15:02
+    ApplicationContextInitialize   
+    1.如果有配置文件<同名的.config.ini>则按照配置进行初始化
+    2.如果没有配置文件，
+      1>直接从(plug-ins\*.DLL, plug-ins\*.BPL, *.DLL)路径下 加载 DLL和BPL文件中的插件
+      2>加载ConfigPlugins下面的配置文件
