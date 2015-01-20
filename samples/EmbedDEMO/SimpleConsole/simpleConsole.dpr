@@ -19,6 +19,9 @@ begin
   ///   TMyBeanFactoryTools(mybean.tools.beanFactory.pas)中的GetBean调用插件
   /// </summary>
   ExecuteLoadBeanFromConfigFiles('ConfigPlugins\*.plug-ins');
+
+  /// 直接加载DLL
+  ExecuteLoadLibFiles('corePlugins\*.dll');
   
   Application.CreateForm(TfrmMain, frmMain);
   Application.Run;
