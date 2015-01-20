@@ -36,4 +36,13 @@ samples\logicBean
    
 samples\diocp-DBDEMO
   将DIOCP远程通信做成MyBean插件，可以调用改插件进行与DIOCP远程通信。
+  
+samples\EmbedDEMO
+  其他插件框架中嵌入MyBean，调用MyBean插件功能。
+  该DEMO演示在标准的DLL中调用MyBean插件。
+    1.EXE中初始化加载MyBean插件 引用mybean.console.pas然后对加载MyBean插件, 引用MyBeanBridgeConsole.pas 对MyBeanBridge.dll进行初始化
+	2.DLL中引用MyBeanBridgeLib.pas,然后可以用TMyBeanFactoryTools.GetBean获取Mybean提供的插件
+  注意其他框架中调用MyBean插件需要带一个MyBeanBridge.dll(D2007编译82kb,不需要带包)提供桥接工作。
+  2015-01-20 14:59:02
+   
 

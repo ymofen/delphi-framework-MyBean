@@ -15,7 +15,7 @@ type
   public
     { Public declarations }
   end;
-     procedure Load_frmTest(App: THandle);stdcall ;External 'DllForm.dll';
+     procedure Load_frmTest(App: THandle);stdcall ;External 'StdWin32DLL.dll';
 var
   Form1: TForm1;
 
