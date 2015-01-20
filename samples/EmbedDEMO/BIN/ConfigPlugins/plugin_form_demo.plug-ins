@@ -1,0 +1,14 @@
+{
+   list:
+   [
+      {  
+         "id":"mybeanMethodForm",   
+         "lib":"plugin_form_demo.dll",
+      },
+      {  
+         "id":"mybeanForm",          
+         "lib":"plugin_form_demo.dll",
+      },	  
+	  
+   ]
+}
