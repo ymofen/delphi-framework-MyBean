@@ -26,6 +26,11 @@ type
     /// </summary>
     class function applicationContext: IApplicationContext;
 
+    /// <summary>
+    ///   获取 applicationKeyMap接口
+    /// </summary>
+    class function applicationKeyMap:IKeyMap;
+
     
     class procedure checkRaiseErrorINfo(const pvIntf: IInterface);
 
@@ -68,7 +73,33 @@ implementation
 
 class function TMyBeanFactoryTools.applicationContext: IApplicationContext;
 begin
-  Result := appPluginContext;
+  if @GetApplicationContextFunc <> nil then
+  begin
+    Result := GetApplicationContextFunc();
+  end else
+  begin
+    Result := mybean.core.intf.appPluginContext;
+  end;
+  if Result = nil then
+  begin
+    raise Exception.Create('无法获取appPluginContext接口,请确保框架是否初始化!');
+  end;
+end;
+
+class function TMyBeanFactoryTools.applicationKeyMap: IKeyMap;
+begin
+  if @GetApplicationKeyMapFunc <> nil then
+  begin
+    Result := GetApplicationKeyMapFunc();
+
+  end else
+  begin
+    Result := mybean.core.intf.applicationKeyMap;
+  end;
+  if Result = nil then
+  begin
+    raise Exception.Create('无法获取applicationKeyMap接口,请确保框架是否初始化!');
+  end;
 end;
 
 class procedure TMyBeanFactoryTools.checkRaiseErrorINfo(const pvIntf: IInterface);

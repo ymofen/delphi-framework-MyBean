@@ -118,7 +118,7 @@ type
     ///    ]
     /// </summary>
     function GetBeanInfos(pvBeanInfo:PAnsiChar; pvLength:Integer): Integer; stdcall;
-  protected
+  public
     /// <summary>
     ///  加载库文件
     /// </summary>
@@ -226,11 +226,10 @@ type
   public
     /// <summary>
     ///   从配置文件中加载, 返回成功处理的Bean配置数量
-    ///
     ///   pvConfigFiles,配置文件通配符 *.plug-ins, *.config
     ///   对应的文件必须是json文件，如果不是则忽略
     /// </summary>
-    function CheckInitializeFromConfigFiles(pvConfigFiles: string): Integer;
+    function ExecuteLoadBeanFromConfigFiles(pvConfigFiles: string): Integer;
 
     /// <summary>
     ///   从单个配置文件中配置插件, 返回成功处理的Bean配置数量
@@ -357,9 +356,20 @@ function applicationKeyMap: IKeyMap; stdcall;
 
 /// <summary>
 ///   加载文件
-///     executeLoadLibFiles('plugin\*.dll');
+///     ExecuteLoadLibFiles('plugin\*.dll');
 /// </summary>
-procedure executeLoadLibFiles(const pvLibFiles: string);
+procedure ExecuteLoadLibFiles(const pvLibFiles: string);
+
+/// <summary>
+///   从配置文件中加载, 返回成功处理的Bean配置数量
+///   可以调用多次
+/// </summary>
+/// <param name="pvConfigFile">
+///     pvConfigFiles,配置文件通配符"*.plug-ins, *.config"
+///     可以是指定多个通配符文件
+///     对应的文件必须是json文件，如果不是则忽略
+/// </param>
+procedure ExecuteLoadBeanFromConfigFiles(const pvConfigFiles: string);
 
 
 /// <summary>
@@ -373,7 +383,7 @@ procedure ApplicationContextInitialize;
 ///   应用程序退出时可以手动调用该方法，
 ///    可以清理全局对象，卸载DLL
 /// </summary>
-procedure applicationContextFinalize;
+procedure ApplicationContextFinalize;
 
 
 
@@ -515,7 +525,7 @@ begin
   Result := hashOf(PAnsiChar(lvStr), Length(lvStr));
 end;
 
-procedure executeLoadLibFiles(const pvLibFiles: string);
+procedure ExecuteLoadLibFiles(const pvLibFiles: string);
 begin
   TApplicationContext.instance.checkLoadLibraryFile(PAnsiChar(AnsiString(pvLibFiles)));
 end;
@@ -525,13 +535,18 @@ begin
   appPluginContext.checkInitialize;
 end;
 
-procedure applicationContextFinalize;
+procedure ApplicationContextFinalize;
 begin
   mybean.core.intf.appPluginContext := nil;
   mybean.core.intf.applicationKeyMap := nil;
 
   executeKeyMapCleanup;
   appContextCleanup;
+end;
+
+procedure ExecuteLoadBeanFromConfigFiles(const pvConfigFiles: string);
+begin
+  TApplicationContext.instance.ExecuteLoadBeanFromConfigFiles(pvConfigFiles);
 end;
 
 
@@ -548,8 +563,8 @@ begin
     if lvConfigFiles <> '' then
     begin
       if FTraceLoadFile then __beanLogger.logMessage(sDebug_loadFromConfigFile, 'LOAD_TRACE_');
-      if CheckInitializeFromConfigFiles(lvConfigFiles) > 0 then
-      begin 
+      if ExecuteLoadBeanFromConfigFiles(lvConfigFiles) > 0 then
+      begin
         if FINIFile.ReadBool('main', 'loadOnStartup', False) then
         begin
           // 确保DLL工厂都已经加载了对应的DLL
@@ -568,7 +583,7 @@ begin
       ExecuteLoadLibrary;
 
       /// 加载ConfigPlugins下面的 配置文件
-      CheckInitializeFromConfigFiles('ConfigPlugins\*.plug-ins');
+      ExecuteLoadBeanFromConfigFiles('ConfigPlugins\*.plug-ins');
     end;
   end;
 end;
@@ -892,7 +907,7 @@ begin
 
 end;
 
-function TApplicationContext.CheckInitializeFromConfigFiles(pvConfigFiles:
+function TApplicationContext.ExecuteLoadBeanFromConfigFiles(pvConfigFiles:
     string): Integer;
 var
   lvFilesList, lvStrings: TStrings;
@@ -978,7 +993,7 @@ end;
 function TApplicationContext.checkLoadBeanConfigFile(
   pvConfigFile: PAnsiChar): Boolean;
 begin
-  Result := CheckInitializeFromConfigFiles(String(AnsiString(pvConfigFile))) > 0;
+  Result := ExecuteLoadBeanFromConfigFiles(String(AnsiString(pvConfigFile))) > 0;
 end;
 
 function TApplicationContext.checkLoadLibraryFile(
@@ -1458,7 +1473,7 @@ initialization
 //  appPluginContext.checkInitialize;
 
 finalization  
-  applicationContextFinalize;
+  ApplicationContextFinalize;
 
   // 记录未释放的情况
   {$IFDEF LOG_ON}

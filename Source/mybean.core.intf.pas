@@ -76,12 +76,17 @@ type
     function checkLoadLibraryFile(pvLibFile:PAnsiChar): Boolean; stdcall;
 
     /// <summary>
-    ///    加载配置文件
+    ///   从配置文件中加载, 返回成功处理的Bean配置数量
+    ///   可以调用多次
     /// </summary>
     /// <returns>
     ///   加载失败返回false<文件可能不存在>
     /// </returns>
-    /// <param name="pvConfigFile"> (PAnsiChar) </param>
+    /// <param name="pvConfigFile">
+    ///     pvConfigFiles,配置文件通配符"*.plug-ins, *.config"
+    ///     可以是指定多个通配符文件
+    ///     对应的文件必须是json文件，如果不是则忽略
+    /// </param>
     function checkLoadBeanConfigFile(pvConfigFile:PAnsiChar): Boolean; stdcall;
   end;
 
@@ -289,8 +294,20 @@ type
 
 
 var
+
   appPluginContext:IApplicationContext;
   applicationKeyMap:IKeyMap;
+
+  /// <summary>
+  ///   提供一个获取appPluginContext对象的函数指针，TMyBeanFactoryTools中如果该指针存在，直接调用该函数
+  /// </summary>
+  GetApplicationContextFunc: function:IApplicationContext; stdcall;
+
+  /// <summary>
+  ///   提供一个获取applicationKeyMap对象的函数指针，TMyBeanFactoryTools中如果该指针存在，直接调用该函数
+  /// </summary>
+  GetApplicationKeyMapFunc: function:IKeyMap; stdcall;
+  
 
 implementation
 
