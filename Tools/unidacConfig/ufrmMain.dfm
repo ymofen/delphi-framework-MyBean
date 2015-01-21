@@ -12,7 +12,6 @@ object frmMain: TfrmMain
   Font.Name = 'Tahoma'
   Font.Style = []
   OldCreateOrder = False
-  OnCreate = FormCreate
   PixelsPerInch = 96
   TextHeight = 13
   object lblDataSourceID: TLabel
@@ -37,12 +36,30 @@ object frmMain: TfrmMain
     Height = 21
     ItemHeight = 13
     TabOrder = 1
-    Text = 'cbbSection'
+    Text = 'main'
+  end
+  object btnOpen: TButton
+    Left = 16
+    Top = 8
+    Width = 90
+    Height = 25
+    Action = actOpen
+    TabOrder = 2
+  end
+  object btnSave: TButton
+    Left = 112
+    Top = 8
+    Width = 89
+    Height = 25
+    Action = actSave
+    TabOrder = 3
   end
   object UniConnection1: TUniConnection
+    SpecificOptions.Strings = (
+      'MySQL.UseUnicode=True')
     ConnectDialog = UniConnectDialog1
-    Left = 104
-    Top = 24
+    Left = 240
+    Top = 96
   end
   object UniConnectDialog1: TUniConnectDialog
     DatabaseLabel = #25968#25454#24211
@@ -56,8 +73,8 @@ object frmMain: TfrmMain
     ConnectButton = #36830#25509
     CancelButton = #21462#28040
     LabelSet = lsCustom
-    Left = 144
-    Top = 24
+    Left = 280
+    Top = 96
   end
   object MySQLUniProvider1: TMySQLUniProvider
     Left = 336
@@ -80,11 +97,31 @@ object frmMain: TfrmMain
     Top = 24
   end
   object actlstMain: TActionList
-    Left = 184
-    Top = 24
+    Left = 360
+    Top = 56
     object actConfig: TAction
       Caption = #37197#32622
       OnExecute = actConfigExecute
     end
+    object actOpen: TAction
+      Caption = #25171#24320#37197#32622#25991#20214
+      OnExecute = actOpenExecute
+    end
+    object actSave: TAction
+      Caption = #20445#23384#37197#32622#25991#20214
+      OnExecute = actSaveExecute
+    end
+  end
+  object dlgOpenConfigFile: TOpenDialog
+    Filter = #37197#32622#25991#20214'(*.ini)|*.ini'
+    FilterIndex = 0
+    Left = 32
+    Top = 96
+  end
+  object dlgSave: TSaveDialog
+    Filter = #37197#32622#25991#20214'(*.ini)|*.ini'
+    FilterIndex = 0
+    Left = 88
+    Top = 96
   end
 end
