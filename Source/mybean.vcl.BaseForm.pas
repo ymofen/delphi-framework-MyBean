@@ -1,4 +1,4 @@
-unit mybean.vcl.BaseForm;
+unit mybean.vcl.baseForm;
 
 
 
@@ -6,7 +6,9 @@ interface
 
 uses
   Classes,
-  Messages, Forms, Controls, ActnList, Windows;
+  Messages, Forms, Controls, ActnList,
+  mybean.core.intf,
+  Windows;
 
 type
   /// <summary>
@@ -44,13 +46,11 @@ type
       , IInterfaceComponentReference
       , IShowAsNormal
       , IShowAsMDI
-      , IShowAsModal)
-  private
+      , IShowAsModal
+      , IFreeObject)
   protected
     procedure CreateParams(var Params: TCreateParams); override;
-    {IInterfaceComponentReference}
-    function GetComponent: TComponent;
-    
+    function GetComponent: TComponent;    
     function GetObject: TObject;
     function GetInstanceID: integer;
   public
@@ -58,14 +58,18 @@ type
     procedure showAsMDI; stdcall;
     function showAsModal: Integer; stdcall;
 
-  public
-  published
+    procedure FreeObject; stdcall;
   end;
 
 implementation
 
 
 
+
+procedure TMyBeanBaseForm.FreeObject;
+begin
+  Free;
+end;
 
 function TMyBeanBaseForm.GetComponent: TComponent;
 begin
