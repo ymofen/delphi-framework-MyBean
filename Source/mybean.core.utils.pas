@@ -16,7 +16,7 @@ unit mybean.core.utils;
 interface
 
 uses  
-  safeLogger;
+  mybean.core.safeLogger;
 
 
 var
