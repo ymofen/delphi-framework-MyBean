@@ -49,3 +49,6 @@
     2.如果没有配置文件，
       1>直接从(plug-ins\*.DLL, plug-ins\*.BPL, *.DLL)路径下 加载 DLL和BPL文件中的插件
       2>加载ConfigPlugins下面的配置文件
+	  
+* 修复在加载DLL/BPL如果不是MyBean插件时，关闭程序时出现的内存泄漏
+    2015年1月22日 14:58:13

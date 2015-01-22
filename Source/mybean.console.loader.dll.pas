@@ -187,6 +187,15 @@ begin
           begin
             FLibHandle := lvLibHandle;
           end;
+        end else
+        begin    // ²»ÊÇMyBean²å¼þ
+          if lvIsBpl then
+          begin
+            UnloadPackage(lvLibHandle);
+          end else
+          begin
+            FreeLibrary(lvLibHandle);
+          end;
         end;
       end;
     end else
