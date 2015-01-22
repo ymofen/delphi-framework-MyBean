@@ -22,11 +22,19 @@ type
     actConfig: TAction;
     cbbSection: TComboBox;
     lblDataSourceID: TLabel;
-    procedure FormCreate(Sender: TObject);
+    dlgOpenConfigFile: TOpenDialog;
+    actOpen: TAction;
+    actSave: TAction;
+    btnOpen: TButton;
+    btnSave: TButton;
+    dlgSave: TSaveDialog;
     procedure actConfigExecute(Sender: TObject);
+    procedure actOpenExecute(Sender: TObject);
+    procedure actSaveExecute(Sender: TObject);
   private
-    { Private declarations }
-    procedure reloadConfig;
+    FCurrentFileName:String;
+    procedure ReloadConfig;
+    procedure Save2File(pvFile:String);
   public
     { Public declarations }
   end;
@@ -38,29 +46,39 @@ implementation
 
 {$R *.dfm}
 
-procedure TfrmMain.FormCreate(Sender: TObject);
-begin
-  reloadConfig;
-end;
-
 procedure TfrmMain.actConfigExecute(Sender: TObject);
 var
   lvIniFile:TIniFile;
 begin
-  cbbSection.Items.Clear;
   lvIniFile := TIniFile.Create(ChangeFileExt(ParamStr(0), '.appconfig.ini'));
   try
     UniConnection1.ConnectString := lvIniFile.ReadString('datasource', cbbSection.Text, '');
-    if UniConnectDialog1.Execute then
-    begin
-      lvIniFile.WriteString('datasource', cbbSection.Text, UniConnection1.ConnectString);
-    end;
+    UniConnectDialog1.Execute;
   finally
     lvIniFile.Free;
   end;
 end;
 
-procedure TfrmMain.reloadConfig;
+procedure TfrmMain.actOpenExecute(Sender: TObject);
+begin
+  dlgOpenConfigFile.InitialDir := ExtractFilePath(ParamStr(0));
+  if dlgOpenConfigFile.Execute() then
+  begin
+    FCurrentFileName := dlgOpenConfigFile.FileName;
+    ReloadConfig;
+  end;
+end;
+
+procedure TfrmMain.actSaveExecute(Sender: TObject);
+begin
+  dlgSave.FileName := FCurrentFileName;
+  if dlgSave.Execute() then
+  begin
+    Save2File(dlgSave.FileName);
+  end;
+end;
+
+procedure TfrmMain.ReloadConfig;
 var
   lvIniFile:TIniFile;
   lvStrings:TStrings;
@@ -69,7 +87,7 @@ begin
   cbbSection.Items.Clear;
   lvStrings := TStringList.Create;
   try
-    lvIniFile := TIniFile.Create(ChangeFileExt(ParamStr(0), '.appconfig.ini'));
+    lvIniFile := TIniFile.Create(FCurrentFileName);
     lvIniFile.ReadSectionValues('datasource', lvStrings);
     for i := 0 to lvStrings.Count - 1 do
     begin
@@ -85,6 +103,18 @@ begin
     cbbSection.Items.Add('main');
   end;
   cbbSection.ItemIndex := 0;
+end;
+
+procedure TfrmMain.Save2File(pvFile: String);
+var
+  lvIniFile:TIniFile;
+begin
+  lvIniFile := TIniFile.Create(pvFile);
+  try
+    lvIniFile.WriteString('datasource', cbbSection.Text, UniConnection1.ConnectString);
+  finally
+    lvIniFile.Free;
+  end;
 end;
 
 end.
