@@ -674,9 +674,19 @@ begin
   ///Ð¶ÔØDLL
   for i := 0 to FFactoryObjectList.Count -1 do
   begin
+    lvLibObject := TBaseFactoryObject(FFactoryObjectList.Objects[i]);
     try
-      lvLibObject := TBaseFactoryObject(FFactoryObjectList.Objects[i]);
       lvLibObject.cleanup;
+    except
+      on E:Exception do
+      begin
+        {$IFDEF LOG_ON}
+        __beanLogger.logMessage(Format(sLoadTrace_UnloadError,
+             [lvLibObject.namespace, E.Message]), 'LOAD_TRACE_');
+        {$ENDIF}
+      end;
+    end;
+    try
       lvLibObject.Free;
     except
     end;

@@ -6,7 +6,7 @@
  *
 *)
 
-unit MyBeanBridgeLib;
+unit mybean.tools.bridgeLib;
 
 interface 
 

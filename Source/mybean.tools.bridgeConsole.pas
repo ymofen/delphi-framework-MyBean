@@ -3,7 +3,7 @@
  *   对MyBeanBridge.dll中的获取地址进行桥接
 *)
 
-unit MyBeanBridgeConsole;
+unit mybean.tools.bridgeConsole;
 
 interface 
 

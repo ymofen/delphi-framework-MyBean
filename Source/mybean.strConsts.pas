@@ -16,6 +16,7 @@ resourcestring
   sLoadTrace_Factory_Initalize     = '准备初始化bean工厂:%s';
   sLoadTrace_Factory_Init_BEGIN    = '初始化bean工厂_BEGIN:%s';
   sLoadTrace_Factory_Init_END      = '初始化bean工厂_END:%s';
+  sLoadTrace_UnloadError           = '卸载插件宿主(%s)时出现了异常:%s';
 
 implementation
 
