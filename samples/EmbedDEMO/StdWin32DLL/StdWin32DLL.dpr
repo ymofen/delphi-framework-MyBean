@@ -14,7 +14,7 @@ uses
   SysUtils,
   Classes,
   forms,
-  MyBeanBridgeLib,
+  mybean.tools.bridgeLib,
   Unit2 in 'Unit2.pas' {Form2},
   uIFormShow in 'uIFormShow.pas',
   uIPluginForm in 'uIPluginForm.pas';

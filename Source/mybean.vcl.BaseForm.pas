@@ -47,17 +47,16 @@ type
       , IShowAsNormal
       , IShowAsMDI
       , IShowAsModal
+      , IShowAsChild
       , IFreeObject)
   protected
     procedure CreateParams(var Params: TCreateParams); override;
     function GetComponent: TComponent;    
-    function GetObject: TObject;
-    function GetInstanceID: integer;
   public
     procedure showAsNormal; stdcall;
     procedure showAsMDI; stdcall;
     function showAsModal: Integer; stdcall;
-
+    procedure showAsChild(pvParent:TWinControl); stdcall;
     procedure FreeObject; stdcall;
   end;
 
@@ -76,11 +75,6 @@ begin
   Result := Self;
 end;
 
-function TMyBeanBaseForm.GetObject: TObject;
-begin
-  result := Self;
-end;
-
 function GetShiftState: TShiftState;
 begin
   Result := [];
@@ -92,11 +86,6 @@ begin
   Include(Result, ssAlt);
 end;
 
-function TMyBeanBaseForm.GetInstanceID: integer;
-begin
-  result := integer(Self);
-end;
-
 
 procedure TMyBeanBaseForm.CreateParams(var Params: TCreateParams);
 begin
@@ -106,6 +95,14 @@ begin
   end;
 end;
 
+
+procedure TMyBeanBaseForm.showAsChild(pvParent: TWinControl);
+begin
+  self.BorderStyle := bsNone;
+  self.Align := alClient;
+  self.Parent := pvParent;
+  self.Visible := true;
+end;
 
 procedure TMyBeanBaseForm.showAsMDI;
 begin

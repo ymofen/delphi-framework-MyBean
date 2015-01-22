@@ -3,7 +3,7 @@ program simpleConsole;
 uses
   mybean.console,
   Forms,
-  MyBeanBridgeConsole,  
+  mybean.tools.bridgeConsole,  
   ufrmMain in 'ufrmMain.pas' {frmMain};
 
 {$R *.res}
