@@ -267,7 +267,7 @@ function CreateNewName(const pvRoot: TComponent; const pvBaseName: string): stri
 implementation
 
 uses
-  uSOTools;
+  mybean.core.SOTools;
 
 
 var
