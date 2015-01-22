@@ -9,12 +9,13 @@
  *     + first release
  *)
 
-unit safeLogger;
+unit mybean.core.safeLogger;
 
 interface
 
 uses
-  Classes, BaseQueue, SysUtils, SyncObjs{$IFDEF MSWINDOWS}, Windows, Messages {$ENDIF};
+  Classes, mybean.core.baseQueue,
+  SysUtils, SyncObjs{$IFDEF MSWINDOWS}, Windows, Messages {$ENDIF};
 
 type
 

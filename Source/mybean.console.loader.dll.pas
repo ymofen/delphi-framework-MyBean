@@ -19,7 +19,7 @@ unit mybean.console.loader.dll;
 interface
 
 uses
-  Windows, SysUtils, Classes, mybean.core.intf, superobject, uSOTools,
+  Windows, SysUtils, Classes, mybean.core.intf, superobject, mybean.core.SOTools,
   mybean.console.loader;
 
 type

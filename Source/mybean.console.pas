@@ -38,7 +38,7 @@ uses
   mybean.console.loader,
   mybean.console.loader.dll,
   mybean.strConsts,
-  uKeyInterface, IniFiles,
+  mybean.core.keyInterface, IniFiles,
 
 {$IFDEF CONSOLE}
 
@@ -51,7 +51,7 @@ uses
   {$ifend}
 {$ENDIF}
 
-  safeLogger;
+  mybean.core.safeLogger;
 
 
 
@@ -407,7 +407,7 @@ function hashOf(const vStrData:String): Integer; overload;
 implementation
 
 uses
-  superobject, uSOTools;
+  superobject, mybean.core.SOTools;
 
 
 

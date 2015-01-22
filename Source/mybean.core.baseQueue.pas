@@ -1,4 +1,4 @@
-unit BaseQueue;
+unit mybean.core.baseQueue;
 
 interface
 

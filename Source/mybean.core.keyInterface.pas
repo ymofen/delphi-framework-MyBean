@@ -1,4 +1,4 @@
-unit uKeyInterface;
+unit mybean.core.keyInterface;
 ////
 //// 添加Delete函数
 ///    2014年1月20日 14:07:30
@@ -44,9 +44,7 @@ type
 
     property count: Integer read Getcount;
     
-    property Values[Index: Integer]: IInterface read GetValues; default;
-
-          
+    property Values[Index: Integer]: IInterface read GetValues; default;         
 
 
   end;

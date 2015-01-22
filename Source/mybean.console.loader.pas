@@ -78,7 +78,7 @@ type
 implementation
 
 uses
-  uSOTools;
+  mybean.core.SOTools;
 
 constructor TBaseFactoryObject.Create;
 begin

@@ -1,4 +1,4 @@
-unit uSOTools;
+unit mybean.core.SOTools;
 
 interface
 
