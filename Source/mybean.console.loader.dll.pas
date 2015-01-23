@@ -29,65 +29,65 @@ type
   TLibFactoryObject = class(TBaseFactoryObject)
   private
     FLibHandle:THandle;
-    FlibFileName: String;
+    FLibFileName: String;
   private
-    procedure doInitalizeBeanFactory;
+    procedure DoInitalizeBeanFactory;
 
-    procedure doCreatePluginFactory;
+    procedure DoCreatePluginFactory;
 
-    procedure doInitialize;
-    procedure SetlibFileName(const Value: String);
+    procedure DoInitialize;
+    procedure SetLibFileName(const Value: String);
   public
-    procedure checkInitialize; override;
+    procedure CheckInitialize; override;
 
-    procedure cleanup;override;
+    procedure Cleanup; override;
 
     /// <summary>
     ///   判断指定的Lib文件是否是MyBean的插件文件
     /// </summary>
-    function checkIsValidLib(pvUnLoadIfSucc: Boolean = false): Boolean; override;
+    function CheckIsValidLib(pvUnLoadIfSucc: Boolean = false): Boolean; override;
 
     /// <summary>
     ///   根据beanID获取插件
     /// </summary>
-    function getBean(pvBeanID:string): IInterface; override;
+    function GetBean(pvBeanID:string): IInterface; override;
 
     /// <summary>
     ///   释放Dll句柄
     /// </summary>
-    procedure doFreeLibrary;
+    procedure DoFreeLibrary;
 
     /// <summary>
     ///   加载dll文件
     /// </summary>
-    function checkLoadLibrary(pvRaiseIfNil: Boolean = true): Boolean;
+    function CheckLoadLibrary(pvRaiseIfNil: Boolean = true): Boolean;
 
     /// <summary>
     ///   DLL文件
     /// </summary>
-    property libFileName: String read FlibFileName write SetlibFileName;
+    property LibFileName: String read FLibFileName write SetLibFileName;
   end;
 
 implementation
 
-procedure TLibFactoryObject.doCreatePluginFactory;
+procedure TLibFactoryObject.DoCreatePluginFactory;
 var
   lvFunc:function:IBeanFactory; stdcall;
 begin
   @lvFunc := GetProcAddress(FLibHandle, PChar('getBeanFactory'));
   if (@lvFunc = nil) then
   begin
-    raise Exception.CreateFmt('非法的Plugin模块文件(%s),找不到入口函数(getBeanFactory)', [self.FlibFileName]);
+    raise Exception.CreateFmt('非法的Plugin模块文件(%s),找不到入口函数(getBeanFactory)', [self.FLibFileName]);
   end;
   FBeanFactory := lvFunc;
 end;
 
-procedure TLibFactoryObject.doFreeLibrary;
+procedure TLibFactoryObject.DoFreeLibrary;
 begin
   FBeanFactory := nil;
   if FLibHandle <> 0 then
   begin
-    if LowerCase(ExtractFileExt(FlibFileName)) = '.bpl' then
+    if LowerCase(ExtractFileExt(FLibFileName)) = '.bpl' then
     begin
       UnloadPackage(FLibHandle);
     end else
@@ -98,7 +98,7 @@ begin
   end;
 end;
 
-procedure TLibFactoryObject.doInitalizeBeanFactory;
+procedure TLibFactoryObject.DoInitalizeBeanFactory;
 var
   lvFunc:procedure(appContext: IApplicationContext; appKeyMap: IKeyMap); stdcall;
 begin
@@ -107,19 +107,19 @@ begin
   begin
     raise Exception.CreateFmt(
       '非法的Plugin模块文件(%s),找不到入口函数(initializeBeanFactory)',
-      [self.FlibFileName]);
+      [self.FLibFileName]);
   end;
   lvFunc(appPluginContext, applicationKeyMap);
 end;
 
-procedure TLibFactoryObject.doInitialize;
+procedure TLibFactoryObject.DoInitialize;
 begin
-  doInitalizeBeanFactory;
-  doCreatePluginFactory;
+  DoInitalizeBeanFactory;
+  DoCreatePluginFactory;
   FbeanFactory.checkInitalize;
 end;
 
-procedure TLibFactoryObject.checkInitialize;
+procedure TLibFactoryObject.CheckInitialize;
 var
   lvConfigStr, lvBeanID:AnsiString;
   lvBeanConfig:ISuperObject;
@@ -127,7 +127,7 @@ var
 begin
   if FbeanFactory = nil then
   begin
-    checkLoadLibrary;
+    CheckLoadLibrary;
 
     //将配置传入到beanFactory中
     for i := 0 to FConfig.A['list'].Length-1 do
@@ -146,7 +146,7 @@ begin
   lvBeanID:= '';
 end;
 
-function TLibFactoryObject.checkIsValidLib(pvUnLoadIfSucc: Boolean = false):
+function TLibFactoryObject.CheckIsValidLib(pvUnLoadIfSucc: Boolean = false):
     Boolean;
 var
   lvFunc:procedure(appContext: IApplicationContext; appKeyMap: IKeyMap); stdcall;
@@ -156,13 +156,13 @@ begin
   Result := false;
   if FLibHandle = 0 then
   begin
-    lvIsBpl :=LowerCase(ExtractFileExt(FlibFileName)) = '.bpl';
+    lvIsBpl :=LowerCase(ExtractFileExt(FLibFileName)) = '.bpl';
     if lvIsBpl then
     begin
-      lvLibHandle := LoadPackage(FlibFileName);
+      lvLibHandle := LoadPackage(FLibFileName);
     end else
     begin
-      lvLibHandle := LoadLibrary(PChar(FlibFileName));
+      lvLibHandle := LoadLibrary(PChar(FLibFileName));
     end;
 
 
@@ -208,25 +208,25 @@ begin
   end;
 end;
 
-function TLibFactoryObject.checkLoadLibrary(pvRaiseIfNil: Boolean = true):
+function TLibFactoryObject.CheckLoadLibrary(pvRaiseIfNil: Boolean = true):
     Boolean;
 begin
   if FLibHandle = 0 then
   begin
-    if not FileExists(FlibFileName) then
+    if not FileExists(FLibFileName) then
     begin
       if pvRaiseIfNil then
       begin
-        raise Exception.Create('文件[' + FlibFileName + ']未找到!');
+        raise Exception.Create('文件[' + FLibFileName + ']未找到!');
       end;
     end else
     begin
-      if LowerCase(ExtractFileExt(FlibFileName)) = '.bpl' then
+      if LowerCase(ExtractFileExt(FLibFileName)) = '.bpl' then
       begin
-        FLibHandle := LoadPackage(FlibFileName);
+        FLibHandle := LoadPackage(FLibFileName);
       end else
       begin
-        FLibHandle := LoadLibrary(PChar(FlibFileName));
+        FLibHandle := LoadLibrary(PChar(FLibFileName));
       end;
     end;
   end;
@@ -235,20 +235,20 @@ begin
   if Result then DoInitialize;  
 end;
 
-procedure TLibFactoryObject.cleanup;
+procedure TLibFactoryObject.Cleanup;
 begin
-  doFreeLibrary;
+  DoFreeLibrary;
 end;
 
-function TLibFactoryObject.getBean(pvBeanID:string): IInterface;
+function TLibFactoryObject.GetBean(pvBeanID:string): IInterface;
 begin
-  result := inherited getBean(pvBeanID);
+  result := inherited GetBean(pvBeanID);
 end;
 
-procedure TLibFactoryObject.SetlibFileName(const Value: String);
+procedure TLibFactoryObject.SetLibFileName(const Value: String);
 begin
-  FlibFileName := Value;
-  Fnamespace := FlibFileName;
+  FLibFileName := Value;
+  Fnamespace := FLibFileName;
 end;
 
 end.

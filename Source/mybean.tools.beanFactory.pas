@@ -22,56 +22,60 @@ type
   TMyBeanFactoryTools = class(TObject)
   public
     /// <summary>
-    ///   获取applicationContext接口
+    ///   获取ApplicationContext接口
     /// </summary>
-    class function applicationContext: IApplicationContext;
+    class function ApplicationContext: IApplicationContext;
 
     /// <summary>
-    ///   获取 applicationKeyMap接口
+    ///   获取 ApplicationKeyMap接口
     /// </summary>
-    class function applicationKeyMap:IKeyMap;
+    class function ApplicationKeyMap: IKeyMap;
 
-    
-    class procedure checkRaiseErrorINfo(const pvIntf: IInterface);
+
+    /// <summary>
+    ///   检测c
+    /// </summary>
+    class procedure CheckRaiseErrorINfo(const pvIntf: IInterface);
 
     /// <summary>
     ///   根据beanID获取对应的插件接口,
     ///      如果beanID对应的配置为单实例模式，相应的对象只会创建一次
     /// </summary>
-    class function getBean(pvBeanID: string; pvRaiseIfNil: Boolean = true): IInterface;
+    class function GetBean(pvBeanID: string; pvRaiseIfNil: Boolean = true):
+        IInterface;
 
     /// <summary>
     ///   释放插件
     /// </summary>
-    class procedure freeBeanInterface(const pvInterface:IInterface);
+    class procedure FreeBeanInterface(const pvInterface:IInterface);
 
     /// <summary>
     ///   存放全局的对象
     /// </summary>
-    class procedure setObject(const pvID: AnsiString; const pvObject: IInterface);
+    class procedure SetObject(const pvID: AnsiString; const pvObject: IInterface);
 
     /// <summary>
     ///   设置得到全局的接口对象
     /// </summary>
-    class function getObject(const pvID:AnsiString):IInterface;
+    class function GetObject(const pvID:AnsiString): IInterface;
 
 
     /// <summary>
     ///   判断插件是否存在
     /// </summary>
-    class function existsObject(pvID:String): Boolean;
+    class function ExistsObject(pvID:String): Boolean;
 
     /// <summary>
     ///   移除全局的接口对象
     /// </summary>
-    class procedure removeObject(pvID:AnsiString);
+    class procedure RemoveObject(pvID:AnsiString);
   end;
 
 implementation
 
 
 
-class function TMyBeanFactoryTools.applicationContext: IApplicationContext;
+class function TMyBeanFactoryTools.ApplicationContext: IApplicationContext;
 begin
   if @GetApplicationContextFunc <> nil then
   begin
@@ -86,7 +90,7 @@ begin
   end;
 end;
 
-class function TMyBeanFactoryTools.applicationKeyMap: IKeyMap;
+class function TMyBeanFactoryTools.ApplicationKeyMap: IKeyMap;
 begin
   if @GetApplicationKeyMapFunc <> nil then
   begin
@@ -94,15 +98,16 @@ begin
 
   end else
   begin
-    Result := mybean.core.intf.applicationKeyMap;
+    Result := mybean.core.intf.ApplicationKeyMap;
   end;
   if Result = nil then
   begin
-    raise Exception.Create('无法获取applicationKeyMap接口,请确保框架是否初始化!');
+    raise Exception.Create('无法获取ApplicationKeyMap接口,请确保框架是否初始化!');
   end;
 end;
 
-class procedure TMyBeanFactoryTools.checkRaiseErrorINfo(const pvIntf: IInterface);
+class procedure TMyBeanFactoryTools.CheckRaiseErrorINfo(const pvIntf:
+    IInterface);
 var
   lvErr:IErrorINfo;
   lvErrCode:Integer;
@@ -141,13 +146,13 @@ begin
 
 end;
 
-class function TMyBeanFactoryTools.existsObject(pvID: String): Boolean;
+class function TMyBeanFactoryTools.ExistsObject(pvID:String): Boolean;
 begin
-  Result := applicationKeyMap.existsObject(PAnsiChar(AnsiString(pvID)));
+  Result := ApplicationKeyMap.ExistsObject(PAnsiChar(AnsiString(pvID)));
 end;
 
-class procedure TMyBeanFactoryTools.freeBeanInterface(
-  const pvInterface: IInterface);
+class procedure TMyBeanFactoryTools.FreeBeanInterface(const
+    pvInterface:IInterface);
 var
   lvFree:IFreeObject;
 begin
@@ -158,42 +163,42 @@ begin
   end;
 end;
 
-class function TMyBeanFactoryTools.getBean(pvBeanID: string; pvRaiseIfNil: Boolean
-    = true): IInterface;
+class function TMyBeanFactoryTools.GetBean(pvBeanID: string; pvRaiseIfNil:
+    Boolean = true): IInterface;
 var
   lvFactory:IBeanFactory;
 begin
-  lvFactory := applicationContext.getBeanFactory(PAnsiChar(AnsiString(pvBeanID))) as IBeanFactory;
+  lvFactory := ApplicationContext.getBeanFactory(PAnsiChar(AnsiString(pvBeanID))) as IBeanFactory;
   if lvFactory = nil then
   begin
     if pvRaiseIfNil then
       raise Exception.CreateFmt('找不到插件[%s]对应的工厂', [pvBeanID]);
   end else
   begin
-    result := lvFactory.getBean(PAnsiChar(AnsiString(pvBeanID)));
+    result := lvFactory.GetBean(PAnsiChar(AnsiString(pvBeanID)));
     if (Result = nil) and (pvRaiseIfNil) then
     begin
-      checkRaiseErrorINfo(lvFactory);
+      CheckRaiseErrorINfo(lvFactory);
     end;
   end;
 end;
 
-class function TMyBeanFactoryTools.getObject(const pvID: AnsiString): IInterface;
+class function TMyBeanFactoryTools.GetObject(const pvID:AnsiString): IInterface;
 begin
-  Result := applicationKeyMap.getObject(PAnsiChar(pvID));
+  Result := ApplicationKeyMap.GetObject(PAnsiChar(pvID));
 end;
 
-class procedure TMyBeanFactoryTools.removeObject(pvID: AnsiString);
+class procedure TMyBeanFactoryTools.RemoveObject(pvID:AnsiString);
 begin
-  if applicationKeyMap <> nil then
-    applicationKeyMap.removeObject(PAnsiChar(pvID));
+  if ApplicationKeyMap <> nil then
+    ApplicationKeyMap.RemoveObject(PAnsiChar(pvID));
 end;
 
 
-class procedure TMyBeanFactoryTools.setObject(const pvID: AnsiString; const
+class procedure TMyBeanFactoryTools.SetObject(const pvID: AnsiString; const
     pvObject: IInterface);
 begin
-  applicationKeyMap.setObject(PAnsiChar(pvID), pvObject);
+  ApplicationKeyMap.SetObject(PAnsiChar(pvID), pvObject);
 end;
 
 end.
