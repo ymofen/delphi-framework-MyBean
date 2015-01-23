@@ -34,61 +34,26 @@ object frmMain: TfrmMain
       BevelOuter = bvNone
       BorderWidth = 3
       TabOrder = 2
-      object lblPath: TLabel
-        Left = 3
-        Top = 37
-        Width = 288
-        Height = 13
-        Align = alTop
-        Caption = 'Copy to Destination Path:'
-        ExplicitWidth = 124
-      end
       object lblCopyTo: TLabel
         Left = 3
         Top = 3
         Width = 288
         Height = 13
         Align = alTop
-        Caption = 'DevExpress Library Path:'
-        ExplicitWidth = 122
-      end
-      object edtTOPath: TEdit
-        Left = 3
-        Top = 50
-        Width = 288
-        Height = 21
-        Align = alTop
-        TabOrder = 0
-        Text = 'H:\Hydra\DCU\'
-      end
-      object edtDEPath: TEdit
-        Left = 3
-        Top = 16
-        Width = 288
-        Height = 21
-        Align = alTop
-        TabOrder = 1
-        Text = 'D:\DevExpress VCL\Library\RS11\'
+        Caption = 'DevExpress Units:'
+        ExplicitWidth = 88
       end
       object mmoDevUnits: TMemo
         Left = 3
-        Top = 71
+        Top = 16
         Width = 288
-        Height = 217
+        Height = 437
         Align = alClient
         ReadOnly = True
         ScrollBars = ssBoth
-        TabOrder = 2
-      end
-      object mmoLog: TMemo
-        Left = 3
-        Top = 288
-        Width = 288
-        Height = 165
-        Align = alBottom
-        ReadOnly = True
-        ScrollBars = ssBoth
-        TabOrder = 3
+        TabOrder = 0
+        ExplicitTop = 71
+        ExplicitHeight = 217
       end
     end
     object pnlRequiredPackages: TPanel
@@ -208,11 +173,11 @@ object frmMain: TfrmMain
       OnClick = btnClearFilesClick
     end
     object btnCopyUnits: TBitBtn
-      Left = 285
+      Left = 357
       Top = 10
-      Width = 85
+      Width = 120
       Height = 25
-      Caption = #22797#21046#21333#20803
+      Caption = #29983#25104#21253#25991#20214'(dpk)'
       TabOrder = 3
       OnClick = btnCopyUnitsClick
     end

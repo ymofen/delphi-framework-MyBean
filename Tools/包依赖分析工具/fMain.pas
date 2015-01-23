@@ -24,12 +24,8 @@ type
     btnCopyUnits: TBitBtn;
     Label1: TLabel;
     mmoUnits: TMemo;
-    lblPath: TLabel;
-    edtTOPath: TEdit;
     lblCopyTo: TLabel;
-    edtDEPath: TEdit;
     mmoDevUnits: TMemo;
-    mmoLog: TMemo;
     procedure btnCopyUnitsClick(Sender: TObject);
     procedure btnClearFilesClick(Sender: TObject);
     procedure lstFilesKeyUp(Sender: TObject; var Key: Word; Shift: TShiftState);
@@ -188,22 +184,55 @@ end;
 procedure TfrmMain.btnCopyUnitsClick(Sender: TObject);
 var
   I: Integer;
-  sF, sT: string;
+  List: TStrings;
 begin
-  if not DirectoryExists(edtTOPath.Text) then
-    ForceDirectories(edtTOPath.Text);
-  for I := 0 to mmoDevUnits.Lines.Count - 1 do
-  begin
-    sF := edtDEPath.Text + mmoDevUnits.Lines.Strings[I];
-    sT := edtTOPath.Text + mmoDevUnits.Lines.Strings[I];
-    //if FileExists(sF + '.dfm') then
-    //  CopyFile(PChar(sF + '.dfm'),PChar(sT + '.dfm'), True);
-    if FileExists(sF + '.dcu') then
-      CopyFile(PChar(sF + '.dcu'), PChar(sT + '.dcu'), True)
-    else
-      mmoLog.Lines.Add(SF);
-  end;
-end;
+  List := TStringList.Create;
+  List.Add('package dxPack;');
+  List.Add('');
+  List.Add('{$R *.res}');
+  List.Add('{$IFDEF IMPLICITBUILDING This IFDEF should not be used by users}');
+  List.Add('{$ALIGN 8}');
+  List.Add('{$ASSERTIONS ON}');
+  List.Add('{$BOOLEVAL OFF}');
+  List.Add('{$DEBUGINFO OFF}');
+  List.Add('{$EXTENDEDSYNTAX ON}');
+  List.Add('{$IMPORTEDDATA ON}');
+  List.Add('{$IOCHECKS ON}');
+  List.Add('{$LOCALSYMBOLS ON}');
+  List.Add('{$LONGSTRINGS ON}');
+  List.Add('{$OPENSTRINGS ON}');
+  List.Add('{$OPTIMIZATION OFF}');
+  List.Add('{$OVERFLOWCHECKS OFF}');
+  List.Add('{$RANGECHECKS OFF}');
+  List.Add('{$REFERENCEINFO ON}');
+  List.Add('{$SAFEDIVIDE OFF}');
+  List.Add('{$STACKFRAMES ON}');
+  List.Add('{$TYPEDADDRESS OFF}');
+  List.Add('{$VARSTRINGCHECKS ON}');
+  List.Add('{$WRITEABLECONST OFF}');
+  List.Add('{$MINENUMSIZE 1}');
+  List.Add('{$IMAGEBASE $400000}');
+  List.Add('{$DEFINE DEBUG}');
+  List.Add('{$ENDIF IMPLICITBUILDING}');
+  List.Add('{$IMPLICITBUILD ON}');
+  List.Add('');
+  List.Add('requires');
+  List.Add('  rtl,');
+  List.Add('  vcl;');
+  List.Add('');
+  List.Add('contains');
+  for I := 0 to mmoDevUnits.Lines.Count - 1 do
+  begin
+    if I = mmoDevUnits.Lines.Count - 1 then
+      List.Add('  ' + mmoDevUnits.Lines[I] + ';')
+    else
+      List.Add('  ' + mmoDevUnits.Lines[I] + ',');
+  end;
+  List.Add('');
+  List.Add('end.');
+
+  List.SaveToFile('dxPack.dpk');
+end;
 
 procedure TfrmMain.btnOpenFilesClick(Sender: TObject);
 begin
@@ -270,10 +299,7 @@ begin
   if Assigned(ssUnits) then
     mmoUnits.Lines.Assign(ssUnits);
   if Assigned(ssRequirePackages) then
-  begin
-    mmoRequirePackages.Lines.Text :=AnsiString(ssRequirePackages.Text);
-    //mmoRequirePackages.Lines.Assign(ssRequirePackages);
-  end;
+    mmoRequirePackages.Lines.Text := ssRequirePackages.Text;
 end;
 
 procedure TfrmMain.UpdateAnalyseResultView(PPI: PPackageInfos);
