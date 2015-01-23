@@ -26,6 +26,7 @@ type
     mmoUnits: TMemo;
     lblCopyTo: TLabel;
     mmoDevUnits: TMemo;
+    cbbType: TComboBox;
     procedure btnCopyUnitsClick(Sender: TObject);
     procedure btnClearFilesClick(Sender: TObject);
     procedure lstFilesKeyUp(Sender: TObject; var Key: Word; Shift: TShiftState);
@@ -148,6 +149,7 @@ var
   Errors: string;
   I, J: Integer;
   S: string;
+  lvDXUnit: Boolean;
 begin
   Analysing(True);
   try
@@ -166,9 +168,19 @@ begin
     for J := 0 to FAnalyseResults.PackageInfos[I].Units.Count - 1 do
     begin
       S := FAnalyseResults.PackageInfos[I].Units.Strings[J];
-      if ((LeftStr(S, 2) = 'cx') or (LeftStr(S, 2) = 'dx'))
-        and (mmoDevUnits.Lines.IndexOf(S) = -1) then
-        mmoDevUnits.Lines.Add(S);
+      lvDXUnit := (LeftStr(S, 2) = 'cx') or (LeftStr(S, 2) = 'dx');
+      case cbbType.ItemIndex of
+        0:
+          if not lvDXUnit and (S <> 'dbrtl') and (S <> 'rtl')
+            and (S <> 'vcl') and (S <> 'vcldb')
+            and (S <> 'vclimg') and (S <> 'vclx')
+            and (S <> 'SysInit') and (S <> 'System')
+            and (mmoDevUnits.Lines.IndexOf(S) = -1) then
+            mmoDevUnits.Lines.Add(S);
+        1:
+          if lvDXUnit and (mmoDevUnits.Lines.IndexOf(S) = -1) then
+            mmoDevUnits.Lines.Add(S);
+      end;
     end;
   end;
 end;
@@ -187,7 +199,10 @@ var
   List: TStrings;
 begin
   List := TStringList.Create;
-  List.Add('package dxPack;');
+  case cbbType.ItemIndex of
+    0: List.Add('package dpPack;');
+    1: List.Add('package dxPack;');
+  end;
   List.Add('');
   List.Add('{$R *.res}');
   List.Add('{$IFDEF IMPLICITBUILDING This IFDEF should not be used by users}');
@@ -216,10 +231,13 @@ begin
   List.Add('{$ENDIF IMPLICITBUILDING}');
   List.Add('{$IMPLICITBUILD ON}');
   List.Add('');
-  List.Add('requires');
-  List.Add('  rtl,');
-  List.Add('  vcl;');
-  List.Add('');
+  if cbbType.ItemIndex > 0 then
+  begin
+    List.Add('requires');
+    List.Add('  rtl,');
+    List.Add('  vcl;');
+    List.Add('');
+  end;
   List.Add('contains');
   for I := 0 to mmoDevUnits.Lines.Count - 1 do
   begin
@@ -231,8 +249,11 @@ begin
   List.Add('');
   List.Add('end.');
 
-  List.SaveToFile('dxPack.dpk');
-end;
+  case cbbType.ItemIndex of
+    0: List.SaveToFile('dpPack.dpk');
+    1: List.SaveToFile('dxPack.dpk');
+  end;
+end;
 
 procedure TfrmMain.btnOpenFilesClick(Sender: TObject);
 begin

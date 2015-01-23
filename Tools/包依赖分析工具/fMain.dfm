@@ -52,8 +52,6 @@ object frmMain: TfrmMain
         ReadOnly = True
         ScrollBars = ssBoth
         TabOrder = 0
-        ExplicitTop = 71
-        ExplicitHeight = 217
       end
     end
     object pnlRequiredPackages: TPanel
@@ -153,7 +151,7 @@ object frmMain: TfrmMain
       OnClick = btnOpenFilesClick
     end
     object btnAnalyse: TBitBtn
-      Left = 103
+      Left = 215
       Top = 10
       Width = 85
       Height = 25
@@ -163,7 +161,7 @@ object frmMain: TfrmMain
       OnClick = btnAnalyseClick
     end
     object btnClearFiles: TBitBtn
-      Left = 194
+      Left = 306
       Top = 10
       Width = 85
       Height = 25
@@ -173,13 +171,26 @@ object frmMain: TfrmMain
       OnClick = btnClearFilesClick
     end
     object btnCopyUnits: TBitBtn
-      Left = 357
+      Left = 421
       Top = 10
       Width = 120
       Height = 25
       Caption = #29983#25104#21253#25991#20214'(dpk)'
       TabOrder = 3
       OnClick = btnCopyUnitsClick
+    end
+    object cbbType: TComboBox
+      Left = 116
+      Top = 12
+      Width = 93
+      Height = 21
+      Style = csDropDownList
+      ItemIndex = 1
+      TabOrder = 4
+      Text = 'DevExpress'#21253
+      Items.Strings = (
+        'Delphi'#21253
+        'DevExpress'#21253)
     end
   end
   object dlgOpen: TOpenDialog
