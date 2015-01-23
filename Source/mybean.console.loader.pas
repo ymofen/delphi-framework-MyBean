@@ -28,38 +28,39 @@ type
     /// </summary>
     FConfig: ISuperObject;
   protected
-    FbeanFactory: IBeanFactory;
-    Fnamespace: string;
+    FBeanFactory: IBeanFactory;
+    FNamespace: string;
   public
     constructor Create;
     destructor Destroy; override;
-    procedure cleanup;virtual;
+    
+    procedure Cleanup; virtual;
 
-    procedure checkFinalize;virtual;
+    procedure CheckFinalize; virtual;
 
-    procedure checkInitialize;virtual;
+    procedure CheckInitialize; virtual;
 
     /// <summary>
     ///   检测是否是有效的插件宿主文件
     /// </summary>
-    function checkIsValidLib(pvUnLoadIfSucc: Boolean = false): Boolean; virtual;
+    function CheckIsValidLib(pvUnLoadIfSucc: Boolean = false): Boolean; virtual;
 
     /// <summary>
     ///   beanID和配置信息
     /// </summary>
-    procedure addBeanConfig(pvBeanConfig: ISuperObject);
+    procedure AddBeanConfig(pvBeanConfig: ISuperObject);
 
     /// <summary>
     ///   根据beanID获取插件
     /// </summary>
-    function getBean(pvBeanID:string):IInterface; virtual;
+    function GetBean(pvBeanID:string): IInterface; virtual;
 
     /// <summary>
     ///   DLL中BeanFactory接口
     /// </summary>
-    property beanFactory: IBeanFactory read FBeanFactory;
+    property BeanFactory: IBeanFactory read FBeanFactory;
 
-    property namespace: string read Fnamespace;
+    property Namespace: string read FNamespace;
 
     property Tag: Integer read FTag write FTag;
 
@@ -71,8 +72,8 @@ type
   /// </summary>
   TFactoryInstanceObject = class(TBaseFactoryObject)
   public
-    procedure setFactoryObject(const intf:IBeanFactory);
-    procedure setNameSpace(const pvNameSpace: string);
+    procedure SetFactoryObject(const intf:IBeanFactory);
+    procedure SetNameSpace(const pvNameSpace: string);
   end;
 
 implementation
@@ -94,56 +95,56 @@ begin
   inherited Destroy;
 end;
 
-function TBaseFactoryObject.getBean(pvBeanID: string): IInterface;
+function TBaseFactoryObject.GetBean(pvBeanID:string): IInterface;
 begin
-  if beanFactory = nil then
+  if BeanFactory = nil then
   begin
-    checkInitialize;
+    CheckInitialize;
   end;
 
-  if beanFactory <> nil then
+  if BeanFactory <> nil then
   begin
-    Result := beanFactory.getBean(PAnsiChar(AnsiString(pvBeanID)));
+    Result := BeanFactory.GetBean(PAnsiChar(AnsiString(pvBeanID)));
   end;
 end;
 
 { TBaseFactoryObject }
 
-procedure TBaseFactoryObject.checkFinalize;
+procedure TBaseFactoryObject.CheckFinalize;
 begin
-  if FbeanFactory <> nil then
+  if FBeanFactory <> nil then
   begin
-    FbeanFactory.checkFinalize;
+    FBeanFactory.CheckFinalize;
   end;
 end;
 
-procedure TBaseFactoryObject.checkInitialize;
+procedure TBaseFactoryObject.CheckInitialize;
 begin
 
 end;
 
-procedure TBaseFactoryObject.cleanup;
+procedure TBaseFactoryObject.Cleanup;
 begin
-  FbeanFactory := nil;
+  FBeanFactory := nil;
 end;
 
-procedure TBaseFactoryObject.addBeanConfig(pvBeanConfig: ISuperObject);
+procedure TBaseFactoryObject.AddBeanConfig(pvBeanConfig: ISuperObject);
 begin
   FConfig.A['list'].Add(pvBeanConfig);
 end;
 
-function TBaseFactoryObject.checkIsValidLib(pvUnLoadIfSucc: Boolean = false):
+function TBaseFactoryObject.CheckIsValidLib(pvUnLoadIfSucc: Boolean = false):
     Boolean;
 begin
   Result := False;
 end;
 
-procedure TFactoryInstanceObject.setFactoryObject(const intf:IBeanFactory);
+procedure TFactoryInstanceObject.SetFactoryObject(const intf:IBeanFactory);
 begin
   FbeanFactory := intf;
 end;
 
-procedure TFactoryInstanceObject.setNameSpace(const pvNameSpace: string);
+procedure TFactoryInstanceObject.SetNameSpace(const pvNameSpace: string);
 begin
   Fnamespace := pvNameSpace;
 end;

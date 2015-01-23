@@ -30,6 +30,20 @@ interface
 {$WARN UNIT_PLATFORM OFF}
 {$WARN SYMBOL_PLATFORM OFF}
 
+// 默认引用Form单元
+{$DEFINE USE_FROMS}
+
+// 控制台程序 不引用Form单元
+{$IFDEF CONSOLE}
+  {$UNDEF USE_FROMS}
+{$ENDIF}
+
+// 不引用Form单元
+{$IFDEF NONE_FROMS}
+  {$UNDEF USE_FROMS}
+{$ENDIF}
+
+
 uses
   Classes, SysUtils, Windows, ShLwApi,
   mybean.core.intf,
@@ -38,9 +52,7 @@ uses
   mybean.strConsts,
   mybean.core.keyInterface, IniFiles,
 
-{$IFDEF CONSOLE}
-
-{$ELSE}
+{$IFDEF USE_FROMS}
   // 引用Forms单元，避免在Application和Screen对象释放之后清理该单元
   {$if CompilerVersion < 23}
     Forms,
@@ -95,13 +107,13 @@ type
     ///     卸载如果出现问题，请查看日志文件
     ///     *(谨慎使用)
     /// </summary>
-    function unLoadLibraryFile(pvLibFile: PAnsiChar; pvRaiseException: Boolean =
+    function UnLoadLibraryFile(pvLibFile: PAnsiChar; pvRaiseException: Boolean =
         true): Boolean; stdcall;
 
     /// <summary>
     ///   判断BeanID是否存在
     /// </summary>
-    function checkBeanExists(pvBeanID:PAnsiChar):Boolean; stdcall;
+    function CheckBeanExists(pvBeanID:PAnsiChar): Boolean; stdcall;
 
 
     /// <summary>
@@ -124,7 +136,7 @@ type
     ///    加载成功返回true, 失败返回false, 可以用raiseLastOsError获取异常
     /// </returns>
     /// <param name="pvLibFile"> (PAnsiChar) </param>
-    function checkLoadLibraryFile(pvLibFile:PAnsiChar): Boolean; stdcall;
+    function CheckLoadLibraryFile(pvLibFile:PAnsiChar): Boolean; stdcall;
 
     /// <summary>
     ///    加载配置文件
@@ -133,18 +145,18 @@ type
     ///   加载失败返回false<文件可能不存在>
     /// </returns>
     /// <param name="pvConfigFile"> (PAnsiChar) </param>
-    function checkLoadBeanConfigFile(pvConfigFile:PAnsiChar): Boolean; stdcall;
+    function CheckLoadBeanConfigFile(pvConfigFile:PAnsiChar): Boolean; stdcall;
   protected
 
     /// <summary>
     ///    加载一个库文件, 获取其中插件，并进行注册
     /// </summary>
-    procedure checkLoadALibFile(pvFile:string);
+    procedure CheckLoadALibFile(pvFile:string);
 
     /// <summary>
     ///   根据提供的Lib文件得到TLibFactoryObject对象，如果不列表中不存在则新增一个对象
     /// </summary>
-    function checkCreateLibObject(pvFileName:string): TLibFactoryObject;
+    function CheckCreateLibObject(pvFileName:string): TLibFactoryObject;
 
 
     /// <summary>
@@ -154,7 +166,7 @@ type
     ///   如果移除返回true
     /// </returns>
     /// <param name="pvFileName"> 要移除的文件名(全路径) </param>
-    function checkRemoveLibObjectFromList(pvFileName:String): Boolean;
+    function CheckRemoveLibObjectFromList(pvFileName:String): Boolean;
 
   private
     /// <summary>
@@ -171,12 +183,12 @@ type
     /// <summary>
     ///   准备工作，读取配置文件
     /// </summary>
-    procedure checkReady;
+    procedure CheckReady;
 
     /// <summary>
     ///   关联Bean和Lib对象(往FBeanMapList中注册关系)
     /// </summary>
-    function checkRegisterBean(pvBeanID: string; pvFactoryObject:
+    function CheckRegisterBean(pvBeanID: string; pvFactoryObject:
         TBaseFactoryObject): Boolean;
 
 
@@ -188,38 +200,37 @@ type
 
   public
     constructor Create;
-    procedure BeforeDestruction; override;
-
     destructor Destroy; override;
 
     /// <summary>
     ///   执行反初始化
     /// </summary>
-    procedure checkFinalize; stdcall;
+    procedure CheckFinalize; stdcall;
 
     /// <summary>
     ///   初始化框架(线程不安全),
     ///     1.如果有配置文件<同名的.config.ini>则按照配置进行初始化
     ///     2.如果没有配置文件，直接加载DLL文件，读取bean注册信息
     /// </summary>
-    procedure checkInitialize; stdcall;
+    procedure CheckInitialize; stdcall;
 
     /// <summary>
     ///   获取根据BeanID获取一个对象
     /// </summary>
-    function getBean(pvBeanID: PAnsiChar): IInterface; stdcall;
+    function GetBean(pvBeanID: PAnsiChar): IInterface; stdcall;
 
 
     /// <summary>
     ///   获取beanID对应的工厂接口
     /// </summary>
-    function getBeanFactory(pvBeanID:PAnsiChar): IInterface; stdcall;
+    function GetBeanFactory(pvBeanID:PAnsiChar): IInterface; stdcall;
 
   protected
     /// <summary>
     ///   直接注册Bean工厂插件
     /// </summary>
-    function registerBeanFactory(const pvFactory: IBeanFactory; const pvNameSapce:PAnsiChar):Integer;stdcall;
+    function RegisterBeanFactory(const pvFactory: IBeanFactory; const
+        pvNameSapce:PAnsiChar): Integer; stdcall;
 
   public
     /// <summary>
@@ -331,26 +342,31 @@ type
 /// <summary>
 ///   获取全局的appliationContext
 /// </summary>
-function appPluginContext: IApplicationContext; stdcall;
+function AppPluginContext: IApplicationContext; stdcall;
 
 /// <summary>
-///   应用程序清理
+///    应用程序清理可以在程序退出前执行。
+///    进行卸载所有的插件
 /// </summary>
-procedure appContextCleanup; stdcall;
+procedure AppContextCleanup; stdcall;
 
 /// <summary>
-///   注册beanFactory
+///    注册beanFactory
 /// </summary>
-function registerFactoryObject(const pvBeanFactory:IBeanFactory; const
+function RegisterFactoryObject(const pvBeanFactory:IBeanFactory; const
     pvNameSapce:PAnsiChar): Integer; stdcall;
 
 
-procedure executeKeyMapCleanup;
+/// <summary>
+///   共享接口中心执行清理，可以在AppContextCleanUp执行前清理
+///   对共享接口中心中的接口进行清理
+/// </summary>
+procedure ExecuteKeyMapCleanup;
 
 /// <summary>
 ///   获取全局的KeyMap接口
 /// </summary>
-function applicationKeyMap: IKeyMap; stdcall;
+function ApplicationKeyMap: IKeyMap; stdcall;
 
 /// <summary>
 ///   加载文件
@@ -363,9 +379,9 @@ procedure ExecuteLoadLibFiles(const pvLibFiles: string);
 ///   可以调用多次
 /// </summary>
 /// <param name="pvConfigFile">
-///     pvConfigFiles,配置文件通配符"*.plug-ins, *.config"
-///     可以是指定多个通配符文件
-///     对应的文件必须是json文件，如果不是则忽略
+///    pvConfigFiles,配置文件通配符"*.plug-ins, *.config"
+///    可以是指定多个通配符文件
+///    对应的文件必须是json文件，如果不是则忽略
 /// </param>
 procedure ExecuteLoadBeanFromConfigFiles(const pvConfigFiles: string);
 
@@ -375,29 +391,31 @@ procedure ExecuteLoadBeanFromConfigFiles(const pvConfigFiles: string);
 ///     根据 ini的配置进行初始化,
 ///     如果没有配置文件，直接加载 *.dll和plug-ins\*.dll
 /// </summary>
-procedure ApplicationContextInitialize;
+procedure ApplicationContextInitialize; stdcall;
 
 /// <summary>
 ///   应用程序退出时可以手动调用该方法，
 ///    可以清理全局对象，卸载DLL
 /// </summary>
-procedure ApplicationContextFinalize;
+procedure ApplicationContextFinalize; stdcall;
 
 
-
-procedure logDebugInfo;
+/// <summary>
+///   记录调试信息
+/// </summary>
+procedure LogDebugInfo;
 
 
 /// <summary>
 ///   产生一个Hash值
 ///    QDAC群-Hash函数
 /// </summary>
-function hashOf(const p:Pointer;l:Integer): Integer; overload;
+function HashOf(const p:Pointer; l:Integer): Integer; overload;
 
 /// <summary>
 ///   产生一个Hash值
 /// </summary>
-function hashOf(const vStrData:String): Integer; overload;
+function HashOf(const vStrData:String): Integer; overload;
 
 
 
@@ -420,15 +438,15 @@ var
 
 
 
-function appPluginContext: IApplicationContext;
+function AppPluginContext: IApplicationContext;
 begin
   Result := TApplicationContext.instance;
 end;
 
-procedure appContextCleanup; stdcall;
+procedure AppContextCleanup;
 begin
   //清理KeyMap对象
-  executeKeyMapCleanup;
+  ExecuteKeyMapCleanup;
 
   if __instanceAppContextAppContextIntf = nil then exit;
   try
@@ -442,12 +460,12 @@ end;
 
 
 
-function applicationKeyMap: IKeyMap;
+function ApplicationKeyMap: IKeyMap;
 begin
   Result := __instanceKeyMap;
 end;
 
-procedure executeKeyMapCleanup;
+procedure ExecuteKeyMapCleanup;
 begin
   if __instanceKeyMapKeyIntf = nil then exit;
   try
@@ -456,7 +474,7 @@ begin
   end;
 end;
 
-function registerFactoryObject(const pvBeanFactory:IBeanFactory; const
+function RegisterFactoryObject(const pvBeanFactory:IBeanFactory; const
     pvNameSapce:PAnsiChar): Integer;
 begin
   try
@@ -466,7 +484,7 @@ begin
   end;
 end;
 
-procedure logDebugInfo;
+procedure LogDebugInfo;
 begin
   if __instanceKeyMapKeyIntf = nil then exit;
   try
@@ -489,7 +507,7 @@ begin
   end;
 end;
 
-function hashOf(const p:Pointer;l:Integer): Integer;
+function HashOf(const p:Pointer;l:Integer): Integer;
 var
   ps:PInteger;
   lr:Integer;
@@ -515,12 +533,12 @@ begin
   end;
 end;
 
-function hashOf(const vStrData:String): Integer;
+function HashOf(const vStrData:String): Integer;
 var
   lvStr:AnsiString;
 begin
   lvStr := AnsiString(vStrData);
-  Result := hashOf(PAnsiChar(lvStr), Length(lvStr));
+  Result := HashOf(PAnsiChar(lvStr), Length(lvStr));
 end;
 
 procedure ExecuteLoadLibFiles(const pvLibFiles: string);
@@ -530,16 +548,16 @@ end;
 
 procedure ApplicationContextInitialize;
 begin
-  appPluginContext.checkInitialize;
+  AppPluginContext.checkInitialize;
 end;
 
 procedure ApplicationContextFinalize;
 begin
-  mybean.core.intf.appPluginContext := nil;
-  mybean.core.intf.applicationKeyMap := nil;
+  mybean.core.intf.AppPluginContext := nil;
+  mybean.core.intf.ApplicationKeyMap := nil;
 
-  executeKeyMapCleanup;
-  appContextCleanup;
+  ExecuteKeyMapCleanup;
+  AppContextCleanup;
 end;
 
 procedure ExecuteLoadBeanFromConfigFiles(const pvConfigFiles: string);
@@ -549,7 +567,7 @@ end;
 
 
 
-procedure TApplicationContext.checkInitialize;
+procedure TApplicationContext.CheckInitialize;
 var
   lvConfigFiles:String;
 begin
@@ -586,7 +604,7 @@ begin
   end;
 end;
 
-procedure TApplicationContext.checkReady;
+procedure TApplicationContext.CheckReady;
 var
   lvTempPath:String;
   l:Integer;
@@ -619,7 +637,7 @@ begin
 
 end;
 
-function TApplicationContext.checkRegisterBean(pvBeanID: string;
+function TApplicationContext.CheckRegisterBean(pvBeanID: string;
     pvFactoryObject: TBaseFactoryObject): Boolean;
 var
   j:Integer;
@@ -648,25 +666,20 @@ begin
   end;
 end;
 
-procedure TApplicationContext.BeforeDestruction;
-begin
-  inherited;  
-end;
-
-procedure TApplicationContext.checkFinalize;
+procedure TApplicationContext.CheckFinalize;
 var
   lvLibObject:TBaseFactoryObject;
   i:Integer;
 begin
   ///清理掉applicationKeyMap中的全局资源
-  applicationKeyMap.cleanupObjects;
+  ApplicationKeyMap.cleanupObjects;
 
 
   ///全部执行一次Finalize;
   for i := 0 to FFactoryObjectList.Count -1 do
   begin
     lvLibObject := TBaseFactoryObject(FFactoryObjectList.Objects[i]);
-    lvLibObject.checkFinalize;
+    lvLibObject.CheckFinalize;
   end;
 
   ///卸载DLL
@@ -702,19 +715,19 @@ begin
   FRootPath := ExtractFilePath(ParamStr(0));
 
   checkCreateINIFile;
-  checkReady;
+  CheckReady;
 end;
 
 destructor TApplicationContext.Destroy;
 begin
   FINIFile.Free;
-  checkFinalize;
+  CheckFinalize;
   FBeanMapList.Free;
   FFactoryObjectList.Free;
   inherited Destroy;
 end;
 
-function TApplicationContext.checkBeanExists(pvBeanID: PAnsiChar): Boolean;
+function TApplicationContext.CheckBeanExists(pvBeanID:PAnsiChar): Boolean;
 var
   lvBeanID:String;
 begin
@@ -743,15 +756,15 @@ begin
   FINIFile := TIniFile.Create(lvFile);
 end;
 
-function TApplicationContext.checkRemoveLibObjectFromList(pvFileName:String):
+function TApplicationContext.CheckRemoveLibObjectFromList(pvFileName:String):
     Boolean;
 var
   lvNameSpace:String;
   i:Integer;
 begin
   Result := False;
-  lvNameSpace :=ExtractFileName(pvFileName) + '_' + IntToStr(hashOf(pvFileName));
-  if Length(lvNameSpace) = 0 then Exit; 
+  lvNameSpace :=ExtractFileName(pvFileName) + '_' + IntToStr(HashOf(pvFileName));
+  if Length(lvNameSpace) = 0 then Exit;
 
   i := FFactoryObjectList.IndexOf(lvNameSpace);
   if i <> -1 then
@@ -761,14 +774,14 @@ begin
   end;
 end;
 
-function TApplicationContext.checkCreateLibObject(pvFileName:string):
+function TApplicationContext.CheckCreateLibObject(pvFileName:string):
     TLibFactoryObject;
 var
   lvNameSpace:String;
   i:Integer;
 begin
   Result := nil;
-  lvNameSpace :=ExtractFileName(pvFileName) + '_' + IntToStr(hashOf(pvFileName));
+  lvNameSpace :=ExtractFileName(pvFileName) + '_' + IntToStr(HashOf(pvFileName));
   if Length(lvNameSpace) = 0 then Exit;
 
   i := FFactoryObjectList.IndexOf(lvNameSpace);
@@ -797,12 +810,12 @@ begin
       
       if pvRaiseException then
       begin   // 抛出异常的情况下, 直接进行初始化
-        pvFactoryObject.checkInitialize;
+        pvFactoryObject.CheckInitialize;
       end else
       begin        //
         if pvFactoryObject.checkIsValidLib(False) then
         begin
-          pvFactoryObject.checkInitialize;
+          pvFactoryObject.CheckInitialize;
         end else
         begin
         {$IFDEF LOG_ON}
@@ -830,7 +843,7 @@ begin
   end;
 end;
 
-function TApplicationContext.getBean(pvBeanID: PAnsiChar): IInterface;
+function TApplicationContext.GetBean(pvBeanID: PAnsiChar): IInterface;
 var
   j:Integer;
   lvLibObject:TBaseFactoryObject;
@@ -842,7 +855,7 @@ begin
   if j <> -1 then
   begin
     lvLibObject := TBaseFactoryObject(FBeanMapList.Objects[j]);
-    Result := lvLibObject.getBean(lvBeanID);
+    Result := lvLibObject.GetBean(lvBeanID);
   end;
 end;
 
@@ -902,7 +915,7 @@ begin
       if FTraceLoadFile then
         __beanLogger.logMessage(sLoadTrace_Factory_Initalize, [string(lvFactoryObject.namespace)],
            'LOAD_TRACE_');
-      lvFactoryObject.checkInitialize;
+      lvFactoryObject.CheckInitialize;
     except
       on E:Exception do
       begin
@@ -947,7 +960,7 @@ begin
   end;
 end;
 
-procedure TApplicationContext.checkLoadALibFile(pvFile: string);
+procedure TApplicationContext.CheckLoadALibFile(pvFile:string);
 var
   lvFile: string;
   lvLib:TLibFactoryObject;
@@ -956,7 +969,7 @@ var
 begin
   if pvFile = '' then exit;
   lvFile := pvFile;
-  lvLib := checkCreateLibObject(lvFile);
+  lvLib := CheckCreateLibObject(lvFile);
   lvIsOK := false;
   try
     if lvLib.Tag = 1 then
@@ -989,7 +1002,7 @@ begin
     if not lvIsOK then
     begin
       try
-        checkRemoveLibObjectFromList(lvFile);
+        CheckRemoveLibObjectFromList(lvFile);
         lvLib.DoFreeLibrary;
         lvLib.Free;
       except
@@ -998,14 +1011,13 @@ begin
   end;
 end;
 
-function TApplicationContext.checkLoadBeanConfigFile(
-  pvConfigFile: PAnsiChar): Boolean;
+function TApplicationContext.CheckLoadBeanConfigFile(pvConfigFile:PAnsiChar):
+    Boolean;
 begin
   Result := ExecuteLoadBeanFromConfigFiles(String(AnsiString(pvConfigFile))) > 0;
 end;
 
-function TApplicationContext.checkLoadLibraryFile(
-  pvLibFile: PAnsiChar): Boolean;
+function TApplicationContext.CheckLoadLibraryFile(pvLibFile:PAnsiChar): Boolean;
 var
   lvFilesList, lvStrings: TStrings;
   i, j: Integer;
@@ -1033,7 +1045,7 @@ begin
 
       for j := 0 to lvStrings.Count -1 do
       begin
-        checkLoadALibFile(trim(lvStrings[j]));
+        CheckLoadALibFile(trim(lvStrings[j]));
 
       end;
 
@@ -1096,7 +1108,7 @@ begin
      {$ENDIF}
     end else
     begin
-      lvLibObj := TBaseFactoryObject(checkCreateLibObject(lvLibFile));
+      lvLibObj := TBaseFactoryObject(CheckCreateLibObject(lvLibFile));
       if lvLibObj = nil then
       begin
         {$IFDEF LOG_ON}
@@ -1114,7 +1126,7 @@ begin
           end;
 
 
-          if checkRegisterBean(lvID, lvLibObj) then
+          if CheckRegisterBean(lvID, lvLibObj) then
           begin
             //将配置放到对应的节点管理中
             lvLibObj.addBeanConfig(lvItem);
@@ -1165,14 +1177,14 @@ begin
     for i := 0 to lvStrings.Count - 1 do
     begin
       lvFile := lvStrings[i];
-      checkLoadALibFile(lvFile);
+      CheckLoadALibFile(lvFile);
     end;
   finally
     lvStrings.Free;
   end;
 end;
 
-function TApplicationContext.getBeanFactory(pvBeanID:PAnsiChar): IInterface;
+function TApplicationContext.GetBeanFactory(pvBeanID:PAnsiChar): IInterface;
 var
   j:Integer;
   lvLibObject:TBaseFactoryObject;
@@ -1190,7 +1202,7 @@ begin
         if FTraceLoadFile then
           __beanLogger.logMessage(sLoadTrace_Factory_Init_BEGIN, [lvLibObject.namespace],
              'LOAD_TRACE_');
-        lvLibObject.checkInitialize;
+        lvLibObject.CheckInitialize;
         if FTraceLoadFile then
           __beanLogger.logMessage(sLoadTrace_Factory_Init_END, [lvLibObject.namespace],
             'LOAD_TRACE_');
@@ -1324,8 +1336,8 @@ begin
     SetLength(Result, I);
 end;
 
-function TApplicationContext.registerBeanFactory(const pvFactory: IBeanFactory;
-  const pvNameSapce: PAnsiChar): Integer;
+function TApplicationContext.RegisterBeanFactory(const pvFactory: IBeanFactory;
+    const pvNameSapce:PAnsiChar): Integer;
 var
   lvObj:TFactoryInstanceObject;
   lvBeanIDs:array[1..4096] of AnsiChar;
@@ -1350,7 +1362,7 @@ var
  // lvNameSpace:String;
   lvObj:TBaseFactoryObject;
 begin
-//  lvNameSpace :=ExtractFileName(pvLibFile) + '_' + IntToStr(hashOf(pvLibFile));
+//  lvNameSpace :=ExtractFileName(pvLibFile) + '_' + IntToStr(HashOf(pvLibFile));
 //  if Length(lvNameSpace) = 0 then Exit;
   for i := FBeanMapList.Count - 1 downto 0 do
   begin
@@ -1362,7 +1374,7 @@ begin
   end;
 end;
 
-function TApplicationContext.unLoadLibraryFile(pvLibFile: PAnsiChar;
+function TApplicationContext.UnLoadLibraryFile(pvLibFile: PAnsiChar;
     pvRaiseException: Boolean = true): Boolean;
 var
   lvNameSpace:String;
@@ -1372,7 +1384,7 @@ begin
   Result := true;
 
   lvNameSpace :=ExtractFileName(String(AnsiString(pvLibFile))) + '_' +
-    IntToStr(hashOf(String(AnsiString(pvLibFile))));
+    IntToStr(HashOf(String(AnsiString(pvLibFile))));
   if Length(lvNameSpace) = 0 then Exit;
 
   i := FFactoryObjectList.IndexOf(lvNameSpace);
@@ -1383,7 +1395,7 @@ begin
       FFactoryObjectList.Delete(i);
       removeRegistedBeans(String(AnsiString(pvLibFile)));
 
-      lvObj.checkFinalize;
+      lvObj.CheckFinalize;
       lvObj.cleanup;
       lvObj.Free;
 
@@ -1474,18 +1486,18 @@ initialization
   __instanceAppContext := TApplicationContext.Create;
   __instanceAppContextAppContextIntf := __instanceAppContext;
 
-  mybean.core.intf.appPluginContext := __instanceAppContext;
-  mybean.core.intf.applicationKeyMap := __instanceKeyMap;
+  mybean.core.intf.AppPluginContext := __instanceAppContext;
+  mybean.core.intf.ApplicationKeyMap := __instanceKeyMap;
 
 //  // 初始化
-//  appPluginContext.checkInitialize;
+//  AppPluginContext.checkInitialize;
 
 finalization  
   ApplicationContextFinalize;
 
   // 记录未释放的情况
   {$IFDEF LOG_ON}
-  logDebugInfo;
+  LogDebugInfo;
   {$ENDIF}
 
   __instanceAppContextAppContextIntf := nil;
