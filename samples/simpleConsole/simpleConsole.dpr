@@ -22,12 +22,14 @@ begin
     ExecuteLoadLibFiles('*.dll');
 
     // 加载configPlugins目录下的插件配置文件(按需加载)
-    ExecuteLoadLibFiles('configPlugins\*.plug-ins');
+    ExecuteLoadBeanFromConfigFiles('configPlugins\*.plug-ins');
     
     Application.MainFormOnTaskbar := True;
     Application.CreateForm(TfrmMain, frmMain);
     Application.Run;
   finally
+    // 释放主窗体
+    Application.MainForm.Free;
 
     // 清理数据共享中心对象, 释放插件, 卸载DLL/BPl
     ApplicationContextFinalize;
