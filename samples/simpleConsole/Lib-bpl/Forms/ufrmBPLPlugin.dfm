@@ -24,13 +24,4 @@ object frmBPLPlugin: TfrmBPLPlugin
       '  beanFactory.RegisterBean('#39'bplFormDEMO'#39', TfrmBPLPlugin);')
     TabOrder = 0
   end
-  object DBChart1: TDBChart
-    Left = 64
-    Top = 88
-    Width = 400
-    Height = 250
-    Title.Text.Strings = (
-      'TDBChart')
-    TabOrder = 1
-  end
 end

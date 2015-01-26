@@ -10,7 +10,6 @@ uses
 type
   TfrmBPLPlugin = class(TBasePluginForm)
     Memo1: TMemo;
-    DBChart1: TDBChart;
   private
     { Private declarations }
   public

@@ -4,7 +4,8 @@ interface
 
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  Dialogs, StdCtrls, mybean.tools.beanFactory, mybean.core.intf, uIPluginForm, IniFiles, uIFormShow;
+  Dialogs, StdCtrls, mybean.tools.beanFactory,
+  mybean.core.intf, uIPluginForm, IniFiles, uIFormShow;
 
 type
   TfrmMain = class(TForm)

@@ -4,7 +4,7 @@ interface
 
 uses
   Forms, uIPluginForm,  Classes, superobject, ComObj,
-  SysUtils, uKeyInterface,
+  SysUtils, mybean.core.keyInterface,
   mybean.core.intf,  mybean.tools.beanFactory;
 
 type
