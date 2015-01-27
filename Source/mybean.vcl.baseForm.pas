@@ -13,7 +13,6 @@ type
   IShowAsNormal = interface(IInterface)
     ['{4A2274AB-3069-4A57-879F-BA3B3D15097D}']
     procedure ShowAsNormal; stdcall;
-    procedure CloseForm; stdcall;
   end;
 
   /// <summary>
@@ -30,7 +29,6 @@ type
   IShowAsMDI = interface(IInterface)
     ['{F68D4D30-C70C-4BCC-9F83-F50D2D873629}']
     procedure ShowAsMDI; stdcall; 
-    procedure CloseForm; stdcall;
   end;
 
   IShowAsChild = interface(IInterface)
