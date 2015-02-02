@@ -13,10 +13,10 @@ begin
   Application.Initialize;
   try
     // 直接加载plug-ins目录下的DLL插件
-    ExecuteLoadLibFiles('plug-ins\*.dll');
+    ExecuteLoadLibFiles('demoPlugins\*.dll');
 
     // 直接加载plug-ins目录下的BPL插件
-    ExecuteLoadLibFiles('plug-ins\*.bpl');
+    ExecuteLoadLibFiles('demoPlugins\*.bpl');
 
     // 直接加载EXE当前目录下的DLL插件
     ExecuteLoadLibFiles('*.dll');
