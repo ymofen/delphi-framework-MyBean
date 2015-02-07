@@ -1,0 +1,5 @@
+1.查看DEMO说明，看看有没有和需求类似的DEMO。推荐大家看Samples\simpleConsole这个DEMO(该DEMO演示了DLL插件和BPL插件)
+
+2.调试DEMO。比如看看框架怎么样调用插件，怎么显示DLL中的窗体插件。
+
+3.自己动手做一个相类似的DEMO，完成同样的功能。
