@@ -140,7 +140,7 @@ type
     ///    加载成功或者已经加载返回Lib文件中的BeanFactory接口
     ///    失败返回nil
     /// </summary>
-    function CheckLoadALibFile(pvFile:string): IBeanFactory;  stdcall;
+    function CheckLoadALibFile(pvFile: PAnsiChar): IBeanFactory; stdcall;
 
 //
 //    /// <summary>

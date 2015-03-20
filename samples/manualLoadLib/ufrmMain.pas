@@ -41,10 +41,19 @@ implementation
 procedure TfrmMain.btnManualLoadClick(Sender: TObject);
 var
   lvFile:string;
+  lvBeanFactory:IBeanFactory;
+  lvBeanIDs:array[1..4096] of AnsiChar;
 begin
   if not dlgOpen.Execute then exit;
   lvFile := dlgOpen.FileName;
-  (TMyBeanFactoryTools.applicationContext as IApplicationContextEx01).checkLoadLibraryFile(PAnsiChar(AnsiString(lvFile)));
+  lvBeanFactory := (TMyBeanFactoryTools.applicationContext as IApplicationContextEx3).CheckLoadALibFile(PAnsiChar(AnsiString(lvFile)));
+
+  if lvBeanFactory <> nil then
+  begin
+    ZeroMemory(@lvBeanIDs[1], 4096);
+    lvBeanFactory.getBeanList(@lvBeanIDs[1], 4096);
+    ShowMessage(PAnsiChar(@lvBeanIDs[1]));
+  end;
   lvFile :='';
 end;
 

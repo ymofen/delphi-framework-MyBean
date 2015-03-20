@@ -233,7 +233,7 @@ type
     ///    加载成功或者已经加载返回Lib文件中的BeanFactory接口
     ///    失败返回nil
     /// </summary>
-    function CheckLoadALibFile(pvFile:string): IBeanFactory;  stdcall;
+    function CheckLoadALibFile(pvFile: PAnsiChar): IBeanFactory; stdcall;
 
     /// <summary>
     ///   从配置文件中加载, 返回成功处理的Bean配置数量
@@ -962,7 +962,7 @@ begin
   end;
 end;
 
-function TApplicationContext.CheckLoadALibFile(pvFile:string): IBeanFactory;
+function TApplicationContext.CheckLoadALibFile(pvFile: PAnsiChar): IBeanFactory;
 var
   lvFile: string;
   lvLib:TLibFactoryObject;
@@ -1029,6 +1029,7 @@ var
   lvFilesList, lvStrings: TStrings;
   i, j: Integer;
   lvStr, lvFileName, lvPath:String;
+  lvTempAnsi:AnsiString;
 begin
   lvStrings := TStringList.Create;
   lvFilesList := TStringList.Create;
@@ -1052,12 +1053,13 @@ begin
 
       for j := 0 to lvStrings.Count -1 do
       begin
-        CheckLoadALibFile(trim(lvStrings[j]));
+        lvTempAnsi := Trim(trim(lvStrings[j]));
+        CheckLoadALibFile(PAnsiChar(lvTempAnsi));
 
       end;
 
     end;
-
+    lvTempAnsi := '';
     Result := true;
 
   finally
@@ -1174,7 +1176,7 @@ procedure TApplicationContext.ExecuteLoadLibrary;
 var
   lvStrings: TStrings;
   i: Integer;
-  lvFile: string;
+  lvFile: AnsiString;
 begin
   lvStrings := TStringList.Create;
   try
@@ -1184,8 +1186,10 @@ begin
     for i := 0 to lvStrings.Count - 1 do
     begin
       lvFile := lvStrings[i];
-      CheckLoadALibFile(lvFile);
+
+      CheckLoadALibFile(PAnsiChar(lvFile));
     end;
+    lvFile := '';
   finally
     lvStrings.Free;
   end;
