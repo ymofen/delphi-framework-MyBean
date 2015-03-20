@@ -230,10 +230,11 @@ type
   public
     /// <summary>
     ///    加载一个库文件, 获取其中插件，并进行注册
-    ///    加载成功返回Lib文件中的BeanFactory接口
+    ///    加载成功或者已经加载返回Lib文件中的BeanFactory接口
     ///    失败返回nil
     /// </summary>
-    function CheckLoadALibFile(pvFile:string): IBeanFactory;
+    function CheckLoadALibFile(pvFile:string): IBeanFactory;  stdcall;
+
     /// <summary>
     ///   从配置文件中加载, 返回成功处理的Bean配置数量
     ///   pvConfigFiles,配置文件通配符 *.plug-ins, *.config

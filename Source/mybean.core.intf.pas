@@ -23,6 +23,7 @@ unit mybean.core.intf;
 interface 
 
 type
+  IBeanFactory = interface;
   /// <summary>
   ///   接口已经改变需要重新编译所有的DLL和主控台
   ///     2014年5月15日 20:55:28
@@ -133,6 +134,14 @@ type
     ///    ]
     /// </summary>
     function GetBeanInfos(pvBeanInfo:PAnsiChar; pvLength:Integer): Integer; stdcall;
+
+    /// <summary>
+    ///    加载一个库文件, 获取其中插件，并进行注册
+    ///    加载成功或者已经加载返回Lib文件中的BeanFactory接口
+    ///    失败返回nil
+    /// </summary>
+    function CheckLoadALibFile(pvFile:string): IBeanFactory;  stdcall;
+
 //
 //    /// <summary>
 //    ///   添加一个插件实例, 可以用GetBean进行获取
