@@ -21,11 +21,12 @@ uses
   ufrmMain in 'Tester\ufrmMain.pas' {frmMain},
   uIFormShow in 'Tester\uIFormShow.pas',
   uDMQFileAccessTools in 'Tester\uDMQFileAccessTools.pas',
-  DRawSocket in 'service\DRawSocket.pas',
-  DTcpClient in 'service\DTcpClient.pas',
-  uDTcpClientCoderImpl in 'service\uDTcpClientCoderImpl.pas',
   DMQClient in 'service\DMQClient.pas',
-  DMQProtocol in 'service\DMQProtocol.pas';
+  DMQProtocol in 'service\DMQProtocol.pas',
+  uDTcpClientCoderImpl in 'service\uDTcpClientCoderImpl.pas',
+  uICoderSocket in 'service\uICoderSocket.pas',
+  uStreamCoderSocket in 'service\uStreamCoderSocket.pas',
+  uIFileAccess in 'service\uIFileAccess.pas';
 
 {$R *.res}
 

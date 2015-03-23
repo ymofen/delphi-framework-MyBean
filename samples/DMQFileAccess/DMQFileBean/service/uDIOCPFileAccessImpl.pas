@@ -4,10 +4,14 @@ interface
 
 uses
   uIRemoteFileAccess,
-  uFileOperaObject;
+  uFileOperaObject, uIFileAccess;
 
 type
-  TDIOCPFileAccessImpl = class(TInterfacedObject, IRemoteFileAccess, IRemoteConnector)
+  TDIOCPFileAccessImpl = class(TInterfacedObject,
+    IRemoteFileAccess, IRemoteConnector
+    , IFileAccess
+    , IFileAccess02
+    )
   private
     FFileOperaObject: TFileOperaObject;
   protected
@@ -40,6 +44,35 @@ type
     ///   获取远程文件大小
     /// </summary>
     function FileSize(pvRFileName, pvType: PAnsiChar): Int64;
+
+  public
+    /// <summary>
+    ///   保存文件
+    /// </summary>
+    /// <param name="pvRFileName"> 文件ID </param>
+    /// <param name="pvLocalFileName"> 本地文件名 </param>
+    /// <param name="pvType"> 类型 </param>
+    procedure FileAccess_saveFile(pvRFileName, pvLocalFileName, pvType: PAnsiChar);
+
+    //删除文件
+    procedure FileAccess_deleteFile(pvRFileName, pvType: PAnsiChar);
+
+    /// <summary>
+    ///   获取文件
+    /// </summary>
+    /// <returns>
+    ///   获取成功否
+    /// </returns>
+    /// <param name="pvRFileName"> 文件ID </param>
+    /// <param name="pvLocalFileName"> 获取回来后保存在本地文件名 </param>
+    /// <param name="pvType"> 类型 </param>
+    /// <param name="pvRaiseIfFalse"> 是否Raise错误 </param>
+    function FileAccess_getFile(pvRFileName, pvLocalFileName, pvType: PAnsiChar;
+        pvRaiseIfFalse: Boolean = true): Boolean;
+
+    function IFileAccess.GetFile = FileAccess_getFile;
+    procedure IFileAccess.saveFile = FileAccess_saveFile;
+    procedure IFileAccess.deleteFile = FileAccess_deleteFile;
   public
     constructor Create;
     procedure AfterConstruction;override;
@@ -85,6 +118,24 @@ function TDIOCPFileAccessImpl.DownFile(pvRFileName, pvLocalFileName,
 begin
   FFileOperaObject.downFile(pvRFileName, pvLocalFileName, pvType);
   Result := true;
+end;
+
+procedure TDIOCPFileAccessImpl.FileAccess_deleteFile(pvRFileName,
+  pvType: PAnsiChar);
+begin
+  DeleteFile(pvRFileName, pvType);  
+end;
+
+function TDIOCPFileAccessImpl.FileAccess_getFile(pvRFileName, pvLocalFileName,
+  pvType: PAnsiChar; pvRaiseIfFalse: Boolean): Boolean;
+begin
+  Result := DownFile(pvRFileName,pvLocalFileName, pvType);
+end;
+
+procedure TDIOCPFileAccessImpl.FileAccess_saveFile(pvRFileName, pvLocalFileName,
+  pvType: PAnsiChar);
+begin
+  UploadFile(pvRFileName, pvLocalFileName, pvType);
 end;
 
 function TDIOCPFileAccessImpl.FileSize(pvRFileName, pvType: PAnsiChar): Int64;

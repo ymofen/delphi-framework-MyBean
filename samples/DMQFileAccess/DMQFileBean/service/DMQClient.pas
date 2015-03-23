@@ -3,7 +3,7 @@ unit DMQClient;
 interface
 
 uses
-  Classes, DMQProtocol, DTcpClient, SysUtils, uByteTools;
+  Classes, DMQProtocol, diocp.tcp.blockClient, SysUtils, utils.byteTools;
 
 type
   TDMQClient = class(TComponent)
@@ -11,7 +11,7 @@ type
     FSendHeader: TDMQRequestRecord;
     FSendData: TMemoryStream;
     FRecvData: TMemoryStream;
-    FTcpClient: TDTcpClient;
+    FTcpClient: TDiocpBlockTcpClient;
     function GetHost: string;
     function GetLogicID: Integer;
     function GetPort: Integer;
@@ -30,7 +30,7 @@ type
     property Port: Integer read GetPort write SetPort;
     property RecvData: TMemoryStream read FRecvData;
     property SendData: TMemoryStream read FSendData;
-    property TcpClient: TDTcpClient read FTcpClient;
+    property TcpClient: TDiocpBlockTcpClient read FTcpClient;
   end;
 
 implementation
@@ -46,7 +46,7 @@ begin
   inherited Create(AOwner);
   FSendHeader.flag := Header_Flag;
   FSendHeader.logicID := 0;
-  FTcpClient := TDTcpClient.Create(Self);
+  FTcpClient := TDiocpBlockTcpClient.Create(Self);
   FSendData := TMemoryStream.Create();
   FRecvData := TMemoryStream.Create();
 end;

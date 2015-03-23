@@ -3,8 +3,8 @@ unit uFileOperaObject;
 interface
 
 uses
-  SysUtils, SimpleMsgPack, Classes, Math, uCRCTools,
-  uStreamCoderSocket, DTcpClient, uICoderSocket, uDTcpClientCoderImpl,
+  SysUtils, SimpleMsgPack, Classes, Math,
+  uStreamCoderSocket, uICoderSocket, uDTcpClientCoderImpl,
   DMQClient;
 
 
