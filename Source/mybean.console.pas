@@ -95,7 +95,7 @@ type
 
     procedure checkCreateINIFile;
 
-    function checkInitializeFactoryObject(pvFactoryObject:TBaseFactoryObject;
+    function CheckInitializeFactoryObject(pvFactoryObject:TBaseFactoryObject;
         pvRaiseException:Boolean): Boolean;
 
     procedure removeRegistedBeans(pvLibFile:string);
@@ -147,11 +147,6 @@ type
     /// <param name="pvConfigFile"> (PAnsiChar) </param>
     function CheckLoadBeanConfigFile(pvConfigFile:PAnsiChar): Boolean; stdcall;
   protected
-
-    /// <summary>
-    ///    加载一个库文件, 获取其中插件，并进行注册
-    /// </summary>
-    procedure CheckLoadALibFile(pvFile:string);
 
     /// <summary>
     ///   根据提供的Lib文件得到TLibFactoryObject对象，如果不列表中不存在则新增一个对象
@@ -233,6 +228,13 @@ type
         pvNameSapce:PAnsiChar): Integer; stdcall;
 
   public
+    /// <summary>
+    ///    加载一个库文件, 获取其中插件，并进行注册
+    ///    加载成功或者已经加载返回Lib文件中的BeanFactory接口
+    ///    失败返回nil
+    /// </summary>
+    function CheckLoadALibFile(pvFile: PAnsiChar): IBeanFactory; stdcall;
+
     /// <summary>
     ///   从配置文件中加载, 返回成功处理的Bean配置数量
     ///   pvConfigFiles,配置文件通配符 *.plug-ins, *.config
@@ -796,7 +798,7 @@ begin
   end;  
 end;
 
-function TApplicationContext.checkInitializeFactoryObject(
+function TApplicationContext.CheckInitializeFactoryObject(
     pvFactoryObject:TBaseFactoryObject; pvRaiseException:Boolean): Boolean;
 begin
   try
@@ -960,13 +962,14 @@ begin
   end;
 end;
 
-procedure TApplicationContext.CheckLoadALibFile(pvFile:string);
+function TApplicationContext.CheckLoadALibFile(pvFile: PAnsiChar): IBeanFactory;
 var
   lvFile: string;
   lvLib:TLibFactoryObject;
   lvIsOK:Boolean;
   lvBeanIDs:array[1..4096] of AnsiChar;
 begin
+  Result := nil;
   if pvFile = '' then exit;
   lvFile := pvFile;
   lvLib := CheckCreateLibObject(lvFile);
@@ -977,7 +980,7 @@ begin
       lvIsOK := true;
     end else
     begin
-      if checkInitializeFactoryObject(TBaseFactoryObject(lvLib), False) then
+      if CheckInitializeFactoryObject(TBaseFactoryObject(lvLib), False) then
       begin
         try
           ZeroMemory(@lvBeanIDs[1], 4096);
@@ -998,6 +1001,10 @@ begin
       end;
     end;
 
+    if lvIsOK then  // 已经加载
+    begin
+      Result := lvLib.BeanFactory;
+    end;
   finally
     if not lvIsOK then
     begin
@@ -1022,6 +1029,7 @@ var
   lvFilesList, lvStrings: TStrings;
   i, j: Integer;
   lvStr, lvFileName, lvPath:String;
+  lvTempAnsi:AnsiString;
 begin
   lvStrings := TStringList.Create;
   lvFilesList := TStringList.Create;
@@ -1045,12 +1053,13 @@ begin
 
       for j := 0 to lvStrings.Count -1 do
       begin
-        CheckLoadALibFile(trim(lvStrings[j]));
+        lvTempAnsi := Trim(trim(lvStrings[j]));
+        CheckLoadALibFile(PAnsiChar(lvTempAnsi));
 
       end;
 
     end;
-
+    lvTempAnsi := '';
     Result := true;
 
   finally
@@ -1167,7 +1176,7 @@ procedure TApplicationContext.ExecuteLoadLibrary;
 var
   lvStrings: TStrings;
   i: Integer;
-  lvFile: string;
+  lvFile: AnsiString;
 begin
   lvStrings := TStringList.Create;
   try
@@ -1177,8 +1186,10 @@ begin
     for i := 0 to lvStrings.Count - 1 do
     begin
       lvFile := lvStrings[i];
-      CheckLoadALibFile(lvFile);
+
+      CheckLoadALibFile(PAnsiChar(lvFile));
     end;
+    lvFile := '';
   finally
     lvStrings.Free;
   end;
