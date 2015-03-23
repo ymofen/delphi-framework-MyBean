@@ -92,8 +92,11 @@ end;
 
 destructor TKeyInterface.Destroy;
 begin
-  clear;
-  FList.Free;
+  if FList <> nil then
+  begin
+    clear;
+    FList.Free;
+  end;
   inherited Destroy;
 end;
 

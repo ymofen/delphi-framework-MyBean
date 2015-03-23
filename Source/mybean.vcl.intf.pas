@@ -42,6 +42,12 @@ type
     procedure ShowAsChild(pvParent:TWinControl); stdcall;
   end;
 
+  ILayoutInChild = interface(IInterface)
+  ['{CBCB34E2-7B15-482B-BDB4-49E0802EEEDA}']
+    procedure LayoutIn(pvParent:TWinControl); stdcall;
+  end;
+
+
 implementation
 
 end.
