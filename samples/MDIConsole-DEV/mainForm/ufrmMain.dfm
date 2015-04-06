@@ -61,9 +61,6 @@ object frmMain: TfrmMain
     Font.Height = -11
     Font.Name = 'Tahoma'
     Font.Style = []
-    ExplicitLeft = 432
-    ExplicitTop = 248
-    ExplicitWidth = 0
   end
   object mmMain: TMainMenu
     Left = 408
