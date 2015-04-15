@@ -13,7 +13,7 @@ library plugMap;
 uses
   SysUtils,
   Classes,
-  mybean.core.beanFactoryForNoVcl,
+  mybean.core.beanFactory,
   uMapObjectImpl in 'Service\uMapObjectImpl.pas',
   uIMapObject in 'interface\uIMapObject.pas',
   ufrmPluginForm in 'Forms\ufrmPluginForm.pas' {frmPluginForm},
