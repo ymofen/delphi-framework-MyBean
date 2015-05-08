@@ -13,6 +13,7 @@
  *
  *
  *)
+
  
 unit mybean.console.loader.dll;
 
@@ -37,6 +38,7 @@ type
 
     procedure DoInitialize;
     procedure SetLibFileName(const Value: String);
+    function GetBeanFactoryForCPlus(out beanFactory: IBeanFactory): Boolean;
   public
     procedure CheckInitialize; override;
 
@@ -70,16 +72,40 @@ type
 
 implementation
 
+function TLibFactoryObject.GetBeanFactoryForCPlus(out beanFactory:
+    IBeanFactory): Boolean;
+var
+  lvProc:procedure(out beanFactory:IBeanFactory); stdcall;
+begin
+  @lvProc := GetProcAddress(FLibHandle, PChar('GetBeanFactoryForCPlus'));
+  if (@lvProc <> nil) then
+  begin       // VC的插件需要手动处理AddRef
+    lvProc(beanFactory);
+    if beanFactory <> nil then
+    begin
+      beanFactory._AddRef;
+    end;
+  end;
+  Result := beanFactory <> nil;
+end;
+
 procedure TLibFactoryObject.DoCreatePluginFactory;
 var
-  lvFunc:function:IBeanFactory; stdcall;
+  lvFunc : function:IBeanFactory; stdcall;
 begin
-  @lvFunc := GetProcAddress(FLibHandle, PChar('getBeanFactory'));
-  if (@lvFunc = nil) then
+  if not GetBeanFactoryForCPlus(FBeanFactory) then
   begin
-    raise Exception.CreateFmt('非法的Plugin模块文件(%s),找不到入口函数(getBeanFactory)', [self.FLibFileName]);
+    @lvFunc := GetProcAddress(FLibHandle, PChar('getBeanFactory'));
+    if (@lvFunc = nil) then
+    begin
+      raise Exception.CreateFmt('非法的Plugin模块文件(%s),找不到入口函数(getBeanFactory)', [self.FLibFileName]);
+    end;
+    FBeanFactory := lvFunc;
+    if FBeanFactory = nil then
+    begin
+      raise Exception.CreateFmt('非法的Plugin模块文件(%s),getBeanFactory 返回的对象为Nil', [self.FLibFileName]);
+    end;
   end;
-  FBeanFactory := lvFunc;
 end;
 
 procedure TLibFactoryObject.DoFreeLibrary;
@@ -116,7 +142,7 @@ procedure TLibFactoryObject.DoInitialize;
 begin
   DoInitalizeBeanFactory;
   DoCreatePluginFactory;
-  FbeanFactory.checkInitalize;
+  FbeanFactory.CheckInitalize;
 end;
 
 procedure TLibFactoryObject.CheckInitialize;

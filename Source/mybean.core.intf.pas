@@ -162,6 +162,7 @@ type
   /// <summary>
   ///   插件工厂接口,由插件宿主(DLL, BPL)库文件提供
   /// </summary>
+  PIBeanFactory = ^IBeanFactory;
   IBeanFactory = interface(IInterface)
     ['{480EC845-2FC0-4B45-932A-57711D518E70}']
 
