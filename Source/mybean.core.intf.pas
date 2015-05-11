@@ -92,6 +92,23 @@ type
   end;
 
   /// <summary>
+  ///   C++ 语言调用的接口
+  /// </summary>
+  IApplicationContextForCPlus = interface
+    ['{9A7238C4-5A47-494B-9058-77500C1622DC}']
+
+    /// <summary>
+    ///   根据beanID获取对应的插件
+    /// </summary>
+    function GetBeanForCPlus(pvBeanID: PAnsiChar; out vInstance: IInterface): HRESULT; stdcall;
+
+    /// <summary>
+    ///   获取beanID对应的工厂接口
+    /// </summary>
+    function GetBeanFactoryForCPlus(pvBeanID:PAnsiChar; out vInstance: IInterface): HRESULT; stdcall;
+  end;
+
+  /// <summary>
   ///   主控台扩展接口
   ///    2014-09-22 12:27:56
   /// </summary>
@@ -158,11 +175,9 @@ type
   end;
 
 
-
   /// <summary>
   ///   插件工厂接口,由插件宿主(DLL, BPL)库文件提供
   /// </summary>
-  PIBeanFactory = ^IBeanFactory;
   IBeanFactory = interface(IInterface)
     ['{480EC845-2FC0-4B45-932A-57711D518E70}']
 
@@ -225,6 +240,17 @@ type
     /// </summary>
     function ConfigBeanSingleton(pvBeanID: PAnsiChar; pvSingleton:Boolean):
         Integer; stdcall;
+  end;
+
+/// <summary>
+  ///   VC 接口
+  /// </summary>
+  IBeanFactoryForCPlus = interface
+    ['{D6F1B138-ECEA-44FC-A3E3-0B5169F1077A}']
+    /// <summary>
+    ///   根据beanID获取对应的插件
+    /// </summary>
+    function GetBeanForCPlus(pvBeanID: PAnsiChar; out vInstance: IInterface): HRESULT; stdcall;
   end;
 
   /// <summary>

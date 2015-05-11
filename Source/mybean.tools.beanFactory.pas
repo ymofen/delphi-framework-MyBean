@@ -166,19 +166,32 @@ end;
 class function TMyBeanFactoryTools.GetBean(pvBeanID: string; pvRaiseIfNil:
     Boolean = true): IInterface;
 var
+  lvTempIntf:IInterface;
   lvFactory:IBeanFactory;
+  lvFactoryCPlus:IBeanFactoryForCPlus;
 begin
-  lvFactory := ApplicationContext.getBeanFactory(PAnsiChar(AnsiString(pvBeanID))) as IBeanFactory;
-  if lvFactory = nil then
+  lvTempIntf := ApplicationContext.getBeanFactory(PAnsiChar(AnsiString(pvBeanID)));
+  if lvTempIntf.QueryInterface(IBeanFactoryForCPlus, lvFactoryCPlus) = S_OK then
   begin
-    if pvRaiseIfNil then
-      raise Exception.CreateFmt('找不到插件[%s]对应的工厂', [pvBeanID]);
+    lvTempIntf := nil;
+    if lvFactoryCPlus.GetBeanForCPlus(PAnsiChar(AnsiString(pvBeanID)), Result) = -1 then
+    begin
+      raise Exception.Create(Format('找不到对应的插件[%s]!', [pvBeanID]));
+    end;
   end else
   begin
-    result := lvFactory.GetBean(PAnsiChar(AnsiString(pvBeanID)));
-    if (Result = nil) and (pvRaiseIfNil) then
+    lvFactory := lvTempIntf as IBeanFactory;
+    if lvFactory = nil then
     begin
-      CheckRaiseErrorINfo(lvFactory);
+      if pvRaiseIfNil then
+        raise Exception.CreateFmt('找不到插件[%s]对应的工厂', [pvBeanID]);
+    end else
+    begin
+      result := lvFactory.GetBean(PAnsiChar(AnsiString(pvBeanID)));
+      if (Result = nil) and (pvRaiseIfNil) then
+      begin
+        CheckRaiseErrorINfo(lvFactory);
+      end;
     end;
   end;
 end;

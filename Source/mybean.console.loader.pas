@@ -23,6 +23,8 @@ type
   private
     FTag: Integer;
   protected
+    // Delphi的库文件
+    FIsDelphiLib:Boolean;
     /// <summary>
     ///   bean的配置,文件中读取的有一个list配置数组
     /// </summary>
@@ -54,6 +56,9 @@ type
     ///   根据beanID获取插件
     /// </summary>
     function GetBean(pvBeanID:string): IInterface; virtual;
+
+
+    function GetBeanForCPlus(pvBeanId:string; out vInstance:IInterface): HRESULT;
 
     /// <summary>
     ///   DLL中BeanFactory接口
@@ -96,15 +101,49 @@ begin
 end;
 
 function TBaseFactoryObject.GetBean(pvBeanID:string): IInterface;
+var
+  lvFactoryCPlus:IBeanFactoryForCPlus;
 begin
-  if BeanFactory = nil then
+  if FBeanFactory = nil then
   begin
     CheckInitialize;
   end;
 
-  if BeanFactory <> nil then
+  if FBeanFactory <> nil then
   begin
-    Result := BeanFactory.GetBean(PAnsiChar(AnsiString(pvBeanID)));
+    if FBeanFactory.QueryInterface(IBeanFactoryForCPlus, lvFactoryCPlus) = S_OK then
+    begin  // C++ 方式获取
+      lvFactoryCPlus.GetBeanForCPlus(PAnsiChar(AnsiString(pvBeanID)), Result);
+    end else
+    begin
+      Result := FBeanFactory.GetBean(PAnsiChar(AnsiString(pvBeanID)));
+    end;
+  end;
+end;
+
+function TBaseFactoryObject.GetBeanForCPlus(pvBeanId:string; out
+    vInstance:IInterface): HRESULT;
+var
+  lvFactoryCPlus:IBeanFactoryForCPlus;
+begin
+  if FBeanFactory = nil then
+  begin
+    CheckInitialize;
+  end;
+
+  if FBeanFactory <> nil then
+  begin
+    if FBeanFactory.QueryInterface(IBeanFactoryForCPlus, lvFactoryCPlus) = S_OK then
+    begin  // C++ 方式获取
+      Result := lvFactoryCPlus.GetBeanForCPlus(PAnsiChar(AnsiString(pvBeanID)), vInstance);
+    end else
+    begin
+      vInstance := FBeanFactory.GetBean(PAnsiChar(AnsiString(pvBeanID)));
+      Result := S_OK;
+    end;
+  end else
+  begin
+    Result := S_FALSE;
   end;
 end;
 

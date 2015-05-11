@@ -35,10 +35,13 @@ type
     procedure DoInitalizeBeanFactory;
 
     procedure DoCreatePluginFactory;
+    procedure DoFinalizeBeanFactory;
 
     procedure DoInitialize;
     procedure SetLibFileName(const Value: String);
     function GetBeanFactoryForCPlus(out beanFactory: IBeanFactory): Boolean;
+  public
+    function GetBeanIDList():String;
   public
     procedure CheckInitialize; override;
 
@@ -79,14 +82,20 @@ var
 begin
   @lvProc := GetProcAddress(FLibHandle, PChar('GetBeanFactoryForCPlus'));
   if (@lvProc <> nil) then
-  begin       // VC的插件需要手动处理AddRef
+  begin       
     lvProc(beanFactory);
-    if beanFactory <> nil then
-    begin
-      beanFactory._AddRef;
-    end;
+    FIsDelphiLib := False; 
   end;
   Result := beanFactory <> nil;
+end;
+
+function TLibFactoryObject.GetBeanIDList: String;
+var
+  lvBeanIDs:array[1..4096] of AnsiChar;
+begin
+  FillChar(lvBeanIDs[1], 4096, 0);
+  (FBeanFactory as  IBeanFactory).getBeanList(@lvBeanIDs[1], 4096);
+  Result := StrPas(@lvBeanIDs[1]);
 end;
 
 procedure TLibFactoryObject.DoCreatePluginFactory;
@@ -105,6 +114,7 @@ begin
     begin
       raise Exception.CreateFmt('非法的Plugin模块文件(%s),getBeanFactory 返回的对象为Nil', [self.FLibFileName]);
     end;
+    FIsDelphiLib := True;
   end;
 end;
 
@@ -128,21 +138,31 @@ procedure TLibFactoryObject.DoInitalizeBeanFactory;
 var
   lvFunc:procedure(appContext: IApplicationContext; appKeyMap: IKeyMap); stdcall;
 begin
-  @lvFunc := GetProcAddress(FLibHandle, PChar('initializeBeanFactory'));
-  if (@lvFunc = nil) then
+  @lvFunc := GetProcAddress(FLibHandle, PChar('InitializeBeanFactory'));
+  if (@lvFunc <> nil) then
   begin
-    raise Exception.CreateFmt(
-      '非法的Plugin模块文件(%s),找不到入口函数(initializeBeanFactory)',
-      [self.FLibFileName]);
+    lvFunc(appPluginContext, applicationKeyMap);
+  end else
+  begin
+    @lvFunc := GetProcAddress(FLibHandle, PChar('initializeBeanFactory'));
+    if (@lvFunc = nil) then
+    begin
+      raise Exception.CreateFmt(
+        '非法的Plugin模块文件(%s),找不到入口函数(initializeBeanFactory)',
+        [self.FLibFileName]);
+    end;
+    lvFunc(appPluginContext, applicationKeyMap);
   end;
-  lvFunc(appPluginContext, applicationKeyMap);
 end;
 
 procedure TLibFactoryObject.DoInitialize;
 begin
   DoInitalizeBeanFactory;
   DoCreatePluginFactory;
-  FbeanFactory.CheckInitalize;
+  if FIsDelphiLib then
+  begin
+    (FBeanFactory as IBeanFactory).CheckInitalize;
+  end;
 end;
 
 procedure TLibFactoryObject.CheckInitialize;
@@ -162,8 +182,8 @@ begin
       lvBeanID := AnsiString(lvBeanConfig.S['id']);
       lvConfigStr := AnsiString(lvBeanConfig.AsJSon(false, false));
 
-      //配置单个bean
-      FbeanFactory.configBean(PAnsiChar(lvBeanID), PAnsiChar(lvConfigStr));
+      (FBeanFactory as IBeanFactory).configBean(PAnsiChar(lvBeanID), PAnsiChar(lvConfigStr));
+
     end;
   end;
 
@@ -195,8 +215,15 @@ begin
     if lvLibHandle <> 0 then
     begin
       try
-        @lvFunc := GetProcAddress(lvLibHandle, PChar('initializeBeanFactory'));
+        // 大写
+        @lvFunc := GetProcAddress(lvLibHandle, PChar('InitializeBeanFactory'));
         result := (@lvFunc <> nil);
+        
+        if not Result then
+        begin
+          @lvFunc := GetProcAddress(lvLibHandle, PChar('initializeBeanFactory'));  
+          result := (@lvFunc <> nil);
+        end;
       finally
         if Result then
         begin
@@ -263,7 +290,19 @@ end;
 
 procedure TLibFactoryObject.Cleanup;
 begin
+  DoFinalizeBeanFactory;
   DoFreeLibrary;
+end;
+
+procedure TLibFactoryObject.DoFinalizeBeanFactory;
+var
+  lvFunc:procedure(); stdcall;
+begin
+  @lvFunc := GetProcAddress(FLibHandle, PChar('FinalizeBeanFactory'));
+  if (@lvFunc <> nil) then
+  begin
+    lvFunc();
+  end;
 end;
 
 function TLibFactoryObject.GetBean(pvBeanID:string): IInterface;

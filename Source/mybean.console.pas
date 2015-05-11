@@ -67,14 +67,16 @@ uses
 
 type
   TApplicationContext = class(TInterfacedObject
+     , IInterface
      , IApplicationContext
+     , IApplicationContextForCPlus
      , IApplicationContextEx01
      , IApplicationContextEx2
      , IApplicationContextEx3
      , IbeanFactoryRegister
      )
   private
-    FINIFile:TIniFile;
+    FIniFile: TIniFile;
 
     FTraceLoadFile: Boolean;
 
@@ -85,7 +87,7 @@ type
 
     /// <summary>
     ///   保存beanID和FactoryObject的对应关系
-    /// </summary>
+    /// </summary>                            
     FBeanMapList: TStrings;
 
     procedure DoRegisterPluginIDS(pvPluginIDS: String; pvFactoryObject:
@@ -93,12 +95,18 @@ type
     procedure DoRegisterPlugins(pvPlugins: TStrings; pvFactoryObject:
         TBaseFactoryObject);
 
-    procedure checkCreateINIFile;
+    procedure CheckCreateINIFile;
 
     function CheckInitializeFactoryObject(pvFactoryObject:TBaseFactoryObject;
         pvRaiseException:Boolean): Boolean;
 
     procedure removeRegistedBeans(pvLibFile:string);
+
+  public
+    function QueryInterface(const IID: TGUID; out Obj): HResult; stdcall;
+    function _AddRef: Integer; stdcall;
+    function _Release: Integer; stdcall;
+
   protected
     /// <summary>
     ///   卸载掉指定的插件宿主文件(dll)
@@ -219,7 +227,16 @@ type
     ///   获取beanID对应的工厂接口
     /// </summary>
     function GetBeanFactory(pvBeanID:PAnsiChar): IInterface; stdcall;
+  public
+    /// <summary>
+    ///   根据beanID获取对应的插件
+    /// </summary>
+    function GetBeanForCPlus(pvBeanID: PAnsiChar; out vInstance: IInterface): HRESULT; stdcall;
 
+    /// <summary>
+    ///   获取beanID对应的工厂接口
+    /// </summary>
+    function GetBeanFactoryForCPlus(pvBeanID:PAnsiChar; out vInstance: IInterface): HRESULT; stdcall;
   protected
     /// <summary>
     ///   直接注册Bean工厂插件
@@ -577,13 +594,13 @@ begin
   if FFactoryObjectList.Count = 0 then
   begin
     // 先读取bean配置文件  plug-ins\*.plug-ins, *.plug-ins
-    lvConfigFiles := FINIFile.ReadString('main', 'beanConfigFiles', '');
+    lvConfigFiles := FIniFile.ReadString('main', 'beanConfigFiles', '');
     if lvConfigFiles <> '' then
     begin
       if FTraceLoadFile then __beanLogger.logMessage(sDebug_loadFromConfigFile, 'LOAD_TRACE_');
       if ExecuteLoadBeanFromConfigFiles(lvConfigFiles) > 0 then
       begin
-        if FINIFile.ReadBool('main', 'loadOnStartup', False) then
+        if FIniFile.ReadBool('main', 'loadOnStartup', False) then
         begin
           // 确保DLL工厂都已经加载了对应的DLL
           CheckInitializeFactoryObjects;
@@ -611,9 +628,9 @@ var
   lvTempPath:String;
   l:Integer;
 begin
-  lvTempPath := FINIFile.ReadString('main', 'copyDest', 'plug-ins\');
+  lvTempPath := FIniFile.ReadString('main', 'copyDest', 'plug-ins\');
 
-  FTraceLoadFile := FINIFile.ReadBool('main','traceLoadLib', FTraceLoadFile);
+  FTraceLoadFile := FIniFile.ReadBool('main','traceLoadLib', FTraceLoadFile);
 
 
   FCopyDestPath := GetAbsolutePath(FRootPath, lvTempPath);
@@ -722,10 +739,13 @@ end;
 
 destructor TApplicationContext.Destroy;
 begin
-  FINIFile.Free;
+  FIniFile.Free;
   CheckFinalize;
   FBeanMapList.Free;
   FFactoryObjectList.Free;
+  {$IFDEF DEBUG}
+  OutputDebugString('ApplicationContext Destroyed In Delphi');
+  {$ENDIF}
   inherited Destroy;
 end;
 
@@ -737,7 +757,7 @@ begin
   Result := FBeanMapList.IndexOf(lvBeanID)<> -1;
 end;
 
-procedure TApplicationContext.checkCreateINIFile;
+procedure TApplicationContext.CheckCreateINIFile;
 var
   lvFile:String;
 begin
@@ -755,7 +775,7 @@ begin
     {$ENDIF}
   end;
 
-  FINIFile := TIniFile.Create(lvFile);
+  FIniFile := TIniFile.Create(lvFile);
 end;
 
 function TApplicationContext.CheckRemoveLibObjectFromList(pvFileName:String):
@@ -967,7 +987,8 @@ var
   lvFile: string;
   lvLib:TLibFactoryObject;
   lvIsOK:Boolean;
-  lvBeanIDs:array[1..4096] of AnsiChar;
+
+  lvBeanIDList:String;
 begin
   Result := nil;
   if pvFile = '' then exit;
@@ -983,10 +1004,8 @@ begin
       if CheckInitializeFactoryObject(TBaseFactoryObject(lvLib), False) then
       begin
         try
-          ZeroMemory(@lvBeanIDs[1], 4096);
-          lvLib.beanFactory.getBeanList(@lvBeanIDs[1], 4096);
-
-          DoRegisterPluginIDS(String(AnsiString(PAnsiChar(@lvBeanIDs[1]))), TBaseFactoryObject(lvLib));
+          lvBeanIDList := lvLib.GetBeanIDList;
+          DoRegisterPluginIDS(lvBeanIDList, TBaseFactoryObject(lvLib));
           lvIsOK := true;
           lvLib.Tag := 1;
         except
@@ -1003,7 +1022,7 @@ begin
 
     if lvIsOK then  // 已经加载
     begin
-      Result := lvLib.BeanFactory;
+      Result := lvLib.BeanFactory as IBeanFactory;
     end;
   finally
     if not lvIsOK then
@@ -1239,6 +1258,70 @@ end;
 
 
 
+function TApplicationContext.GetBeanFactoryForCPlus(pvBeanID: PAnsiChar;
+  out vInstance: IInterface): HRESULT;
+var
+  j:Integer;
+  lvLibObject:TBaseFactoryObject;
+  lvBeanID:AnsiString;
+begin
+  lvBeanID := pvBeanID;
+  try
+    j := FBeanMapList.IndexOf(String(lvBeanID));
+    if j <> -1 then
+    begin
+      lvLibObject := TBaseFactoryObject(FBeanMapList.Objects[j]);
+      if lvLibObject.BeanFactory = nil then
+      begin
+        if FTraceLoadFile then
+          __beanLogger.logMessage(sLoadTrace_Factory_Init_BEGIN, [lvLibObject.namespace],
+             'LOAD_TRACE_');
+        lvLibObject.CheckInitialize;
+        if FTraceLoadFile then
+          __beanLogger.logMessage(sLoadTrace_Factory_Init_END, [lvLibObject.namespace],
+            'LOAD_TRACE_');
+      end;
+      vInstance := lvLibObject.BeanFactory;
+      Result := S_OK;
+    end else
+    begin
+      Result := S_FALSE;
+      {$IFDEF LOG_ON}
+      __beanLogger.logMessage(
+                    Format('找不到对应的[%s]插件工厂', [lvBeanID]),
+                    'LOAD_TRACE_');
+      {$ENDIF}
+    end;
+  except
+    on E:Exception do
+    begin
+      __beanLogger.logMessage(
+                    Format('获取插件工厂[%s]出现异常', [lvBeanID]) + e.Message,
+                    'LOAD_TRACE_');
+      Result := S_FALSE;
+    end;
+  end;
+end;
+
+function TApplicationContext.GetBeanForCPlus(pvBeanID: PAnsiChar;
+  out vInstance: IInterface): HRESULT;
+var
+  j:Integer;
+  lvLibObject:TBaseFactoryObject;
+  lvBeanID:String;
+begin
+  lvBeanID := string(AnsiString(pvBeanID));
+  j := FBeanMapList.IndexOf(lvBeanID);
+  if j <> -1 then
+  begin
+    lvLibObject := TBaseFactoryObject(FBeanMapList.Objects[j]);
+    Result := lvLibObject.GetBeanForCPlus(pvBeanID, vInstance);
+  end else
+  begin
+    Result := S_FALSE;
+  end;
+end;
+
 class function TApplicationContext.Instance: TApplicationContext;
 begin
   Result := __instanceAppContext;
@@ -1347,6 +1430,11 @@ begin
     SetLength(Result, I);
 end;
 
+function TApplicationContext.QueryInterface(const IID: TGUID; out Obj): HResult;
+begin
+  Result := inherited QueryInterface(IID, Obj);
+end;
+
 function TApplicationContext.RegisterBeanFactory(const pvFactory: IBeanFactory;
     const pvNameSapce:PAnsiChar): Integer;
 var
@@ -1428,6 +1516,32 @@ begin
       end;
     end;
   end;  
+end;
+
+function TApplicationContext._AddRef: Integer;
+{$IFDEF DEBUG}
+var
+  lvOutput:String;
+{$ENDIF}
+begin
+  {$IFDEF DEBUG}
+  lvOutput := Format('ApplicationContext AddRef By Delphi: %d', [RefCount + 1]);
+  OutputDebugString(PChar(lvOutput));
+  {$ENDIF}
+  Result := inherited _AddRef;
+end;
+
+function TApplicationContext._Release: Integer;
+{$IFDEF DEBUG}
+var
+  lvOutput:String;
+{$ENDIF}
+begin
+  {$IFDEF DEBUG}
+  lvOutput := Format('ApplicationContext Release By Delphi: %d', [RefCount-1]);
+  OutputDebugString(PChar(lvOutput));
+  {$ENDIF}
+  Result := inherited _Release;
 end;
 
 procedure TKeyMapImpl.AfterConstruction;
