@@ -92,10 +92,12 @@ end;
 function TLibFactoryObject.GetBeanIDList: String;
 var
   lvBeanIDs:array[1..4096] of AnsiChar;
+  lvRet:AnsiString;
 begin
   FillChar(lvBeanIDs[1], 4096, 0);
   (FBeanFactory as  IBeanFactory).getBeanList(@lvBeanIDs[1], 4096);
-  Result := StrPas(@lvBeanIDs[1]);
+  lvRet := StrPas(PAnsiChar(@lvBeanIDs[1]));
+  Result := lvRet;
 end;
 
 procedure TLibFactoryObject.DoCreatePluginFactory;
