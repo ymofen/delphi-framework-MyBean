@@ -171,6 +171,13 @@ var
   lvFactoryCPlus:IBeanFactoryForCPlus;
 begin
   lvTempIntf := ApplicationContext.getBeanFactory(PAnsiChar(AnsiString(pvBeanID)));
+  if lvTempIntf = nil then
+  begin
+    if pvRaiseIfNil then
+      raise Exception.CreateFmt('找不到插件[%s]对应的工厂', [pvBeanID]);
+    Exit;
+  end;
+
   if lvTempIntf.QueryInterface(IBeanFactoryForCPlus, lvFactoryCPlus) = S_OK then
   begin
     lvTempIntf := nil;
