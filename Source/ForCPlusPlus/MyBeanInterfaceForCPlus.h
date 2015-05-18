@@ -9,6 +9,9 @@
 
 typedef IUnknown IInterface;
 
+/// TGetInterfaceFunctionForStdcall = function(out vIntf : IInterface) :HRESULT; stdcall;
+typedef HRESULT(__stdcall *TGetInterfaceFunctionForStdcall) (IInterface ** instance);
+
 /// <summary>
 ///   C++ 语言调用的接口, 主控台提供
 /// </summary>
@@ -25,6 +28,38 @@ IApplicationContextForCPlus: public IInterface{
 	/// </summary>
 	/// function GetBeanFactoryForCPlus(pvBeanID:PAnsiChar; out vInstance : IInterface) : HRESULT; stdcall;
 	virtual HRESULT __stdcall GetBeanFactoryForCPlus(PMyBeanChar beanId, IInterface **p) = 0;
+};
+
+
+/// <summary>
+///   C++ 语言调用的接口, 主控台提供
+/// </summary>
+interface DECLSPEC_UUID("{66828066-38B7-4613-8F9B-627CB76D84F2}")
+IStrMapForCPlus: public IInterface{
+/// <summary>
+///   根据key值获取接口
+/// </summary>
+/// function GetValue(pvKey:PAnsiChar; out vIntf : IInterface) : HRESULT; stdcall;
+virtual HRESULT __stdcall GetValue(PMyBeanChar beanId, IInterface **p) = 0;
+
+
+/// <summary>
+///  赋值接口
+/// </summary>
+/// function SetValue(pvKey:PAnsiChar; pvIntf: IInterface) : HRESULT; stdcall;
+virtual HRESULT __stdcall SetValue(PMyBeanChar beanId, IInterface * p) = 0;
+
+/// <summary>
+///   移除接口
+/// </summary>
+/// function Remove(pvKey:PAnsiChar) : HRESULT; stdcall;
+virtual HRESULT __stdcall Remove(PMyBeanChar beanId) = 0;
+
+/// <summary>
+///   判断是否存在接口
+/// </summary>
+/// function Exists(pvKey:PAnsiChar) : HRESULT; stdcall;
+virtual HRESULT __stdcall Exists(PMyBeanChar beanId) = 0;
 };
 
 

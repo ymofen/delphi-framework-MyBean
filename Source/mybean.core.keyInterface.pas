@@ -113,6 +113,9 @@ begin
   if lvBlock <> nil then
   begin
     Result := lvBlock.intf;
+  end else
+  begin
+    Result := nil;
   end;
 end;
 

@@ -23,6 +23,9 @@ unit mybean.core.intf;
 interface 
 
 type
+  /// 获取接口实例
+  TGetInterfaceFunctionForStdcall = function(out vIntf:IInterface):HRESULT; stdcall;
+
   IBeanFactory = interface;
   /// <summary>
   ///   接口已经改变需要重新编译所有的DLL和主控台
@@ -287,6 +290,35 @@ type
     procedure FreeObject; stdcall;
   end;
 
+
+  /// <summary>
+  ///   Map接口(与C++交互)
+  /// </summary>
+  IStrMapForCPlus = interface
+    ['{66828066-38B7-4613-8F9B-627CB76D84F2}']
+    /// <summary>
+    ///   根据key值获取接口
+    /// </summary>
+    function GetValue(pvKey:PAnsiChar; out vIntf: IInterface): HRESULT; stdcall;
+
+    /// <summary>
+    ///  赋值接口
+    /// </summary>
+    function SetValue(pvKey:PAnsiChar; pvIntf: IInterface): HRESULT; stdcall;
+
+    /// <summary>
+    ///   移除接口
+    /// </summary>
+    function Remove(pvKey:PAnsiChar): HRESULT; stdcall;
+
+    /// <summary>
+    ///   判断是否存在接口
+    ///   S_OK(0) 存在
+    ///   S_False(1) 不存在
+    /// </summary>
+    function Exists(pvKey:PAnsiChar): HRESULT; stdcall;
+  end;
+
   IKeyMap = interface(IInterface)
     ['{3CF4907D-C1FF-4E93-9E32-06AAD82310B4}']
 
@@ -333,7 +365,6 @@ type
 
 
 var
-
   appPluginContext:IApplicationContext;
   applicationKeyMap:IKeyMap;
 
@@ -346,7 +377,17 @@ var
   ///   提供一个获取applicationKeyMap对象的函数指针，TMyBeanFactoryTools中如果该指针存在，直接调用该函数
   /// </summary>
   GetApplicationKeyMapFunc: function:IKeyMap; stdcall;
-  
+
+
+  /// <summary>
+  ///   获取一个ApplicationContext接口实例的函数指针, 全局过程
+  /// </summary>
+  __GetApplicationContextFunctionForStdcall: TGetInterfaceFunctionForStdcall;
+
+  /// <summary>
+  ///   提供一个获取applicationKeyMap对象的函数指针，TMyBeanFactoryTools中如果该指针存在，直接调用该函数
+  /// </summary>
+  __GetApplicationMapFunctionForStdcall: TGetInterfaceFunctionForStdcall;
 
 implementation
 

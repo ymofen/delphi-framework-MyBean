@@ -320,13 +320,33 @@ type
   end;
 
 
-  TKeyMapImpl = class(TInterfacedObject, IKeyMap)
+  TKeyMapImpl = class(TInterfacedObject, IKeyMap, IStrMapForCPlus)
   private
     FKeyIntface:TKeyInterface;
   protected
+    function QueryInterface(const IID: TGUID; out Obj): HResult; stdcall;
     function _AddRef: Integer; stdcall;
     function _Release: Integer; stdcall;
+  public
+    /// <summary>
+    ///   根据key值获取接口
+    /// </summary>
+    function GetValue(pvKey:PAnsiChar; out vIntf: IInterface): HRESULT; stdcall;
 
+    /// <summary>
+    ///  赋值接口
+    /// </summary>
+    function SetValue(pvKey:PAnsiChar; pvIntf: IInterface): HRESULT; stdcall;
+
+    /// <summary>
+    ///   移除接口
+    /// </summary>
+    function Remove(pvKey:PAnsiChar): HRESULT; stdcall;
+
+    /// <summary>
+    ///   判断是否存在接口
+    /// </summary>
+    function Exists(pvKey:PAnsiChar): HRESULT; stdcall;
   protected
     /// <summary>
     ///   判断是否存在接口
@@ -436,6 +456,16 @@ function HashOf(const p:Pointer; l:Integer): Integer; overload;
 /// </summary>
 function HashOf(const vStrData:String): Integer; overload;
 
+/// <summary>
+///   获取ApplicatioinContext函数, 供其他 DLL(VC)使用
+/// </summary>
+function __GetApplicationContextFunc(out vIntf:IInterface): HRESULT; stdcall;
+
+
+/// <summary>
+///   获取ApplicatioinKeyMap函数, 供其他 DLL(VC)使用
+/// </summary>
+function __GetApplicationMapFunc(out vIntf:IInterface): HRESULT; stdcall;
 
 
 
@@ -582,6 +612,19 @@ end;
 procedure ExecuteLoadBeanFromConfigFiles(const pvConfigFiles: string);
 begin
   TApplicationContext.instance.ExecuteLoadBeanFromConfigFiles(pvConfigFiles);
+end;
+
+function __GetApplicationContextFunc(out vIntf:IInterface): HRESULT; stdcall;
+begin
+  vIntf := __instanceAppContext;
+  Result := S_OK;
+end;
+
+
+function __GetApplicationMapFunc(out vIntf:IInterface): HRESULT; stdcall;
+begin
+  vIntf := __instanceKeyMap;
+  Result := S_OK;
 end;
 
 
@@ -1525,7 +1568,7 @@ var
 {$ENDIF}
 begin
   {$IFDEF DEBUG}
-  lvOutput := Format('ApplicationContext AddRef By Delphi: %d', [RefCount + 1]);
+  lvOutput := Format('ApplicationContext AddRef By Delphi: %d\r\n', [RefCount + 1]);
   OutputDebugString(PChar(lvOutput));
   {$ENDIF}
   Result := inherited _AddRef;
@@ -1538,7 +1581,7 @@ var
 {$ENDIF}
 begin
   {$IFDEF DEBUG}
-  lvOutput := Format('ApplicationContext Release By Delphi: %d', [RefCount-1]);
+  lvOutput := Format('ApplicationContext Release By Delphi: %d\r\n', [RefCount-1]);
   OutputDebugString(PChar(lvOutput));
   {$ENDIF}
   Result := inherited _Release;
@@ -1557,10 +1600,24 @@ end;
 
 destructor TKeyMapImpl.Destroy;
 begin
+  {$IFDEF DEBUG}
+  OutputDebugString('ApplicationKeyMap Destroyed In Delphi\r\n');
+  {$ENDIF}
   cleanupObjects;
   FKeyIntface.Free;
   FKeyIntface := nil;
   inherited Destroy;
+end;
+
+function TKeyMapImpl.Exists(pvKey: PAnsiChar): HRESULT;
+begin
+  if FKeyIntface.exists(string(AnsiString(pvKey))) then
+  begin
+    Result := S_OK;
+  end else
+  begin
+    Result := S_FALSE;
+  end;    
 end;
 
 function TKeyMapImpl.existsObject(const pvKey: PAnsiChar): Boolean;
@@ -1571,6 +1628,35 @@ end;
 function TKeyMapImpl.getObject(const pvKey: PAnsiChar): IInterface;
 begin
   Result := FKeyIntface.find(string(AnsiString(pvKey)));
+end;
+
+function TKeyMapImpl.GetValue(pvKey: PAnsiChar; out vIntf: IInterface): HRESULT;
+var
+  s:String;
+begin
+  try
+    vIntf := FKeyIntface.find(string(AnsiString(pvKey)));
+    s := Format('%s对象地址:%d\r\n', [pvKey, Integer(vIntf)]);
+    OutputDebugString(PChar(s));
+    if vIntf <> nil then Result := S_OK else Result := S_FALSE;
+  except
+    Result := -1;
+  end;
+end;
+
+function TKeyMapImpl.QueryInterface(const IID: TGUID; out Obj): HResult;
+begin
+  Result := inherited QueryInterface(IID, Obj);
+end;
+
+function TKeyMapImpl.Remove(pvKey: PAnsiChar): HRESULT;
+begin
+  try
+    FKeyIntface.remove(string(AnsiString(pvKey)));
+    Result := S_OK;
+  except
+    Result := -1;
+  end;
 end;
 
 procedure TKeyMapImpl.removeObject(const pvKey: PAnsiChar);
@@ -1590,13 +1676,39 @@ begin
   end;
 end;
 
-function TKeyMapImpl._AddRef: Integer;
+function TKeyMapImpl.SetValue(pvKey: PAnsiChar; pvIntf: IInterface): HRESULT;
 begin
+  try
+    FKeyIntface.put(string(AnsiString(pvKey)), pvIntf);
+    Result := S_OK;
+  except
+    Result := -1;
+  end;  
+end;
+
+function TKeyMapImpl._AddRef: Integer;
+{$IFDEF DEBUG}
+var
+  lvOutput:String;
+{$ENDIF}
+begin
+  {$IFDEF DEBUG}
+  lvOutput := Format('ApplicationKeyMap AddRef By Delphi: %d\r\n', [RefCount + 1]);
+  OutputDebugString(PChar(lvOutput));
+  {$ENDIF}
   Result := inherited _AddRef;
 end;
 
 function TKeyMapImpl._Release: Integer;
+{$IFDEF DEBUG}
+var
+  lvOutput:String;
+{$ENDIF}
 begin
+  {$IFDEF DEBUG}
+  lvOutput := Format('ApplicationKeyMap Release By Delphi: %d\r\n', [RefCount-1]);
+  OutputDebugString(PChar(lvOutput));
+  {$ENDIF}
   Result := inherited _Release;
 end;
 
@@ -1613,6 +1725,10 @@ initialization
 
   mybean.core.intf.AppPluginContext := __instanceAppContext;
   mybean.core.intf.ApplicationKeyMap := __instanceKeyMap;
+
+  mybean.core.intf.__GetApplicationContextFunctionForStdcall := __GetApplicationContextFunc;
+  mybean.core.intf.__GetApplicationMapFunctionForStdcall := __GetApplicationMapFunc;
+
 
 //  // 初始化
 //  AppPluginContext.checkInitialize;

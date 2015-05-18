@@ -11,6 +11,59 @@ BeanFactory * __beanFactory;
 /// 全局的ApplicationContext
 IInterface * __applicationContext;
 
+/// 获取ApplicationContext接口
+TGetInterfaceFunctionForStdcall __ApplicationContextGetter;
+
+/// 获取ApplicationKeyMap接口
+TGetInterfaceFunctionForStdcall __ApplicationMapGetter;
+
+
+IStrMapForCPlus * GetApplicationMap()
+{
+	if (__ApplicationMapGetter == NULL)
+	{
+		return NULL;
+	}
+	else
+	{
+		IInterface * map;
+		__ApplicationMapGetter(&map);
+		if (map == NULL){ 
+			return NULL; 
+		}
+		else{			
+			IStrMapForCPlus * ret= NULL;
+			OutputDebugStringA("Map->QueryInterfaced(IStrMapForCPlus)\r\n");
+			if (map->QueryInterface(__uuidof(IStrMapForCPlus), (void**)&ret) == S_OK)
+			{
+				map->Release();
+				return ret;
+			}
+			else
+			{
+				map->Release();
+				return NULL;
+			}
+		}
+	}
+}
+
+IInterface * GetMapObject(PMyBeanChar objId)
+{
+	IStrMapForCPlus * map = GetApplicationMap();
+	if (map != NULL)
+	{	
+		IInterface * ret;
+		map->GetValue(objId, &ret);
+		map->Release();
+		return ret;
+	}
+	else
+	{
+		return NULL;
+	}
+}
+
 
 IInterface * __stdcall GetBean(PMyBeanChar beanID){
 	IApplicationContextForCPlus * applicationContext;
@@ -27,3 +80,4 @@ IInterface * __stdcall GetBean(PMyBeanChar beanID){
 		return NULL;
 	}
 }
+

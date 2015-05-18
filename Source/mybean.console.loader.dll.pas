@@ -139,6 +139,7 @@ end;
 procedure TLibFactoryObject.DoInitalizeBeanFactory;
 var
   lvFunc:procedure(appContext: IApplicationContext; appKeyMap: IKeyMap); stdcall;
+  lvProc:procedure(func: TGetInterfaceFunctionForStdcall) stdcall;
 begin
   @lvFunc := GetProcAddress(FLibHandle, PChar('InitializeBeanFactory'));
   if (@lvFunc <> nil) then
@@ -154,6 +155,18 @@ begin
         [self.FLibFileName]);
     end;
     lvFunc(appPluginContext, applicationKeyMap);
+  end;
+
+  lvProc := GetProcAddress(FLibHandle, PChar('SetApplicationContextGetterFunction'));
+  if (@lvProc <> nil) then
+  begin
+    lvProc(__GetApplicationContextFunctionForStdcall);
+  end;
+
+  lvProc := GetProcAddress(FLibHandle, PChar('SetApplicationMapGetterFunction'));
+  if (@lvProc <> nil) then
+  begin
+    lvProc(__GetApplicationMapFunctionForStdcall);
   end;
 end;
 
