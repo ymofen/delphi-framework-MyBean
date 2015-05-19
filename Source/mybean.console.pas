@@ -154,6 +154,8 @@ type
     /// </returns>
     /// <param name="pvConfigFile"> (PAnsiChar) </param>
     function CheckLoadBeanConfigFile(pvConfigFile:PAnsiChar): Boolean; stdcall;
+  public
+    procedure StartLibraryService;
   protected
 
     /// <summary>
@@ -413,6 +415,12 @@ function ApplicationKeyMap: IKeyMap; stdcall;
 /// </summary>
 procedure ExecuteLoadLibFiles(const pvLibFiles: string);
 
+
+/// <summary>
+///   执行所有DLL中的函数
+/// </summary>
+procedure StartLibraryService;
+
 /// <summary>
 ///   从配置文件中加载, 返回成功处理的Bean配置数量
 ///   可以调用多次
@@ -627,6 +635,11 @@ begin
   Result := S_OK;
 end;
 
+procedure StartLibraryService;
+begin
+  TApplicationContext.Instance.StartLibraryService;
+end;
+
 
 
 procedure TApplicationContext.CheckInitialize;
@@ -663,6 +676,8 @@ begin
       /// 加载ConfigPlugins下面的 配置文件
       ExecuteLoadBeanFromConfigFiles('ConfigPlugins\*.plug-ins');
     end;
+
+    StartLibraryService;
   end;
 end;
 
@@ -1513,6 +1528,19 @@ begin
     begin
       FBeanMapList.Delete(i);
     end;                        
+  end;
+end;
+
+procedure TApplicationContext.StartLibraryService;
+var
+  lvLibObject:TBaseFactoryObject;
+  i:Integer;
+begin
+  ///全部执行一次StartService;
+  for i := 0 to FFactoryObjectList.Count -1 do
+  begin
+    lvLibObject := TBaseFactoryObject(FFactoryObjectList.Objects[i]);
+    lvLibObject.StartService;
   end;
 end;
 

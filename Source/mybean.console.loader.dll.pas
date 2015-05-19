@@ -47,6 +47,8 @@ type
 
     procedure Cleanup; override;
 
+    procedure StartService; override;
+
     /// <summary>
     ///   判断指定的Lib文件是否是MyBean的插件文件
     /// </summary>
@@ -141,7 +143,7 @@ var
   lvFunc:procedure(appContext: IApplicationContext; appKeyMap: IKeyMap); stdcall;
   lvProc:procedure(func: TGetInterfaceFunctionForStdcall) stdcall;
 begin
-  @lvFunc := GetProcAddress(FLibHandle, PChar('InitializeBeanFactory'));
+  @lvFunc := GetProcAddress(FLibHandle, PChar('InitializeLibrary'));
   if (@lvFunc <> nil) then
   begin
     lvFunc(appPluginContext, applicationKeyMap);
@@ -231,7 +233,7 @@ begin
     begin
       try
         // 大写
-        @lvFunc := GetProcAddress(lvLibHandle, PChar('InitializeBeanFactory'));
+        @lvFunc := GetProcAddress(lvLibHandle, PChar('InitializeLibrary'));
         result := (@lvFunc <> nil);
         
         if not Result then
@@ -313,7 +315,7 @@ procedure TLibFactoryObject.DoFinalizeBeanFactory;
 var
   lvFunc:procedure(); stdcall;
 begin
-  @lvFunc := GetProcAddress(FLibHandle, PChar('FinalizeBeanFactory'));
+  @lvFunc := GetProcAddress(FLibHandle, PChar('FinalizeLibrary'));
   if (@lvFunc <> nil) then
   begin
     lvFunc();
@@ -329,6 +331,18 @@ procedure TLibFactoryObject.SetLibFileName(const Value: String);
 begin
   FLibFileName := Value;
   Fnamespace := FLibFileName;
+end;
+
+procedure TLibFactoryObject.StartService;
+var
+  lvFunc:procedure(); stdcall;
+begin
+  @lvFunc := GetProcAddress(FLibHandle, PChar('StartLibraryService'));
+  if (@lvFunc <> nil) then
+  begin
+    lvFunc();
+  end;
+
 end;
 
 end.

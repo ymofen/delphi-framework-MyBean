@@ -42,6 +42,8 @@ type
 
     procedure CheckInitialize; virtual;
 
+    procedure StartService;virtual;
+
     /// <summary>
     ///   检测是否是有效的插件宿主文件
     /// </summary>
@@ -145,6 +147,11 @@ begin
   begin
     Result := S_FALSE;
   end;
+end;
+
+procedure TBaseFactoryObject.StartService;
+begin
+
 end;
 
 { TBaseFactoryObject }
