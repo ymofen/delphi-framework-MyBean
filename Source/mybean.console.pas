@@ -1636,7 +1636,7 @@ var
 begin
   try
     vIntf := FKeyIntface.find(string(AnsiString(pvKey)));
-    s := Format('%s对象地址:%d\r\n', [pvKey, Integer(vIntf)]);
+    s := Format('%s对象地址:%d\r\n', [pvKey, IntPtr(vIntf)]);
     OutputDebugString(PChar(s));
     if vIntf <> nil then Result := S_OK else Result := S_FALSE;
   except
