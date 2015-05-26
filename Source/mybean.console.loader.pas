@@ -67,6 +67,7 @@ type
     /// </summary>
     property BeanFactory: IBeanFactory read FBeanFactory;
 
+
     property Namespace: string read FNamespace;
 
     property Tag: Integer read FTag write FTag;
@@ -109,6 +110,10 @@ begin
   if FBeanFactory = nil then
   begin
     CheckInitialize;
+
+    // GetBean的时候如果FBeanFactory还没有赋值，
+    //  代表库文件是按需加载的，所以需要执行一次StartService
+    StartService;
   end;
 
   if FBeanFactory <> nil then

@@ -12,6 +12,10 @@ uses
 begin
   Application.Initialize;
   try
+      // 直接加载plug-ins目录下的DLL插件
+    ExecuteLoadLibFiles('CorePlugins\*.dll');
+    ExecuteLoadLibFiles('CorePlugins\*.bpl');
+    
     // 直接加载plug-ins目录下的DLL插件
     ExecuteLoadLibFiles('demoPlugins\*.dll');
 
@@ -24,7 +28,9 @@ begin
 
     // 加载configPlugins目录下的插件配置文件(按需加载)
     ExecuteLoadBeanFromConfigFiles('configPlugins\*.plug-ins');
-    
+
+    StartLibraryService;
+
     Application.MainFormOnTaskbar := True;
     Application.CreateForm(TfrmMain, frmMain);
     Application.Run;

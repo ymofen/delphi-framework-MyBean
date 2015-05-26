@@ -1291,6 +1291,11 @@ begin
           __beanLogger.logMessage(sLoadTrace_Factory_Init_BEGIN, [lvLibObject.namespace],
              'LOAD_TRACE_');
         lvLibObject.CheckInitialize;
+
+        // GetBeanFactory的时候如果FBeanFactory还没有赋值，
+        //  代表库文件是按需加载的，所以需要执行一次StartService
+        lvLibObject.StartService;
+
         if FTraceLoadFile then
           __beanLogger.logMessage(sLoadTrace_Factory_Init_END, [lvLibObject.namespace],
             'LOAD_TRACE_');

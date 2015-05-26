@@ -15,12 +15,15 @@ IPublisher * GetPublisher(PMyBeanChar publisherId)
 {
 	
 	IInterface * intf = GetBean("MyBeanSubscribeCenter");
+	ISubscribeCenter * subscribeCenter = NULL;
 	IPublisher * publisher = NULL;
 	if (intf != NULL)
 	{
-		if (intf->QueryInterface(__uuidof(IPublisher), (void**)&publisher) == S_OK)
+		if (intf->QueryInterface(__uuidof(ISubscribeCenter), (void**)&subscribeCenter) == S_OK)
 		{
-			intf->Release();			
+			intf->Release();	
+			subscribeCenter->GetPublisher(publisherId, (IPublisher**)&publisher);
+			subscribeCenter->Release();
 			return publisher;
 		}
 		else
@@ -39,7 +42,8 @@ bool AddSubscriber(PMyBeanChar publisherId, IInterface * subscriber)
 	IPublisher * publisher = GetPublisher(publisherId);
 	if (publisher != NULL)
 	{
-		publisher -> 
+		publisher->AddSubscriber(subscriber);
+		publisher->Release();
 		return true;
 	}
 	else

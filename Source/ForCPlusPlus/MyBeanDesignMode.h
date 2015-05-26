@@ -133,4 +133,4 @@ extern IPublisher * GetPublisher(PMyBeanChar publisherId);
 /// <summary>
 ///   向发布者添加一个订阅者
 /// </summary>
-extern void AddSubscriber(PMyBeanChar publisherId, IInterface * subscriber);
+extern bool AddSubscriber(PMyBeanChar publisherId, IInterface * subscriber);

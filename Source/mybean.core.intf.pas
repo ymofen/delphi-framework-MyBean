@@ -26,6 +26,11 @@ type
 {$IF RTLVersion<25}
   IntPtr = Integer;
 {$IFEND}
+  PInterface = ^IInterface;
+
+  PMyBeanChar = PAnsiChar;
+  MyBeanChar = AnsiChar;
+  MyBeanString = AnsiString;
 
   /// 获取接口实例
   TGetInterfaceFunctionForStdcall = function(out vIntf:IInterface):HRESULT; stdcall;
