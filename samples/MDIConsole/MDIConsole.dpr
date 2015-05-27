@@ -19,7 +19,6 @@ uses
 {R *.res}
 
 begin
-  
   Application.Initialize;
   // mybean≥ı ºªØ
   applicationContextInitialize;

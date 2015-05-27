@@ -6,7 +6,7 @@ uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics,
   Controls, Forms, Dialogs, Menus, ActnList,
   Tabs, ExtCtrls, uIMainForm, PluginTabControl,
-  StdCtrls, IniFiles, System.Actions;
+  StdCtrls, IniFiles;
 
 type
   TfrmMain = class(TForm, IMainForm)
@@ -23,13 +23,13 @@ type
     btnCreateAsMDI: TButton;
     actCreatePluginAsMDI: TAction;
     Button1: TButton;
-    Button2: TButton;
+    btnShowAsNormal: TButton;
     procedure actAboutExecute(Sender: TObject);
     procedure actCreateDemoFormExecute(Sender: TObject);
     procedure actCreatePluginAsMDIExecute(Sender: TObject);
     procedure actCreateReporterDEMOExecute(Sender: TObject);
+    procedure btnShowAsNormalClick(Sender: TObject);
     procedure Button1Click(Sender: TObject);
-    procedure Button2Click(Sender: TObject);
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
     procedure FormShow(Sender: TObject);
   private
@@ -110,17 +110,23 @@ begin
   self.showPluginAsMDI(lvPlugin);
 end;
 
-procedure TfrmMain.Button1Click(Sender: TObject);
+procedure TfrmMain.btnShowAsNormalClick(Sender: TObject);
 var
-  FTempIntf:IInterface;
+  lvPlugInf:IInterface;
 begin
-  FTempIntf := TMyBeanFactoryTools.getBean(edtPluginID.Text);
-  self.showPluginAsMDI(FTempIntf);
+  lvPlugInf := TMyBeanFactoryTools.getBean(edtPluginID.Text);
+  (lvPlugInf as IShowAsNormal).showAsNormal();
 end;
 
-procedure TfrmMain.Button2Click(Sender: TObject);
+procedure TfrmMain.Button1Click(Sender: TObject);
+var
+  lvPlugInf:IInterface;
 begin
-  FTempIntf := nil;
+  ShowMessage('请注意: 演示调用单实例窗体插件[mybeanForm]' + sLineBreak
+           + '要求mybeanForm注册方式为单实例,单实例插件不能自己调用Free,或者在窗体中Action:=caFree');
+  lvPlugInf := TMyBeanFactoryTools.getBean('mybeanForm');
+  (lvPlugInf as IShowAsNormal).showAsNormal();
+
 end;
 
 procedure TfrmMain.closePluginQuery(const pvForm: IInterface; vCanClose:

@@ -4,10 +4,11 @@ interface
 
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  Dialogs, mybean.vcl.BaseForm, mybean.core.beanFactory;
+  Dialogs, mybean.vcl.BaseForm, mybean.core.beanFactory, StdCtrls;
 
 type
   TfrmMyBeanPlugin = class(TMyBeanBaseForm)
+    Memo1: TMemo;
   private
     { Private declarations }
   public

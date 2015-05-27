@@ -50,22 +50,22 @@ object frmMain: TfrmMain
       TabOrder = 2
     end
     object Button1: TButton
-      Left = 352
+      Left = 336
       Top = 1
-      Width = 75
+      Width = 91
       Height = 25
-      Caption = 'Button1'
+      Caption = #21333#23454#20363#31383#20307#28436#31034
       TabOrder = 3
       OnClick = Button1Click
     end
-    object Button2: TButton
-      Left = 464
-      Top = 0
-      Width = 75
+    object btnShowAsNormal: TButton
+      Left = 433
+      Top = 1
+      Width = 94
       Height = 25
-      Caption = 'Button2'
+      Caption = 'btnShowAsNormal'
       TabOrder = 4
-      OnClick = Button2Click
+      OnClick = btnShowAsNormalClick
     end
   end
   object mmMain: TMainMenu
