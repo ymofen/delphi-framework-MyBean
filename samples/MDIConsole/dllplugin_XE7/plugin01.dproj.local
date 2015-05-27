@@ -1,0 +1,20 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<BorlandProject>
+	<Transactions>
+    <Transaction>2015/03/05 13:18:08.000.305,=C:\Users\ymofen\Documents\Embarcadero\Studio\Projects\Unit1.pas</Transaction>
+    <Transaction>2015/05/26 10:27:30.000.329,=C:\Users\ymofen\Documents\Embarcadero\Studio\Projects\Unit1.pas</Transaction>
+    <Transaction>2015/05/27 16:58:18.000.670,E:\workspace\delphi\delphi-framework-MyBean\samples\MDIConsole\plugin01.dproj=C:\Users\ymofen\Documents\Embarcadero\Studio\Projects\Project1.dproj</Transaction>
+    <Transaction>2015/05/27 16:58:43.000.819,E:\workspace\delphi\delphi-framework-MyBean\samples\MDIConsole\dllplugin_1\plugin01.dproj=E:\workspace\delphi\delphi-framework-MyBean\samples\MDIConsole\plugin01.dproj</Transaction>
+    <Transaction>2015/05/27 17:00:06.000.666,=E:\workspace\delphi\delphi-framework-MyBean\samples\MDIConsole\plug-ins-form-demo\Forms\ufrmMyBeanPlugin.pas</Transaction>
+    <Transaction>2015/05/27 17:02:42.000.150,=E:\workspace\delphi\delphi-framework-MyBean\samples\MDIConsole\plug-ins-form-demo\Forms\ufrmAbout.pas</Transaction>
+    <Transaction>2015/05/27 17:02:55.000.182,=E:\workspace\delphi\delphi-framework-MyBean\samples\MDIConsole\plug-ins-form-demo\Service\uBasePluginForm.pas</Transaction>
+    <Transaction>2015/05/27 17:03:18.000.112,=E:\workspace\delphi\delphi-framework-MyBean\samples\MDIConsole\Interface\uIFormShow.pas</Transaction>
+    <Transaction>2015/05/27 17:03:18.000.121,=E:\workspace\delphi\delphi-framework-MyBean\samples\MDIConsole\Interface\uIMainForm.pas</Transaction>
+    <Transaction>2015/05/27 17:03:18.000.102,=E:\workspace\delphi\delphi-framework-MyBean\samples\MDIConsole\Interface\uICaption.pas</Transaction>
+    <Transaction>2015/05/27 17:03:18.000.078,=E:\workspace\delphi\delphi-framework-MyBean\samples\MDIConsole\Interface\mBeanMainFormTools.pas</Transaction>
+    <Transaction>2015/05/27 17:03:18.000.131,=E:\workspace\delphi\delphi-framework-MyBean\samples\MDIConsole\Interface\uIPluginForm.pas</Transaction>
+    <Transaction>2015/05/27 17:03:54.000.155,=E:\workspace\delphi\delphi-framework-MyBean\samples\MDIConsole\plug-ins-form-demo\Forms\ufrmPluginForm.pas</Transaction>
+    <Transaction>2015/05/27 17:03:54.000.187,=E:\workspace\delphi\delphi-framework-MyBean\samples\MDIConsole\plug-ins-form-demo\Forms\ufrmShowModalTester.pas</Transaction>
+    <Transaction>2015/05/27 17:04:26.687,E:\workspace\delphi\delphi-framework-MyBean\samples\MDIConsole\plug-ins-form-demo\Forms\ufrmShowModalTester.pas=</Transaction>
+  </Transactions>
+</BorlandProject>
