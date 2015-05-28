@@ -18,11 +18,14 @@ type
     Label1: TLabel;
     btnDel: TButton;
     btnFileSize: TButton;
+    edtUploadFileName: TEdit;
+    btnUpload2: TButton;
     procedure FormCreate(Sender: TObject);
     procedure btnConnectClick(Sender: TObject);
     procedure btnDelClick(Sender: TObject);
     procedure btnDownloadClick(Sender: TObject);
     procedure btnFileSizeClick(Sender: TObject);
+    procedure btnUpload2Click(Sender: TObject);
     procedure btnUploadClick(Sender: TObject);
   private
     { Private declarations }
@@ -88,9 +91,29 @@ begin
    )));
 end;
 
+
 procedure TfrmMain.FormCreate(Sender: TObject);
 begin
   FDIOCPFileAccess := TMyBeanFactoryTools.getBean('diocpRemoteFile') as IRemoteFileAccess;
+end;
+
+procedure TfrmMain.btnUpload2Click(Sender: TObject);
+var
+  lvRFileID, lvLocalFile:String;
+begin
+  lvLocalFile := edtUploadFileName.Text;
+  if not FileExists(lvLocalFile) then
+  begin
+    raise Exception.CreateFmt('指定的文件[%s]不存在', [lvLocalFile]);
+  end;
+
+  lvRFileID := 'diocpBean\' + ExtractFileName(lvLocalFile);
+  TDIOCPFileAccessTools.UploadFile(
+    FDIOCPFileAccess,
+   lvRFileID,   //远程文件
+   lvLocalFile);                                  //本地文件
+  ShowMessage('上传文件成功!');
+  edtRFileID.Text := lvRFileID;   
 end;
 
 

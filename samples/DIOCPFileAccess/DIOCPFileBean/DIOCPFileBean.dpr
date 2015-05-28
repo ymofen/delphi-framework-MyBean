@@ -19,8 +19,6 @@ uses
   SimpleMsgPack in 'service\SimpleMsgPack.pas',
   uFileOperaObject in 'service\uFileOperaObject.pas',
   ufrmMain in 'Tester\ufrmMain.pas' {frmMain},
-  uIFormShow in 'Tester\uIFormShow.pas',
-  uDIOCPFileAccessTools in 'Tester\uDIOCPFileAccessTools.pas',
   DRawSocket in 'service\DRawSocket.pas',
   DTcpClient in 'service\DTcpClient.pas',
   uDTcpClientCoderImpl in 'service\uDTcpClientCoderImpl.pas',

@@ -47,8 +47,8 @@ object frmMain: TfrmMain
     OnClick = btnConnectClick
   end
   object btnUpload: TButton
-    Left = 16
-    Top = 80
+    Left = 8
+    Top = 91
     Width = 75
     Height = 25
     Caption = 'btnUpload'
@@ -89,6 +89,23 @@ object frmMain: TfrmMain
     Caption = 'btnFileSize'
     TabOrder = 7
     OnClick = btnFileSizeClick
+  end
+  object edtUploadFileName: TEdit
+    Left = 16
+    Top = 64
+    Width = 273
+    Height = 21
+    TabOrder = 8
+    Text = 'C:\a.zip'
+  end
+  object btnUpload2: TButton
+    Left = 295
+    Top = 62
+    Width = 84
+    Height = 25
+    Caption = 'btnUpload2'
+    TabOrder = 9
+    OnClick = btnUpload2Click
   end
   object dlgOpen: TOpenDialog
     Left = 16
