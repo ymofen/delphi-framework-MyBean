@@ -1,0 +1,19 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<BorlandProject>
+	<PersonalityInfo>
+		<Option>
+			<Option Name="Personality">Default.Personality</Option>
+			<Option Name="ProjectType"></Option>
+			<Option Name="Version">1.0</Option>
+			<Option Name="GUID">{BB9DF894-0B4C-4F24-903B-CDAE95E60D30}</Option>
+		</Option>
+	</PersonalityInfo>
+	<Default.Personality>  <Projects>
+      <Projects Name="MyBeanSubscribe.dll">plug-ins\Subscribe\MyBeanSubscribe.bdsproj</Projects>
+      <Projects Name="simpleConsole.exe">plug-ins\SimpleConsole\simpleConsole.bdsproj</Projects>
+      <Projects Name="DEMOSubscriber.dll">plug-ins\SubscriberDEMOPlugins\DEMOSubscriber.bdsproj</Projects>
+      <Projects Name="Targets">MyBeanSubscribe.dll simpleConsole.exe DEMOSubscriber.dll</Projects>
+    </Projects>
+    <Dependencies/>
+  </Default.Personality>
+</BorlandProject>

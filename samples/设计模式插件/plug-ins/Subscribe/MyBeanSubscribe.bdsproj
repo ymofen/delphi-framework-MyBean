@@ -1,0 +1,206 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<BorlandProject>
+	<PersonalityInfo>
+		<Option>
+			<Option Name="Personality">Delphi.Personality</Option>
+			<Option Name="ProjectType"></Option>
+			<Option Name="Version">1.0</Option>
+			<Option Name="GUID">{8751E6DD-FE40-40C6-8D68-1A2198CCF5F1}</Option>
+		</Option>
+	</PersonalityInfo>
+	<Delphi.Personality>
+		<Source>
+			<Source Name="MainSource">MyBeanSubscribe.dpr</Source>
+		</Source>
+		<FileVersion>
+			<FileVersion Name="Version">7.0</FileVersion>
+		</FileVersion>
+		<Compiler>
+			<Compiler Name="A">8</Compiler>
+			<Compiler Name="B">0</Compiler>
+			<Compiler Name="C">1</Compiler>
+			<Compiler Name="D">1</Compiler>
+			<Compiler Name="E">0</Compiler>
+			<Compiler Name="F">0</Compiler>
+			<Compiler Name="G">1</Compiler>
+			<Compiler Name="H">1</Compiler>
+			<Compiler Name="I">1</Compiler>
+			<Compiler Name="J">0</Compiler>
+			<Compiler Name="K">0</Compiler>
+			<Compiler Name="L">1</Compiler>
+			<Compiler Name="M">0</Compiler>
+			<Compiler Name="N">1</Compiler>
+			<Compiler Name="O">1</Compiler>
+			<Compiler Name="P">1</Compiler>
+			<Compiler Name="Q">0</Compiler>
+			<Compiler Name="R">0</Compiler>
+			<Compiler Name="S">0</Compiler>
+			<Compiler Name="T">0</Compiler>
+			<Compiler Name="U">0</Compiler>
+			<Compiler Name="V">1</Compiler>
+			<Compiler Name="W">0</Compiler>
+			<Compiler Name="X">1</Compiler>
+			<Compiler Name="Y">1</Compiler>
+			<Compiler Name="Z">1</Compiler>
+			<Compiler Name="ShowHints">True</Compiler>
+			<Compiler Name="ShowWarnings">True</Compiler>
+			<Compiler Name="UnitAliases">WinTypes=Windows;WinProcs=Windows;DbiTypes=BDE;DbiProcs=BDE;DbiErrs=BDE;</Compiler>
+			<Compiler Name="NamespacePrefix"></Compiler>
+			<Compiler Name="GenerateDocumentation">False</Compiler>
+			<Compiler Name="DefaultNamespace"></Compiler>
+			<Compiler Name="SymbolDeprecated">True</Compiler>
+			<Compiler Name="SymbolLibrary">True</Compiler>
+			<Compiler Name="SymbolPlatform">True</Compiler>
+			<Compiler Name="SymbolExperimental">True</Compiler>
+			<Compiler Name="UnitLibrary">True</Compiler>
+			<Compiler Name="UnitPlatform">True</Compiler>
+			<Compiler Name="UnitDeprecated">True</Compiler>
+			<Compiler Name="UnitExperimental">True</Compiler>
+			<Compiler Name="HResultCompat">True</Compiler>
+			<Compiler Name="HidingMember">True</Compiler>
+			<Compiler Name="HiddenVirtual">True</Compiler>
+			<Compiler Name="Garbage">True</Compiler>
+			<Compiler Name="BoundsError">True</Compiler>
+			<Compiler Name="ZeroNilCompat">True</Compiler>
+			<Compiler Name="StringConstTruncated">True</Compiler>
+			<Compiler Name="ForLoopVarVarPar">True</Compiler>
+			<Compiler Name="TypedConstVarPar">True</Compiler>
+			<Compiler Name="AsgToTypedConst">True</Compiler>
+			<Compiler Name="CaseLabelRange">True</Compiler>
+			<Compiler Name="ForVariable">True</Compiler>
+			<Compiler Name="ConstructingAbstract">True</Compiler>
+			<Compiler Name="ComparisonFalse">True</Compiler>
+			<Compiler Name="ComparisonTrue">True</Compiler>
+			<Compiler Name="ComparingSignedUnsigned">True</Compiler>
+			<Compiler Name="CombiningSignedUnsigned">True</Compiler>
+			<Compiler Name="UnsupportedConstruct">True</Compiler>
+			<Compiler Name="FileOpen">True</Compiler>
+			<Compiler Name="FileOpenUnitSrc">True</Compiler>
+			<Compiler Name="BadGlobalSymbol">True</Compiler>
+			<Compiler Name="DuplicateConstructorDestructor">True</Compiler>
+			<Compiler Name="InvalidDirective">True</Compiler>
+			<Compiler Name="PackageNoLink">True</Compiler>
+			<Compiler Name="PackageThreadVar">True</Compiler>
+			<Compiler Name="ImplicitImport">True</Compiler>
+			<Compiler Name="HPPEMITIgnored">True</Compiler>
+			<Compiler Name="NoRetVal">True</Compiler>
+			<Compiler Name="UseBeforeDef">True</Compiler>
+			<Compiler Name="ForLoopVarUndef">True</Compiler>
+			<Compiler Name="UnitNameMismatch">True</Compiler>
+			<Compiler Name="NoCFGFileFound">True</Compiler>
+			<Compiler Name="ImplicitVariants">True</Compiler>
+			<Compiler Name="UnicodeToLocale">True</Compiler>
+			<Compiler Name="LocaleToUnicode">True</Compiler>
+			<Compiler Name="ImagebaseMultiple">True</Compiler>
+			<Compiler Name="SuspiciousTypecast">True</Compiler>
+			<Compiler Name="PrivatePropAccessor">True</Compiler>
+			<Compiler Name="UnsafeType">False</Compiler>
+			<Compiler Name="UnsafeCode">False</Compiler>
+			<Compiler Name="UnsafeCast">False</Compiler>
+			<Compiler Name="OptionTruncated">True</Compiler>
+			<Compiler Name="WideCharReduced">True</Compiler>
+			<Compiler Name="DuplicatesIgnored">True</Compiler>
+			<Compiler Name="UnitInitSeq">True</Compiler>
+			<Compiler Name="LocalPInvoke">True</Compiler>
+			<Compiler Name="MessageDirective">True</Compiler>
+			<Compiler Name="TypeInfoImplicitlyAdded">True</Compiler>
+			<Compiler Name="XMLWhitespaceNotAllowed">True</Compiler>
+			<Compiler Name="XMLUnknownEntity">True</Compiler>
+			<Compiler Name="XMLInvalidNameStart">True</Compiler>
+			<Compiler Name="XMLInvalidName">True</Compiler>
+			<Compiler Name="XMLExpectedCharacter">True</Compiler>
+			<Compiler Name="XMLCRefNoResolve">True</Compiler>
+			<Compiler Name="XMLNoParm">True</Compiler>
+			<Compiler Name="XMLNoMatchingParm">True</Compiler>
+			<Compiler Name="CodePage"></Compiler>
+		</Compiler>
+		<Linker>
+			<Linker Name="MapFile">0</Linker>
+			<Linker Name="OutputObjs">0</Linker>
+			<Linker Name="GenerateHpps">False</Linker>
+			<Linker Name="ConsoleApp">1</Linker>
+			<Linker Name="DebugInfo">False</Linker>
+			<Linker Name="RemoteSymbols">False</Linker>
+			<Linker Name="GenerateDRC">False</Linker>
+			<Linker Name="MinStackSize">16384</Linker>
+			<Linker Name="MaxStackSize">1048576</Linker>
+			<Linker Name="ImageBase">4194304</Linker>
+			<Linker Name="ExeDescription"></Linker>
+		</Linker>
+		<Directories>
+			<Directories Name="OutputDir">E:\workspace\dcworkspace\GPSNet\plugins</Directories>
+			<Directories Name="UnitOutputDir"></Directories>
+			<Directories Name="PackageDLLOutputDir"></Directories>
+			<Directories Name="PackageDCPOutputDir"></Directories>
+			<Directories Name="SearchPath"></Directories>
+			<Directories Name="Packages">vcl;rtl;vclx;vclactnband;dbrtl;vcldb;vcldbx;bdertl;dsnap;dsnapcon;teeUI;teedb;tee;adortl;vclib;ibxpress;dbxcds;dbexpress;DbxCommonDriver;IndyCore;IndySystem;IndyProtocols;xmlrtl;inet;IntrawebDB_90_100;Intraweb_90_100;VclSmp;vclie;websnap;webdsnap;inetdbbde;inetdbxpress;soaprtl;Python_d7;SPCommVCL;dxCoreRS11;cxLibraryRS11;dxGDIPlusRS11;dxThemeRS11;cxBarEditItemRS11;dxBarRS11;dxComnRS11;cxEditorsRS11;cxDataRS11;cxPivotGridRS11;cxExportRS11;dxmdsRS11;cxPivotGridChartRS11;cxGridRS11;cxPageControlRS11;cxSchedulerGridRS11;cxSchedulerRS11;cxSpreadSheetRS11;cxVerticalGridRS11;dxADOServerModeRS11;dxServerModeRS11;dxBarDBNavRS11;dxBarExtDBItemsRS11;dxBarExtItemsRS11;dxorgcRS11;dxdborRS11;dxdbtrRS11;dxDBXServerModeRS11;dxDockingRS11;dxFlowChartRS11;dxPSCoreRS11;dxPScxPivotGridLnkRS11;dxPScxCommonRS11;dxPSLnksRS11;dxPScxSchedulerLnkRS11;dxPScxSSLnkRS11;dxPScxTLLnkRS11;cxTreeListRS11;dxPScxVGridLnkRS11;dxPSdxDBTVLnkRS11;dxPSdxFCLnkRS11;dxPSdxOCLnkRS11;dxPsPrVwAdvRS11;dxPSPrVwRibbonRS11;dxRibbonRS11;dxSkinsCoreRS11;dxSkinscxPCPainterRS11;dxSkinscxSchedulerPainterRS11;dxSkinsdxDLPainterRS11;dxSkinsdxBarPainterRS11;dxSkinsdxNavBarPainterRS11;dxNavBarRS11;dxSkinsdxRibbonPainterRS11;dxSpellCheckerRS11;dxTabbedMDIRS11;dxtrmdRS11;dxPScxPCProdRS11;dxSkinBlackRS11;dxSkinBlueprintRS11;dxSkinBlueRS11;dxSkinCaramelRS11;dxSkinCoffeeRS11;dxSkinDarkRoomRS11;dxSkinDarkSideRS11;dxSkinDevExpressDarkStyleRS11;dxSkinDevExpressStyleRS11;dxSkinFoggyRS11;dxSkinGlassOceansRS11;dxSkinHighContrastRS11;dxSkiniMaginaryRS11;dxSkinLilianRS11;dxSkinLiquidSkyRS11;dxSkinLondonLiquidSkyRS11;dxSkinMcSkinRS11;dxSkinMoneyTwinsRS11;dxSkinOffice2007BlackRS11;dxSkinOffice2007BlueRS11;dxSkinOffice2007GreenRS11;dxSkinOffice2007PinkRS11;dxSkinOffice2007SilverRS11;dxSkinOffice2010BlackRS11;dxSkinOffice2010BlueRS11;dxSkinOffice2010SilverRS11;dxSkinOffice2013WhiteRS11;dxSkinPumpkinRS11;dxSkinSevenClassicRS11;dxSkinSevenRS11;dxSkinSharpRS11;dxSkinSilverRS11;dxSkinSpringTimeRS11;dxSkinStardustRS11;dxSkinSummer2008RS11;dxSkinTheAsphaltWorldRS11;dxSkinValentineRS11;dxSkinVS2010RS11;dxSkinWhiteprintRS11;dxSkinXmas2008BlueRS11;dxSkinMetropolisRS11;dxSkinMetropolisDarkRS11;dxSkinOffice2013DarkGrayRS11;dxSkinOffice2013LightGrayRS11;dxWizardControlRS11;cxSchedulerRibbonStyleEventEditorRS11;dxTileControlRS11;dxLayoutControlRS11</Directories>
+			<Directories Name="Conditionals">DEBUG</Directories>
+			<Directories Name="DebugSourceDirs"></Directories>
+			<Directories Name="UsePackages">False</Directories>
+		</Directories>
+		<Parameters>
+			<Parameters Name="RunParams"></Parameters>
+			<Parameters Name="HostApplication">E:\workspace\dcworkspace\GPSNet\GPSNet.exe</Parameters>
+			<Parameters Name="Launcher"></Parameters>
+			<Parameters Name="UseLauncher">False</Parameters>
+			<Parameters Name="DebugCWD"></Parameters>
+			<Parameters Name="Debug Symbols Search Path"></Parameters>
+			<Parameters Name="LoadAllSymbols">True</Parameters>
+			<Parameters Name="LoadUnspecifiedSymbols">False</Parameters>
+		</Parameters>
+		<Signing>
+			<Signing Name="SignAssembly">False</Signing>
+		</Signing>
+		<VersionInfo>
+			<VersionInfo Name="IncludeVerInfo">False</VersionInfo>
+			<VersionInfo Name="AutoIncBuild">False</VersionInfo>
+			<VersionInfo Name="MajorVer">1</VersionInfo>
+			<VersionInfo Name="MinorVer">0</VersionInfo>
+			<VersionInfo Name="Release">0</VersionInfo>
+			<VersionInfo Name="Build">0</VersionInfo>
+			<VersionInfo Name="Debug">False</VersionInfo>
+			<VersionInfo Name="PreRelease">False</VersionInfo>
+			<VersionInfo Name="Special">False</VersionInfo>
+			<VersionInfo Name="Private">False</VersionInfo>
+			<VersionInfo Name="DLL">False</VersionInfo>
+			<VersionInfo Name="Locale">2052</VersionInfo>
+			<VersionInfo Name="CodePage">936</VersionInfo>
+		</VersionInfo>
+		<VersionInfoKeys>
+			<VersionInfoKeys Name="CompanyName"></VersionInfoKeys>
+			<VersionInfoKeys Name="FileDescription"></VersionInfoKeys>
+			<VersionInfoKeys Name="FileVersion">1.0.0.0</VersionInfoKeys>
+			<VersionInfoKeys Name="InternalName"></VersionInfoKeys>
+			<VersionInfoKeys Name="LegalCopyright"></VersionInfoKeys>
+			<VersionInfoKeys Name="LegalTrademarks"></VersionInfoKeys>
+			<VersionInfoKeys Name="OriginalFilename"></VersionInfoKeys>
+			<VersionInfoKeys Name="ProductName"></VersionInfoKeys>
+			<VersionInfoKeys Name="ProductVersion">1.0.0.0</VersionInfoKeys>
+			<VersionInfoKeys Name="Comments"></VersionInfoKeys>
+		</VersionInfoKeys>
+		<Excluded_Packages>
+      <Excluded_Packages Name="e:\workspace\delphi\vcl\dev14.2.2\devexpressvcl_14.2.2\library\rs11\bpl\dclcxSchedulerRS11.bpl">ExpressScheduler by Developer Express Inc.</Excluded_Packages>
+      <Excluded_Packages Name="$(BDS)\bin\dcloffice2k100.bpl">Microsoft Office 2000 Sample Automation Server Wrapper Components</Excluded_Packages>
+      <Excluded_Packages Name="$(BDS)\bin\dclofficexp100.bpl">Microsoft Office XP Sample Automation Server Wrapper Components</Excluded_Packages>
+      <Excluded_Packages Name="e:\workspace\delphi\vcl\dev14.2.2\devexpressvcl_14.2.2\library\rs11\bpl\dclcxeditorfieldlinkrs11.bpl">ExpressEditors FieldLink by Developer Express Inc.</Excluded_Packages>
+      <Excluded_Packages Name="e:\workspace\delphi\vcl\dev14.2.2\devexpressvcl_14.2.2\library\rs11\bpl\dclcxpagecontrolrs11.bpl">ExpressPageControl by Developer Express Inc.</Excluded_Packages>
+      <Excluded_Packages Name="e:\workspace\delphi\vcl\dev14.2.2\devexpressvcl_14.2.2\library\rs11\bpl\dclcxpagecontroldxbarpopupmenurs11.bpl">ExpressPageControl dxBar Popup Menu by Developer Express Inc.</Excluded_Packages>
+      <Excluded_Packages Name="e:\workspace\delphi\vcl\dev14.2.2\devexpressvcl_14.2.2\library\rs11\bpl\dclcxpivotgridolaprs11.bpl">ExpressPivotGrid OLAP by Developer Express Inc.</Excluded_Packages>
+      <Excluded_Packages Name="e:\workspace\delphi\vcl\dev14.2.2\devexpressvcl_14.2.2\library\rs11\bpl\dclcxschedulertreebrowserrs11.bpl">ExpressScheduler tree browser by Developer Express Inc.</Excluded_Packages>
+      <Excluded_Packages Name="e:\workspace\delphi\vcl\dev14.2.2\devexpressvcl_14.2.2\library\rs11\bpl\dclcxtreelistdxbarpopupmenurs11.bpl">ExpressQuantumTreeList dxBar Built-In Menu by Developer Express Inc.</Excluded_Packages>
+      <Excluded_Packages Name="e:\workspace\delphi\vcl\dev14.2.2\devexpressvcl_14.2.2\library\rs11\bpl\dclcxtreelistrs11.bpl">ExpressQuantumTreeList by Developer Express Inc.</Excluded_Packages>
+      <Excluded_Packages Name="e:\workspace\delphi\vcl\dev14.2.2\devexpressvcl_14.2.2\library\rs11\bpl\dcldxpsteechartrs11.bpl">File e:\workspace\delphi\vcl\dev14.2.2\devexpressvcl_14.2.2\library\rs11\bpl\dcldxpsteechartrs11.bpl not found</Excluded_Packages>
+      <Excluded_Packages Name="e:\workspace\delphi\vcl\dev14.2.2\devexpressvcl_14.2.2\library\rs11\bpl\dcldxpsdbteechartrs11.bpl">File e:\workspace\delphi\vcl\dev14.2.2\devexpressvcl_14.2.2\library\rs11\bpl\dcldxpsdbteechartrs11.bpl not found</Excluded_Packages>
+      <Excluded_Packages Name="e:\workspace\delphi\vcl\dev14.2.2\devexpressvcl_14.2.2\library\rs11\bpl\dcldxlayoutcontrolrs11.bpl">ExpressLayout Control by Developer Express Inc.</Excluded_Packages>
+      <Excluded_Packages Name="e:\workspace\delphi\vcl\dev14.2.2\devexpressvcl_14.2.2\library\rs11\bpl\dcldxmdsrs11.bpl">ExpressMemData by Developer Express Inc.</Excluded_Packages>
+      <Excluded_Packages Name="e:\workspace\delphi\vcl\dev14.2.2\devexpressvcl_14.2.2\library\rs11\bpl\dcldxnavbarrs11.bpl">ExpressNavBar by Developer Express Inc.</Excluded_Packages>
+      <Excluded_Packages Name="e:\workspace\delphi\vcl\dev14.2.2\devexpressvcl_14.2.2\library\rs11\bpl\dcldxpscxcommonrs11.bpl">ExpressPrinting System Cross Platform Library by Developer Express Inc.</Excluded_Packages>
+      <Excluded_Packages Name="e:\workspace\delphi\vcl\dev14.2.2\devexpressvcl_14.2.2\library\rs11\bpl\dcldxpscxextcommonrs11.bpl">ExpressPrinting System Extended Cross Platform Library by Developer Express Inc.</Excluded_Packages>
+      <Excluded_Packages Name="e:\workspace\delphi\vcl\dev14.2.2\devexpressvcl_14.2.2\library\rs11\bpl\dcldxpscxgridlnkrs11.bpl">ExpressPrinting System ReportLink for ExpressQuantumGrid by Developer Express Inc.</Excluded_Packages>
+      <Excluded_Packages Name="e:\workspace\delphi\vcl\dev14.2.2\devexpressvcl_14.2.2\library\rs11\bpl\dcldxpsdxlclnkrs11.bpl">ExpressPrinting System ReportLink for ExpressLayoutControl by Developer Express Inc.</Excluded_Packages>
+      <Excluded_Packages Name="e:\workspace\delphi\vcl\dev14.2.2\devexpressvcl_14.2.2\library\rs11\bpl\dcldxpsdxdboclnkrs11.bpl">ExpressPrinting System ReportLinks for ExpressDBOrgChart by Developer Express Inc.</Excluded_Packages>
+      <Excluded_Packages Name="e:\workspace\delphi\vcl\dev14.2.2\devexpressvcl_14.2.2\library\rs11\bpl\dxskinsharpplusrs11.bpl">ExpressSkins - SharpPlus Skin by Developer Express Inc.</Excluded_Packages>
+    </Excluded_Packages>
+		<buildevents/>
+	</Delphi.Personality>
+</BorlandProject>

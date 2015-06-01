@@ -1,0 +1,278 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<BorlandProject>
+	<PersonalityInfo>
+		<Option>
+			<Option Name="Personality">Delphi.Personality</Option>
+			<Option Name="ProjectType"></Option>
+			<Option Name="Version">1.0</Option>
+			<Option Name="GUID">{E8F2AF8E-C709-479D-A74A-3B82852D4173}</Option>
+		</Option>
+	</PersonalityInfo>
+	<Delphi.Personality>
+		<Source>
+			<Source Name="MainSource">DEMOSubscriber.dpr</Source>
+		</Source>
+		<FileVersion>
+			<FileVersion Name="Version">7.0</FileVersion>
+		</FileVersion>
+		<Compiler>
+			<Compiler Name="A">8</Compiler>
+			<Compiler Name="B">0</Compiler>
+			<Compiler Name="C">1</Compiler>
+			<Compiler Name="D">1</Compiler>
+			<Compiler Name="E">0</Compiler>
+			<Compiler Name="F">0</Compiler>
+			<Compiler Name="G">1</Compiler>
+			<Compiler Name="H">1</Compiler>
+			<Compiler Name="I">1</Compiler>
+			<Compiler Name="J">0</Compiler>
+			<Compiler Name="K">0</Compiler>
+			<Compiler Name="L">1</Compiler>
+			<Compiler Name="M">0</Compiler>
+			<Compiler Name="N">1</Compiler>
+			<Compiler Name="O">1</Compiler>
+			<Compiler Name="P">1</Compiler>
+			<Compiler Name="Q">0</Compiler>
+			<Compiler Name="R">0</Compiler>
+			<Compiler Name="S">0</Compiler>
+			<Compiler Name="T">0</Compiler>
+			<Compiler Name="U">0</Compiler>
+			<Compiler Name="V">1</Compiler>
+			<Compiler Name="W">0</Compiler>
+			<Compiler Name="X">1</Compiler>
+			<Compiler Name="Y">1</Compiler>
+			<Compiler Name="Z">1</Compiler>
+			<Compiler Name="ShowHints">True</Compiler>
+			<Compiler Name="ShowWarnings">True</Compiler>
+			<Compiler Name="UnitAliases">WinTypes=Windows;WinProcs=Windows;DbiTypes=BDE;DbiProcs=BDE;DbiErrs=BDE;</Compiler>
+			<Compiler Name="NamespacePrefix"></Compiler>
+			<Compiler Name="GenerateDocumentation">False</Compiler>
+			<Compiler Name="DefaultNamespace"></Compiler>
+			<Compiler Name="SymbolDeprecated">True</Compiler>
+			<Compiler Name="SymbolLibrary">True</Compiler>
+			<Compiler Name="SymbolPlatform">True</Compiler>
+			<Compiler Name="SymbolExperimental">True</Compiler>
+			<Compiler Name="UnitLibrary">True</Compiler>
+			<Compiler Name="UnitPlatform">True</Compiler>
+			<Compiler Name="UnitDeprecated">True</Compiler>
+			<Compiler Name="UnitExperimental">True</Compiler>
+			<Compiler Name="HResultCompat">True</Compiler>
+			<Compiler Name="HidingMember">True</Compiler>
+			<Compiler Name="HiddenVirtual">True</Compiler>
+			<Compiler Name="Garbage">True</Compiler>
+			<Compiler Name="BoundsError">True</Compiler>
+			<Compiler Name="ZeroNilCompat">True</Compiler>
+			<Compiler Name="StringConstTruncated">True</Compiler>
+			<Compiler Name="ForLoopVarVarPar">True</Compiler>
+			<Compiler Name="TypedConstVarPar">True</Compiler>
+			<Compiler Name="AsgToTypedConst">True</Compiler>
+			<Compiler Name="CaseLabelRange">True</Compiler>
+			<Compiler Name="ForVariable">True</Compiler>
+			<Compiler Name="ConstructingAbstract">True</Compiler>
+			<Compiler Name="ComparisonFalse">True</Compiler>
+			<Compiler Name="ComparisonTrue">True</Compiler>
+			<Compiler Name="ComparingSignedUnsigned">True</Compiler>
+			<Compiler Name="CombiningSignedUnsigned">True</Compiler>
+			<Compiler Name="UnsupportedConstruct">True</Compiler>
+			<Compiler Name="FileOpen">True</Compiler>
+			<Compiler Name="FileOpenUnitSrc">True</Compiler>
+			<Compiler Name="BadGlobalSymbol">True</Compiler>
+			<Compiler Name="DuplicateConstructorDestructor">True</Compiler>
+			<Compiler Name="InvalidDirective">True</Compiler>
+			<Compiler Name="PackageNoLink">True</Compiler>
+			<Compiler Name="PackageThreadVar">True</Compiler>
+			<Compiler Name="ImplicitImport">True</Compiler>
+			<Compiler Name="HPPEMITIgnored">True</Compiler>
+			<Compiler Name="NoRetVal">True</Compiler>
+			<Compiler Name="UseBeforeDef">True</Compiler>
+			<Compiler Name="ForLoopVarUndef">True</Compiler>
+			<Compiler Name="UnitNameMismatch">True</Compiler>
+			<Compiler Name="NoCFGFileFound">True</Compiler>
+			<Compiler Name="ImplicitVariants">True</Compiler>
+			<Compiler Name="UnicodeToLocale">True</Compiler>
+			<Compiler Name="LocaleToUnicode">True</Compiler>
+			<Compiler Name="ImagebaseMultiple">True</Compiler>
+			<Compiler Name="SuspiciousTypecast">True</Compiler>
+			<Compiler Name="PrivatePropAccessor">True</Compiler>
+			<Compiler Name="UnsafeType">False</Compiler>
+			<Compiler Name="UnsafeCode">False</Compiler>
+			<Compiler Name="UnsafeCast">False</Compiler>
+			<Compiler Name="OptionTruncated">True</Compiler>
+			<Compiler Name="WideCharReduced">True</Compiler>
+			<Compiler Name="DuplicatesIgnored">True</Compiler>
+			<Compiler Name="UnitInitSeq">True</Compiler>
+			<Compiler Name="LocalPInvoke">True</Compiler>
+			<Compiler Name="MessageDirective">True</Compiler>
+			<Compiler Name="TypeInfoImplicitlyAdded">True</Compiler>
+			<Compiler Name="XMLWhitespaceNotAllowed">True</Compiler>
+			<Compiler Name="XMLUnknownEntity">True</Compiler>
+			<Compiler Name="XMLInvalidNameStart">True</Compiler>
+			<Compiler Name="XMLInvalidName">True</Compiler>
+			<Compiler Name="XMLExpectedCharacter">True</Compiler>
+			<Compiler Name="XMLCRefNoResolve">True</Compiler>
+			<Compiler Name="XMLNoParm">True</Compiler>
+			<Compiler Name="XMLNoMatchingParm">True</Compiler>
+			<Compiler Name="CodePage"></Compiler>
+		</Compiler>
+		<Linker>
+			<Linker Name="MapFile">0</Linker>
+			<Linker Name="OutputObjs">0</Linker>
+			<Linker Name="GenerateHpps">False</Linker>
+			<Linker Name="ConsoleApp">1</Linker>
+			<Linker Name="DebugInfo">False</Linker>
+			<Linker Name="RemoteSymbols">False</Linker>
+			<Linker Name="GenerateDRC">False</Linker>
+			<Linker Name="MinStackSize">16384</Linker>
+			<Linker Name="MaxStackSize">1048576</Linker>
+			<Linker Name="ImageBase">4194304</Linker>
+			<Linker Name="ExeDescription"></Linker>
+		</Linker>
+		<Directories>
+			<Directories Name="OutputDir">..\..\BIN\DebugPlugins</Directories>
+			<Directories Name="UnitOutputDir"></Directories>
+			<Directories Name="PackageDLLOutputDir"></Directories>
+			<Directories Name="PackageDCPOutputDir"></Directories>
+			<Directories Name="SearchPath"></Directories>
+			<Directories Name="Packages"></Directories>
+			<Directories Name="Conditionals"></Directories>
+			<Directories Name="DebugSourceDirs"></Directories>
+			<Directories Name="UsePackages">False</Directories>
+		</Directories>
+		<Parameters>
+			<Parameters Name="RunParams"></Parameters>
+			<Parameters Name="HostApplication">..\..\BIN\simpleConsole.exe</Parameters>
+			<Parameters Name="Launcher"></Parameters>
+			<Parameters Name="UseLauncher">False</Parameters>
+			<Parameters Name="DebugCWD"></Parameters>
+			<Parameters Name="Debug Symbols Search Path"></Parameters>
+			<Parameters Name="LoadAllSymbols">True</Parameters>
+			<Parameters Name="LoadUnspecifiedSymbols">False</Parameters>
+		</Parameters>
+		<Signing>
+			<Signing Name="SignAssembly">False</Signing>
+		</Signing>
+		<VersionInfo>
+			<VersionInfo Name="IncludeVerInfo">False</VersionInfo>
+			<VersionInfo Name="AutoIncBuild">False</VersionInfo>
+			<VersionInfo Name="MajorVer">1</VersionInfo>
+			<VersionInfo Name="MinorVer">0</VersionInfo>
+			<VersionInfo Name="Release">0</VersionInfo>
+			<VersionInfo Name="Build">0</VersionInfo>
+			<VersionInfo Name="Debug">False</VersionInfo>
+			<VersionInfo Name="PreRelease">False</VersionInfo>
+			<VersionInfo Name="Special">False</VersionInfo>
+			<VersionInfo Name="Private">False</VersionInfo>
+			<VersionInfo Name="DLL">False</VersionInfo>
+			<VersionInfo Name="Locale">2052</VersionInfo>
+			<VersionInfo Name="CodePage">936</VersionInfo>
+		</VersionInfo>
+		<VersionInfoKeys>
+			<VersionInfoKeys Name="CompanyName"></VersionInfoKeys>
+			<VersionInfoKeys Name="FileDescription"></VersionInfoKeys>
+			<VersionInfoKeys Name="FileVersion">1.0.0.0</VersionInfoKeys>
+			<VersionInfoKeys Name="InternalName"></VersionInfoKeys>
+			<VersionInfoKeys Name="LegalCopyright"></VersionInfoKeys>
+			<VersionInfoKeys Name="LegalTrademarks"></VersionInfoKeys>
+			<VersionInfoKeys Name="OriginalFilename"></VersionInfoKeys>
+			<VersionInfoKeys Name="ProductName"></VersionInfoKeys>
+			<VersionInfoKeys Name="ProductVersion">1.0.0.0</VersionInfoKeys>
+			<VersionInfoKeys Name="Comments"></VersionInfoKeys>
+		</VersionInfoKeys>
+		<Excluded_Packages>
+      <Excluded_Packages Name="$(BDS)\bin\dclIntraweb_90_100.bpl">VCL for the Web 9.0 Design Package for CodeGear RAD Studio</Excluded_Packages>
+      <Excluded_Packages Name="$(BDS)\bin\dcloffice2k100.bpl">Microsoft Office 2000 Sample Automation Server Wrapper Components</Excluded_Packages>
+      <Excluded_Packages Name="$(BDS)\bin\dclofficexp100.bpl">Microsoft Office XP Sample Automation Server Wrapper Components</Excluded_Packages>
+      <Excluded_Packages Name="e:\workspace\delphi\vcl\dev14.2.2\devexpressvcl_14.2.2\library\rs11\bpl\dcldxpsteechartrs11.bpl">File e:\workspace\delphi\vcl\dev14.2.2\devexpressvcl_14.2.2\library\rs11\bpl\dcldxpsteechartrs11.bpl not found</Excluded_Packages>
+      <Excluded_Packages Name="e:\workspace\delphi\vcl\dev14.2.2\devexpressvcl_14.2.2\library\rs11\bpl\dcldxpsdbteechartrs11.bpl">File e:\workspace\delphi\vcl\dev14.2.2\devexpressvcl_14.2.2\library\rs11\bpl\dcldxpsdbteechartrs11.bpl not found</Excluded_Packages>
+      <Excluded_Packages Name="e:\workspace\delphi\vcl\dev14.2.2\devexpressvcl_14.2.2\library\rs11\bpl\dcldxlayoutcontrolrs11.bpl">ExpressLayout Control by Developer Express Inc.</Excluded_Packages>
+      <Excluded_Packages Name="e:\workspace\delphi\vcl\dev14.2.2\devexpressvcl_14.2.2\library\rs11\bpl\dcldxmdsrs11.bpl">ExpressMemData by Developer Express Inc.</Excluded_Packages>
+      <Excluded_Packages Name="e:\workspace\delphi\vcl\dev14.2.2\devexpressvcl_14.2.2\library\rs11\bpl\dcldxnavbarrs11.bpl">ExpressNavBar by Developer Express Inc.</Excluded_Packages>
+      <Excluded_Packages Name="e:\workspace\delphi\vcl\dev14.2.2\devexpressvcl_14.2.2\library\rs11\bpl\dcldxpscorers11.bpl">ExpressPrinting System by Developer Express Inc.</Excluded_Packages>
+      <Excluded_Packages Name="e:\workspace\delphi\vcl\dev14.2.2\devexpressvcl_14.2.2\library\rs11\bpl\dcldxpscxcommonrs11.bpl">ExpressPrinting System Cross Platform Library by Developer Express Inc.</Excluded_Packages>
+      <Excluded_Packages Name="e:\workspace\delphi\vcl\dev14.2.2\devexpressvcl_14.2.2\library\rs11\bpl\dcldxpscxextcommonrs11.bpl">ExpressPrinting System Extended Cross Platform Library by Developer Express Inc.</Excluded_Packages>
+      <Excluded_Packages Name="e:\workspace\delphi\vcl\dev14.2.2\devexpressvcl_14.2.2\library\rs11\bpl\dcldxpscxgridlnkrs11.bpl">ExpressPrinting System ReportLink for ExpressQuantumGrid by Developer Express Inc.</Excluded_Packages>
+      <Excluded_Packages Name="e:\workspace\delphi\vcl\dev14.2.2\devexpressvcl_14.2.2\library\rs11\bpl\dcldxpsdxlclnkrs11.bpl">ExpressPrinting System ReportLink for ExpressLayoutControl by Developer Express Inc.</Excluded_Packages>
+      <Excluded_Packages Name="e:\workspace\delphi\vcl\dev14.2.2\devexpressvcl_14.2.2\library\rs11\bpl\dcldxpscxpivotgridlnkrs11.bpl">ExpressPrinting System ReportLink for ExpressPivotGrid by Developer Express Inc.</Excluded_Packages>
+      <Excluded_Packages Name="e:\workspace\delphi\vcl\dev14.2.2\devexpressvcl_14.2.2\library\rs11\bpl\dcldxpscxschedulerlnkrs11.bpl">ExpressPrinting System ReportLink for ExpressScheduler by Developer Express Inc.</Excluded_Packages>
+      <Excluded_Packages Name="e:\workspace\delphi\vcl\dev14.2.2\devexpressvcl_14.2.2\library\rs11\bpl\dcldxpscxsslnkrs11.bpl">ExpressPrinting System ReportLink for ExpressSpreadSheet by Developer Express Inc.</Excluded_Packages>
+      <Excluded_Packages Name="e:\workspace\delphi\vcl\dev14.2.2\devexpressvcl_14.2.2\library\rs11\bpl\dcldxpscxtllnkrs11.bpl">ExpressPrinting System ReportLink for ExpressQuantumTreeList by Developer Express Inc.</Excluded_Packages>
+      <Excluded_Packages Name="e:\workspace\delphi\vcl\dev14.2.2\devexpressvcl_14.2.2\library\rs11\bpl\dcldxpscxvgridlnkrs11.bpl">ExpressPrinting System ReportLink for ExpressVerticalGrid by Developer Express Inc.</Excluded_Packages>
+      <Excluded_Packages Name="e:\workspace\delphi\vcl\dev14.2.2\devexpressvcl_14.2.2\library\rs11\bpl\dcldxpsdxdboclnkrs11.bpl">ExpressPrinting System ReportLinks for ExpressDBOrgChart by Developer Express Inc.</Excluded_Packages>
+      <Excluded_Packages Name="e:\workspace\delphi\vcl\dev14.2.2\devexpressvcl_14.2.2\library\rs11\bpl\dcldxpsdxdbtvlnkrs11.bpl">ExpressPrinting System ReportLink for ExpressDBTree by Developer Express Inc.</Excluded_Packages>
+      <Excluded_Packages Name="e:\workspace\delphi\vcl\dev14.2.2\devexpressvcl_14.2.2\library\rs11\bpl\dcldxpsdxfclnkrs11.bpl">ExpressPrinting System ReportLinks for ExpressFlowChart by Developer Express Inc.</Excluded_Packages>
+      <Excluded_Packages Name="e:\workspace\delphi\vcl\dev14.2.2\devexpressvcl_14.2.2\library\rs11\bpl\dcldxpsdxoclnkrs11.bpl">ExpressPrinting System ReportLinks for ExpressOrgChart by Developer Express Inc.</Excluded_Packages>
+      <Excluded_Packages Name="e:\workspace\delphi\vcl\dev14.2.2\devexpressvcl_14.2.2\library\rs11\bpl\dcldxpslnksrs11.bpl">ExpressPrinting System ReportLinks (Standard) by Developer Express Inc.</Excluded_Packages>
+      <Excluded_Packages Name="e:\workspace\delphi\vcl\dev14.2.2\devexpressvcl_14.2.2\library\rs11\bpl\dcldxpsprvwadvrs11.bpl">ExpressPrinting System Advanced Preview Window by Developer Express Inc.</Excluded_Packages>
+      <Excluded_Packages Name="e:\workspace\delphi\vcl\dev14.2.2\devexpressvcl_14.2.2\library\rs11\bpl\dcldxpsprvwribbonrs11.bpl">ExpressPrinting System Ribbon Preview Window by Developer Express Inc.</Excluded_Packages>
+      <Excluded_Packages Name="e:\workspace\delphi\vcl\dev14.2.2\devexpressvcl_14.2.2\library\rs11\bpl\dcldxribbonrs11.bpl">ExpressBars Ribbon controls by Developer Express Inc.</Excluded_Packages>
+      <Excluded_Packages Name="e:\workspace\delphi\vcl\dev14.2.2\devexpressvcl_14.2.2\library\rs11\bpl\dcldxskinscorers11.bpl">ExpressSkins Library by Developer Express Inc.</Excluded_Packages>
+      <Excluded_Packages Name="e:\workspace\delphi\vcl\dev14.2.2\devexpressvcl_14.2.2\library\rs11\bpl\dcldxskinscxeditorshelperrs11.bpl">ExpressSkins Library Uses Clause Auto Fill Helper for ExpressEditors by Developer Express Inc.</Excluded_Packages>
+      <Excluded_Packages Name="e:\workspace\delphi\vcl\dev14.2.2\devexpressvcl_14.2.2\library\rs11\bpl\dcldxskinsdesignhelperrs11.bpl">ExpressSkins Library Uses Clause Auto Fill Helper by Developer Express Inc.</Excluded_Packages>
+      <Excluded_Packages Name="e:\workspace\delphi\vcl\dev14.2.2\devexpressvcl_14.2.2\library\rs11\bpl\dcldxskinscxpcpainterrs11.bpl">ExpressSkins Library Uses Clause Auto Fill Helper for PageControl Painter by Developer Express Inc.</Excluded_Packages>
+      <Excluded_Packages Name="e:\workspace\delphi\vcl\dev14.2.2\devexpressvcl_14.2.2\library\rs11\bpl\dxskinscxpcpainterrs11.bpl">ExpressSkins Library Painter for PageControl by Developer Express Inc.</Excluded_Packages>
+      <Excluded_Packages Name="e:\workspace\delphi\vcl\dev14.2.2\devexpressvcl_14.2.2\library\rs11\bpl\dcldxskinscxschedulerpainterrs11.bpl">ExpressSkins Library Uses Clause Auto Fill Helper for Scheduler Painter by Developer Express Inc.</Excluded_Packages>
+      <Excluded_Packages Name="e:\workspace\delphi\vcl\dev14.2.2\devexpressvcl_14.2.2\library\rs11\bpl\dxskinscxschedulerpainterrs11.bpl">ExpressSkins Library Painter for Scheduler by Developer Express Inc.</Excluded_Packages>
+      <Excluded_Packages Name="e:\workspace\delphi\vcl\dev14.2.2\devexpressvcl_14.2.2\library\rs11\bpl\dcldxskinsdxbarspaintersrs11.bpl">ExpressSkins Library Uses Clause Auto Fill Helper for Bars Painters by Developer Express Inc.</Excluded_Packages>
+      <Excluded_Packages Name="e:\workspace\delphi\vcl\dev14.2.2\devexpressvcl_14.2.2\library\rs11\bpl\dxskinsdxdlpainterrs11.bpl">ExpressSkins Library Painter for Docking Library by Developer Express Inc.</Excluded_Packages>
+      <Excluded_Packages Name="e:\workspace\delphi\vcl\dev14.2.2\devexpressvcl_14.2.2\library\rs11\bpl\dxskinsdxbarpainterrs11.bpl">ExpressSkins Library Painter for Bars by Developer Express Inc.</Excluded_Packages>
+      <Excluded_Packages Name="e:\workspace\delphi\vcl\dev14.2.2\devexpressvcl_14.2.2\library\rs11\bpl\dcldxskinsdxnavbarpainterrs11.bpl">ExpressSkins Library Uses Clause Auto Fill Helper for NavBar Painter by Developer Express Inc.</Excluded_Packages>
+      <Excluded_Packages Name="e:\workspace\delphi\vcl\dev14.2.2\devexpressvcl_14.2.2\library\rs11\bpl\dxskinsdxnavbarpainterrs11.bpl">ExpressSkins Library Painter for NavBar by Developer Express Inc.</Excluded_Packages>
+      <Excluded_Packages Name="e:\workspace\delphi\vcl\dev14.2.2\devexpressvcl_14.2.2\library\rs11\bpl\dcldxskinsdxribbonpaintersrs11.bpl">ExpressSkins Library Uses Clause Auto Fill Helper for Ribbon Painters by Developer Express Inc.</Excluded_Packages>
+      <Excluded_Packages Name="e:\workspace\delphi\vcl\dev14.2.2\devexpressvcl_14.2.2\library\rs11\bpl\dxskinsdxribbonpainterrs11.bpl">ExpressSkins Library Painter for Ribbon by Developer Express Inc.</Excluded_Packages>
+      <Excluded_Packages Name="e:\workspace\delphi\vcl\dev14.2.2\devexpressvcl_14.2.2\library\rs11\bpl\dcldxtabbedmdirs11.bpl">ExpressBars Tabbed MDI by Developer Express Inc.</Excluded_Packages>
+      <Excluded_Packages Name="e:\workspace\delphi\vcl\dev14.2.2\devexpressvcl_14.2.2\library\rs11\bpl\dxpscxpcprodrs11.bpl">ExpressPrinting System ContainerProducer for ExpressPageControl by Developer Express Inc.</Excluded_Packages>
+      <Excluded_Packages Name="e:\workspace\delphi\vcl\dev14.2.2\devexpressvcl_14.2.2\library\rs11\bpl\dxskinblackrs11.bpl">ExpressSkins - Black Skin by Developer Express Inc.</Excluded_Packages>
+      <Excluded_Packages Name="e:\workspace\delphi\vcl\dev14.2.2\devexpressvcl_14.2.2\library\rs11\bpl\dxskinblueprintrs11.bpl">ExpressSkins - Blueprint Skin by Developer Express Inc.</Excluded_Packages>
+      <Excluded_Packages Name="e:\workspace\delphi\vcl\dev14.2.2\devexpressvcl_14.2.2\library\rs11\bpl\dxskinbluers11.bpl">ExpressSkins - Blue Skin by Developer Express Inc.</Excluded_Packages>
+      <Excluded_Packages Name="e:\workspace\delphi\vcl\dev14.2.2\devexpressvcl_14.2.2\library\rs11\bpl\dxskincaramelrs11.bpl">ExpressSkins - Caramel Skin by Developer Express Inc.</Excluded_Packages>
+      <Excluded_Packages Name="e:\workspace\delphi\vcl\dev14.2.2\devexpressvcl_14.2.2\library\rs11\bpl\dxskincoffeers11.bpl">ExpressSkins - Coffee Skin by Developer Express Inc.</Excluded_Packages>
+      <Excluded_Packages Name="e:\workspace\delphi\vcl\dev14.2.2\devexpressvcl_14.2.2\library\rs11\bpl\dxskindarkroomrs11.bpl">ExpressSkins - Darkroom Skin by Developer Express Inc.</Excluded_Packages>
+      <Excluded_Packages Name="e:\workspace\delphi\vcl\dev14.2.2\devexpressvcl_14.2.2\library\rs11\bpl\dxskindarksiders11.bpl">ExpressSkins - DarkSide Skin by Developer Express Inc.</Excluded_Packages>
+      <Excluded_Packages Name="e:\workspace\delphi\vcl\dev14.2.2\devexpressvcl_14.2.2\library\rs11\bpl\dxskindevexpressdarkstylers11.bpl">ExpressSkins - DevExpressDarkStyle Skin by Developer Express Inc.</Excluded_Packages>
+      <Excluded_Packages Name="e:\workspace\delphi\vcl\dev14.2.2\devexpressvcl_14.2.2\library\rs11\bpl\dxskindevexpressstylers11.bpl">ExpressSkins - DevExpressStyle Skin by Developer Express Inc.</Excluded_Packages>
+      <Excluded_Packages Name="e:\workspace\delphi\vcl\dev14.2.2\devexpressvcl_14.2.2\library\rs11\bpl\dxskinfoggyrs11.bpl">ExpressSkins - Foggy Skin by Developer Express Inc.</Excluded_Packages>
+      <Excluded_Packages Name="e:\workspace\delphi\vcl\dev14.2.2\devexpressvcl_14.2.2\library\rs11\bpl\dxskinglassoceansrs11.bpl">ExpressSkins - GlassOceans Skin by Developer Express Inc.</Excluded_Packages>
+      <Excluded_Packages Name="e:\workspace\delphi\vcl\dev14.2.2\devexpressvcl_14.2.2\library\rs11\bpl\dxskinhighcontrastrs11.bpl">ExpressSkins - HighContrast Skin by Developer Express Inc.</Excluded_Packages>
+      <Excluded_Packages Name="e:\workspace\delphi\vcl\dev14.2.2\devexpressvcl_14.2.2\library\rs11\bpl\dxskinimaginaryrs11.bpl">ExpressSkins - iMaginary Skin by Developer Express Inc.</Excluded_Packages>
+      <Excluded_Packages Name="e:\workspace\delphi\vcl\dev14.2.2\devexpressvcl_14.2.2\library\rs11\bpl\dxskinlilianrs11.bpl">ExpressSkins - Lilian Skin by Developer Express Inc.</Excluded_Packages>
+      <Excluded_Packages Name="e:\workspace\delphi\vcl\dev14.2.2\devexpressvcl_14.2.2\library\rs11\bpl\dxskinliquidskyrs11.bpl">ExpressSkins - LiquidSky Skin by Developer Express Inc.</Excluded_Packages>
+      <Excluded_Packages Name="e:\workspace\delphi\vcl\dev14.2.2\devexpressvcl_14.2.2\library\rs11\bpl\dxskinlondonliquidskyrs11.bpl">ExpressSkins - LondonLiquidSky Skin by Developer Express Inc.</Excluded_Packages>
+      <Excluded_Packages Name="e:\workspace\delphi\vcl\dev14.2.2\devexpressvcl_14.2.2\library\rs11\bpl\dxskinmcskinrs11.bpl">ExpressSkins - McSkin Skin by Developer Express Inc.</Excluded_Packages>
+      <Excluded_Packages Name="e:\workspace\delphi\vcl\dev14.2.2\devexpressvcl_14.2.2\library\rs11\bpl\dxskinmoneytwinsrs11.bpl">ExpressSkins - MoneyTwins Skin by Developer Express Inc.</Excluded_Packages>
+      <Excluded_Packages Name="e:\workspace\delphi\vcl\dev14.2.2\devexpressvcl_14.2.2\library\rs11\bpl\dxskinoffice2007blackrs11.bpl">ExpressSkins - Office2007Black Skin by Developer Express Inc.</Excluded_Packages>
+      <Excluded_Packages Name="e:\workspace\delphi\vcl\dev14.2.2\devexpressvcl_14.2.2\library\rs11\bpl\dxskinoffice2007bluers11.bpl">ExpressSkins - Office2007Blue Skin by Developer Express Inc.</Excluded_Packages>
+      <Excluded_Packages Name="e:\workspace\delphi\vcl\dev14.2.2\devexpressvcl_14.2.2\library\rs11\bpl\dxskinoffice2007greenrs11.bpl">ExpressSkins - Office2007Green Skin by Developer Express Inc.</Excluded_Packages>
+      <Excluded_Packages Name="e:\workspace\delphi\vcl\dev14.2.2\devexpressvcl_14.2.2\library\rs11\bpl\dxskinoffice2007pinkrs11.bpl">ExpressSkins - Office2007Pink Skin by Developer Express Inc.</Excluded_Packages>
+      <Excluded_Packages Name="e:\workspace\delphi\vcl\dev14.2.2\devexpressvcl_14.2.2\library\rs11\bpl\dxskinoffice2007silverrs11.bpl">ExpressSkins - Office2007Silver Skin by Developer Express Inc.</Excluded_Packages>
+      <Excluded_Packages Name="e:\workspace\delphi\vcl\dev14.2.2\devexpressvcl_14.2.2\library\rs11\bpl\dxskinoffice2010blackrs11.bpl">ExpressSkins - Office2010Black Skin by Developer Express Inc.</Excluded_Packages>
+      <Excluded_Packages Name="e:\workspace\delphi\vcl\dev14.2.2\devexpressvcl_14.2.2\library\rs11\bpl\dxskinoffice2010bluers11.bpl">ExpressSkins - Office2010Blue Skin by Developer Express Inc.</Excluded_Packages>
+      <Excluded_Packages Name="e:\workspace\delphi\vcl\dev14.2.2\devexpressvcl_14.2.2\library\rs11\bpl\dxskinoffice2010silverrs11.bpl">ExpressSkins - Office2010Silver Skin by Developer Express Inc.</Excluded_Packages>
+      <Excluded_Packages Name="e:\workspace\delphi\vcl\dev14.2.2\devexpressvcl_14.2.2\library\rs11\bpl\dxskinoffice2013whiters11.bpl">ExpressSkins - Office2013White Skin by Developer Express Inc.</Excluded_Packages>
+      <Excluded_Packages Name="e:\workspace\delphi\vcl\dev14.2.2\devexpressvcl_14.2.2\library\rs11\bpl\dxskinpumpkinrs11.bpl">ExpressSkins - Pumpkin Skin by Developer Express Inc.</Excluded_Packages>
+      <Excluded_Packages Name="e:\workspace\delphi\vcl\dev14.2.2\devexpressvcl_14.2.2\library\rs11\bpl\dxskinsevenclassicrs11.bpl">ExpressSkins - SevenClassic Skin by Developer Express Inc.</Excluded_Packages>
+      <Excluded_Packages Name="e:\workspace\delphi\vcl\dev14.2.2\devexpressvcl_14.2.2\library\rs11\bpl\dxskinsevenrs11.bpl">ExpressSkins - Seven Skin by Developer Express Inc.</Excluded_Packages>
+      <Excluded_Packages Name="e:\workspace\delphi\vcl\dev14.2.2\devexpressvcl_14.2.2\library\rs11\bpl\dxskinsharpplusrs11.bpl">ExpressSkins - SharpPlus Skin by Developer Express Inc.</Excluded_Packages>
+      <Excluded_Packages Name="e:\workspace\delphi\vcl\dev14.2.2\devexpressvcl_14.2.2\library\rs11\bpl\dxskinsharprs11.bpl">ExpressSkins - Sharp Skin by Developer Express Inc.</Excluded_Packages>
+      <Excluded_Packages Name="e:\workspace\delphi\vcl\dev14.2.2\devexpressvcl_14.2.2\library\rs11\bpl\dxskinsilverrs11.bpl">ExpressSkins - Silver Skin by Developer Express Inc.</Excluded_Packages>
+      <Excluded_Packages Name="e:\workspace\delphi\vcl\dev14.2.2\devexpressvcl_14.2.2\library\rs11\bpl\dxskinspringtimers11.bpl">ExpressSkins - Springtime Skin by Developer Express Inc.</Excluded_Packages>
+      <Excluded_Packages Name="e:\workspace\delphi\vcl\dev14.2.2\devexpressvcl_14.2.2\library\rs11\bpl\dxskinstardustrs11.bpl">ExpressSkins - Stardust Skin by Developer Express Inc.</Excluded_Packages>
+      <Excluded_Packages Name="e:\workspace\delphi\vcl\dev14.2.2\devexpressvcl_14.2.2\library\rs11\bpl\dxskinsummer2008rs11.bpl">ExpressSkins - Summer2008 Skin by Developer Express Inc.</Excluded_Packages>
+      <Excluded_Packages Name="e:\workspace\delphi\vcl\dev14.2.2\devexpressvcl_14.2.2\library\rs11\bpl\dxskintheasphaltworldrs11.bpl">ExpressSkins - TheAsphaltWorld Skin by Developer Express Inc.</Excluded_Packages>
+      <Excluded_Packages Name="e:\workspace\delphi\vcl\dev14.2.2\devexpressvcl_14.2.2\library\rs11\bpl\dxskinvalentiners11.bpl">ExpressSkins - Valentine Skin by Developer Express Inc.</Excluded_Packages>
+      <Excluded_Packages Name="e:\workspace\delphi\vcl\dev14.2.2\devexpressvcl_14.2.2\library\rs11\bpl\dxskinvs2010rs11.bpl">ExpressSkins - VS2010 Skin by Developer Express Inc.</Excluded_Packages>
+      <Excluded_Packages Name="e:\workspace\delphi\vcl\dev14.2.2\devexpressvcl_14.2.2\library\rs11\bpl\dxskinwhiteprintrs11.bpl">ExpressSkins - Whiteprint Skin by Developer Express Inc.</Excluded_Packages>
+      <Excluded_Packages Name="e:\workspace\delphi\vcl\dev14.2.2\devexpressvcl_14.2.2\library\rs11\bpl\dxskinxmas2008bluers11.bpl">ExpressSkins - Xmas2008Blue Skin by Developer Express Inc.</Excluded_Packages>
+      <Excluded_Packages Name="e:\workspace\delphi\vcl\dev14.2.2\devexpressvcl_14.2.2\library\rs11\bpl\dxskinmetropolisrs11.bpl">ExpressSkins - Metropolis Skin by Developer Express Inc.</Excluded_Packages>
+      <Excluded_Packages Name="e:\workspace\delphi\vcl\dev14.2.2\devexpressvcl_14.2.2\library\rs11\bpl\dxskinmetropolisdarkrs11.bpl">ExpressSkins - MetropolisDark Skin by Developer Express Inc.</Excluded_Packages>
+      <Excluded_Packages Name="e:\workspace\delphi\vcl\dev14.2.2\devexpressvcl_14.2.2\library\rs11\bpl\dxskinoffice2013darkgrayrs11.bpl">ExpressSkins - Office2013DarkGray Skin by Developer Express Inc.</Excluded_Packages>
+      <Excluded_Packages Name="e:\workspace\delphi\vcl\dev14.2.2\devexpressvcl_14.2.2\library\rs11\bpl\dxskinoffice2013lightgrayrs11.bpl">ExpressSkins - Office2013LightGray Skin by Developer Express Inc.</Excluded_Packages>
+      <Excluded_Packages Name="e:\workspace\delphi\vcl\dev14.2.2\devexpressvcl_14.2.2\library\rs11\bpl\dclcxgridwizardrs11.bpl">ExpressQuantumGrid Wizard by Developer Express Inc.</Excluded_Packages>
+      <Excluded_Packages Name="e:\workspace\delphi\vcl\dev14.2.2\devexpressvcl_14.2.2\library\rs11\bpl\dclcxschedulerribbonstyleeventeditorrs11.bpl">ExpressScheduler Ribbon Event Window by Developer Express Inc.</Excluded_Packages>
+      <Excluded_Packages Name="e:\workspace\delphi\vcl\dev14.2.2\devexpressvcl_14.2.2\library\rs11\bpl\dcldxiconlibraryrs11.bpl">Express Cross Platform Library Icon Library by Developer Express Inc.</Excluded_Packages>
+      <Excluded_Packages Name="e:\workspace\delphi\vcl\dev14.2.2\devexpressvcl_14.2.2\library\rs11\bpl\dcldxwizardcontrolrs11.bpl">ExpressWizardControl by Developer Express Inc.</Excluded_Packages>
+      <Excluded_Packages Name="e:\workspace\delphi\vcl\dev14.2.2\devexpressvcl_14.2.2\library\rs11\bpl\dclcxgridrs11.bpl">ExpressQuantumGrid by Developer Express Inc.</Excluded_Packages>
+      <Excluded_Packages Name="e:\workspace\delphi\vcl\dev14.2.2\devexpressvcl_14.2.2\library\rs11\bpl\dcldxribboncustomizationformrs11.bpl">ExpressBars Ribbon Customization Form by Developer Express Inc.</Excluded_Packages>
+    </Excluded_Packages>
+		<buildevents/>
+	</Delphi.Personality>
+</BorlandProject>
