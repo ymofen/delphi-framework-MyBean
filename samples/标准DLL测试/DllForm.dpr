@@ -14,22 +14,19 @@ uses
   SysUtils,
   Classes,
   forms,
-  Unit2 in 'Unit2.pas' {Form2};
+  Unit2 in 'Unit2.pas' {Form2},
+  fAbout in 'fAbout.pas' {frmAbout},
+  uBasePluginForm in 'uBasePluginForm.pas';
 
 {$R *.res}
- procedure Load_frmTest(App: THandle);stdcall;
-var
-  sHandle: THandle;
+procedure Load_frmTest(App: THandle);stdcall;
 begin
-  sHandle := Application.Handle;
-  //Application.Handle := App;
-  Form2 := TForm2.Create(Application);
+  frmAbout := TfrmAbout.Create(nil);
   try
-    Form2.ShowModal;
+    frmAbout.ShowModal;
   finally
-    Form2.Free;
+    frmAbout.Free;
   end;
-  Application.Handle := sHandle;
 end;
  
 exports

@@ -21,9 +21,6 @@ object Form1: TForm1
     Align = alTop
     Caption = 'Panel1'
     TabOrder = 0
-    ExplicitLeft = 184
-    ExplicitTop = 25
-    ExplicitWidth = 185
     object btnInVoke: TButton
       Left = 22
       Top = 9
