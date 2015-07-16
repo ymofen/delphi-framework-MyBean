@@ -730,7 +730,7 @@ begin
     begin
       lvLibObject := TBaseFactoryObject(FBeanMapList.Objects[j]);
       __beanLogger.logMessage(Format(sLoadTrace_BeanID_Repeat,
-         [lvID,lvLibObject.namespace]), 'load_warning_', lgvWarning);
+         [lvID , pvFactoryObject.Namespace, lvLibObject.namespace]), 'load_warning_', lgvWarning);
     end else
     begin
       FBeanMapList.AddObject(lvID, pvFactoryObject);
@@ -954,9 +954,7 @@ procedure TApplicationContext.DoRegisterPlugins(pvPlugins: TStrings;
 var
   i, j:Integer;
   lvID:String;
-  {$IFDEF LOG_ON}
   lvLibObject:TBaseFactoryObject;
-  {$ENDIF}
 begin
   for i := 0 to pvPlugins.Count - 1 do
   begin
@@ -966,11 +964,9 @@ begin
       j := FBeanMapList.IndexOf(lvID);
       if j <> -1 then
       begin
-      {$IFDEF LOG_ON}
         lvLibObject := TBaseFactoryObject(FBeanMapList.Objects[j]);
         __beanLogger.logMessage(Format(sLoadTrace_BeanID_Repeat,
-           [lvID,lvLibObject.namespace]));
-      {$ENDIF}
+           [lvID , pvFactoryObject.Namespace, lvLibObject.namespace]), 'load_warning_', lgvWarning);
       end else
       begin
         FBeanMapList.AddObject(lvID, pvFactoryObject);
