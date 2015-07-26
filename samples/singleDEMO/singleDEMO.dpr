@@ -9,7 +9,8 @@ uses
   uIUIForm in 'Interface\uIUIForm.pas',
   ufrmSingleton in 'Child\ufrmSingleton.pas' {frmSingleton},
   uIShow in 'Interface\uIShow.pas',
-  uIFormShow in 'Interface\uIFormShow.pas';
+  uIFormShow in 'Interface\uIFormShow.pas',
+  mybean.tools.beanFactory;
 
 {R *.res}
 
@@ -19,8 +20,12 @@ begin
   beanFactory.RegisterMainFormBean('main', TfrmMain);
   registerFactoryObject(beanFactory, 'default');
   Application.MainFormOnTaskbar := True;
-  //Application.CreateForm(TfrmMain, frmMain);
-  appPluginContext.getBean('main');
-  Application.Run;
 
+  TMyBeanFactoryTools.GetBean('main');
+  try
+    Application.Run;
+  finally
+    Application.MainForm.Free;
+    ApplicationContextFinalize;
+  end;                         
 end.

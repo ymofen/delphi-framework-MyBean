@@ -53,7 +53,7 @@ type
   private
     FbeanID: string;
     FInstance: IInterface;
-    procedure checkFreeInstance;
+    procedure CheckFreeInstance;
   public
     destructor Destroy; override;
     property beanID: string read FbeanID write FbeanID;
@@ -136,7 +136,7 @@ type
     /// </summary>
     function getErrorDesc(pvErrorDesc: PAnsiChar; pvLength: Integer): Integer;  stdcall;
   protected
-    procedure clear;
+    procedure Clear;
     function _Release: Integer; stdcall;
   public
     /// <summary>
@@ -320,8 +320,12 @@ end;
 
 procedure TBeanFactory.checkFinalize;
 begin
+  // 清理注册信息和单实例接口
+  Clear;
+
+  // 清理GetBean的组件插件
   FVclOwners.DestroyComponents;
-  clear;
+
 
   if Assigned(OnFinalizeLibFactory) then
   begin
@@ -410,7 +414,7 @@ begin
 end;
 
 
-procedure TBeanFactory.clear;
+procedure TBeanFactory.Clear;
 var
   i: Integer;
 begin
@@ -620,7 +624,7 @@ destructor TBeanFactory.Destroy;
 begin
   FVclOwners.Free;
 
-  clear;
+  Clear;
   FreeAndNil(FCS);
   FConfig := nil;
   FPlugins.Free;
@@ -880,29 +884,15 @@ begin
   FInstance := nil;
 end;
 
-procedure TBeanInfo.checkFreeInstance;
-//var
-//  lvFree:IFreeObject;
+procedure TBeanInfo.CheckFreeInstance;
 begin
-//  if FInstance <> nil then
-//  begin
-//    if FInstance.QueryInterface(IFreeObject, lvFree)=S_OK then
-//    begin
-//      FInstance := nil;
-//      lvFree.FreeObject;
-//      lvFree := nil;
-//    end;
-//  end;
-
   FInstance := nil;
-
-
 end;
 
 destructor TBeanInfo.Destroy;
 begin
   try
-    checkFreeInstance;
+    CheckFreeInstance;
   except
   end;
   inherited Destroy;
