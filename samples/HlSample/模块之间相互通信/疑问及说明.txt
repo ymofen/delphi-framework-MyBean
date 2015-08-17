@@ -1,0 +1,12 @@
+开发环境:xe7 + mybean_20150610
+-----------------
+问题1
+实现接口相互传递参数的显示到memo的过程中,发现必须是单例模式下,才能正常把数据
+显示到memo中 
+注册时候必须带上 后面的 true 参数 
+beanFactory.RegisterBean('plug1',TfrmPlug1,true);
+--------------------
+问题2
+ TMyBeanFactoryTools.SetObject('main',Self); 
+这句代码我没有搞明白是怎么回事,只知道是根据名字能取到接口.
+希望 天地玄 大侠有机会传授

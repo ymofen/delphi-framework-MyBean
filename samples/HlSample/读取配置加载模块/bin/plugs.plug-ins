@@ -1,0 +1,13 @@
+{
+list:
+[
+ {
+  "lib": "plugs\\Plug1.dll",
+  "id": "plug1"
+ },
+ {
+  "lib": "plugs\\Plug2.dll",
+  "id": "plug2"
+ }
+]
+}
