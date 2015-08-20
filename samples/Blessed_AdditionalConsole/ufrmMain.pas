@@ -29,7 +29,7 @@ var
   frmMain: TfrmMain;
 
 implementation
-  uses Unit1;
+
 {$R *.dfm}
 
 procedure TfrmMain.btnGetBeanInfosClick(Sender: TObject);

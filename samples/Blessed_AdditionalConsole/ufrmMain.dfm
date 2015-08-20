@@ -51,8 +51,6 @@ object frmMain: TfrmMain
     Lines.Strings = (
       #23454#29616#30340#25554#20214#38656#35201#23454#29616'IShowAsChild'#25509#21475#25165#33021#26377#34987#35813'DEMO'#35843#29992)
     TabOrder = 2
-    ExplicitWidth = 329
-    ExplicitHeight = 213
   end
   object btnGetBeanInfos: TButton
     Left = 8
