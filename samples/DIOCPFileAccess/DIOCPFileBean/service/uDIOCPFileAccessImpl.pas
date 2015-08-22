@@ -9,6 +9,7 @@ uses
 type
   TDIOCPFileAccessImpl = class(TInterfacedObject
      , IRemoteFileAccess
+     , IQueryProgressInfo
      , IFileAccess
      , IFileAccessEx
      , IFileAccess02
@@ -45,6 +46,16 @@ type
     ///   获取远程文件大小
     /// </summary>
     function FileSize(pvRFileName, pvType: PAnsiChar): Int64;
+  public
+    /// <summary>
+    ///  查询最大
+    /// </summary>
+    function QueryMax: Int64; stdcall;
+
+    /// <summary>
+    ///  查询当前进度
+    /// </summary>
+    function QueryPosition: Int64; stdcall;
 
   public
 
@@ -97,6 +108,7 @@ end;
 
 procedure TDIOCPFileAccessImpl.Close;
 begin
+  FFileOperaObject.BreakWork := True;
   FFileOperaObject.close;  
 end;
 
@@ -147,6 +159,17 @@ procedure TDIOCPFileAccessImpl.Open;
 begin
   FFileOperaObject.close;
   FFileOperaObject.Open;
+  FFileOperaObject.BreakWork := False;
+end;
+
+function TDIOCPFileAccessImpl.QueryMax: Int64;
+begin
+  Result := FFileOperaObject.Max;
+end;
+
+function TDIOCPFileAccessImpl.QueryPosition: Int64;
+begin
+  Result := FFileOperaObject.Position;
 end;
 
 procedure TDIOCPFileAccessImpl.saveFile(pvRFileName, pvLocalFileName,

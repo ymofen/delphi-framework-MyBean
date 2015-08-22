@@ -10,6 +10,11 @@ uses
 type
   TFileOperaObject = class(TObject)
   private
+    FBreakWork: Boolean;
+    FMax:Int64;
+    
+    FPosition:Int64;
+    
     FFileSize:Int64;
     FFileCheckSum:Cardinal;
     FCoderSocket:ICoderSocket;
@@ -43,9 +48,23 @@ type
     class function verifyData(const buf; len:Cardinal): Cardinal;
     class function verifyStream(pvStream:TStream; len:Cardinal): Cardinal;
 
+    property BreakWork: Boolean read FBreakWork write FBreakWork;
+
     property FileCheckSum: Cardinal read FFileCheckSum;
 
     property FileSize: Int64 read FFileSize;
+
+    /// <summary>
+    ///   查询上传/下载文件的最大尺寸
+    /// </summary>
+    property Max: Int64 read FMax;
+
+    /// <summary>
+    ///  查询上传/下载文件的当前尺寸
+    /// </summary>
+    property Position: Int64 read FPosition;
+
+
 
     
   end;
@@ -76,9 +95,7 @@ end;
 
 procedure TFileOperaObject.copyAFile(pvRFile, pvRDestFile, pvType: String);
 var
-  lvFileStream:TFileStream;
   lvRecvObj, lvSendObj:TSimpleMsgPack;
-  i, l, lvSize:Integer;
 begin
   checkConnect;
   lvSendObj := TSimpleMsgPack.Create;
@@ -115,8 +132,6 @@ begin
 end;
 
 procedure TFileOperaObject.deleteFile(pvRFile, pvType: string);
-var
-  i, l, lvSize:Integer;
 begin
   checkConnect;
 
@@ -156,15 +171,13 @@ var
   lvRFileSize:Integer;
 var
   lvFileStream:TFileStream;
-  i, l, lvSize:Integer;
   lvFileName:String;
-  lvCrc, lvChecksum, lvLocalCheckSum:Cardinal;
+  lvChecksum, lvLocalCheckSum:Cardinal;
   lvBytes:TBytes;
 begin
   checkConnect;
   
-  //if FProgConsole <> nil then FProgConsole.SetHintText('正在获取远程文件大小');
-  readFileINfo(pvRFile, pvType);
+  readFileINfo(pvRFile, pvType, True);
 
   lvRFileSize := FFileSize;
 
@@ -172,24 +185,14 @@ begin
   begin
     raise Exception.CreateFmt('远程文件[%s]不存在!', [pvRFile]);
   end;
-//  if FProgConsole <> nil then
-//  begin
-//    FProgConsole.SetMax(lvRFileSize);
-//    FProgConsole.SetPosition(0);
-//  end;
+  FMax := lvRFileSize;
 
-//  lvCheckSum := FFileCheckSum;
-//  if lvCheckSum = 0 then raise Exception.Create('服务端文件不存在!');
+  lvCheckSum := FFileCheckSum;
+  if lvCheckSum = 0 then raise Exception.Create('服务端文件不存在!');
 
   lvLocalCheckSum := ChecksumAFile(pvLocalFile);
   if lvCheckSum = lvLocalCheckSum then
   begin
-//    if FProgConsole <> nil then
-//    begin
-//      FProgConsole.SetHintText('秒传文件...');
-//      FProgConsole.SetPosition(lvRFileSize);
-//      Sleep(1000);
-//    end;
     Exit;
   end;
         
@@ -210,23 +213,18 @@ begin
 
   lvFileStream := TFileStream.Create(lvFileName, fmCreate or fmShareDenyWrite);
   try
-//    if FProgConsole <> nil then
-//    begin
-//      FProgConsole.SetHintText('下载文件中...');
-//    end;
     while true do
     begin
-//      if FProgConsole <> nil then
-//      begin
-//        if FProgConsole.IsBreaked then Break;
-//      end;
-        
       FCMDObj.Clear();
+
+      if FBreakWork then Break;
+      
       pressINfo(FCMDObj, pvRFile, pvType);
 
 
       FCMDObj.I['cmd.index'] := 1;
       FCMDObj.I['start'] := lvFileStream.Position;
+
 
       FCMDStream.Clear;
       FCMDObj.EncodeToStream(FCMDStream);
@@ -251,10 +249,7 @@ begin
       lvBytes := FCMDObj.ForcePathObject('data').AsBytes;
       lvFileStream.Write(lvBytes[0], Length(lvBytes));
 
-//      if FProgConsole <> nil then
-//      begin
-//        FProgConsole.SetPosition(lvFileStream.Position);
-//      end;
+      FPosition := lvFileStream.Position;
         
       //文件下载完成
       if lvFileStream.Size = FCMDObj.I['fileSize'] then
@@ -270,7 +265,6 @@ end;
 function TFileOperaObject.ChecksumAFile(pvFile:string): Cardinal;
 var
   lvFileStream:TFileStream;
-  lvCrc:Cardinal;
 begin
   result := 0;
   if FileExists(pvFile) then
@@ -287,6 +281,7 @@ end;
 procedure TFileOperaObject.open;
 begin
   FTcpClient.Connect;
+  FBreakWork := False;
 end;
 
 procedure TFileOperaObject.pressINfo(pvSendObject: TSimpleMsgPack; pvRFile,
@@ -299,9 +294,6 @@ end;
 
 procedure TFileOperaObject.readFileINfo(pvRFile, pvType: string; pvChecksum:
     Boolean = true);
-var
-  lvFileStream:TFileStream;
-  i, l, lvSize:Integer;
 begin
   checkConnect;
 
@@ -348,8 +340,7 @@ function TFileOperaObject.uploadFile(pvRFile:String; pvLocalFile:string;
 var
   lvFileStream:TFileStream;
 
-  lvPosition, i, l, lvSize:Int64;
-  lvCheckSum, lvLocalCheckSum:Cardinal;
+  lvPosition, lvSize:Int64;
 begin
   //将文件分段传递<每段固定大小> 4K
   //循环发送
@@ -366,6 +357,7 @@ begin
 
   lvFileStream := TFileStream.Create(pvLocalFile, fmOpenRead);
   try
+    FMax := lvFileStream.Size;
     //readFileINfo(pvRFile, pvType);
 
 //    lvCheckSum := FFileCheckSum;
@@ -383,12 +375,9 @@ begin
 //    end;
 
     while true do
-    begin
-//      if FProgConsole <> nil then
-//      begin
-//        if FProgConsole.IsBreaked then Break;
-//      end;
-//
+    begin                   
+      if FBreakWork then Break; 
+
       FCMDObj.Clear();
       if pvRFile = '' then
       begin
@@ -402,17 +391,7 @@ begin
 
       lvPosition:=lvFileStream.Position;
       FCMDObj.I['start'] := lvPosition;
-//      if lvFileStream.Position = 102400 then
-//      begin
-//        FCMDObj.I['start'] := lvFileStream.Position;
-//      end;
-//      if lvFileStream.Position = 0 then
-//      begin
-//        FCMDObj.I['start'] := 0;
-//      end;
 
-//     FCMDObj.S['startStr'] := IntToStr(lvFileStream.Position);
-      
       lvSize := Min(SEC_SIZE, lvFileStream.Size-lvFileStream.Position);
       if lvSize = 0 then
       begin
@@ -443,10 +422,7 @@ begin
           raise Exception.Create(FCMDObj.S['__result.msg']);
         end;
 
-  //      if FProgConsole <> nil then
-  //      begin
-  //        FProgConsole.SetPosition(lvFileStream.Position);
-  //      end;
+        FPosition := lvFileStream.Position;
 
         if (lvFileStream.Position = lvFileStream.Size) then
         begin
